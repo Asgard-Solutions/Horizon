@@ -43,6 +43,8 @@ export default function Discover() {
     navigate(item.type === "collection" ? `/discover?${new URLSearchParams({ collection: String(item.id) })}` : detailPath(item));
   };
   const collectionName = first?.collection?.title;
+  const filtered = Object.values(query.filters).some((f) => f.length);
+  const libraryEmpty = !!first && total === 0 && !filtered && !query.collection && query.view === "all";
   const upTarget = query.view === "collections" && !query.collection ? '[data-testid="discover-views"] [aria-selected="true"]' : '[data-testid="discover-sort-button"]';
 
   return (
@@ -66,15 +68,21 @@ export default function Discover() {
           {first ? `${total} ${query.view === "collections" ? (total === 1 ? "collection" : "collections") : total === 1 ? "title" : "titles"}` : ""}
         </span>
       </header>
-      {query.view !== "collections" && <FilterBar query={query} facets={facets} onChange={change} />}
+      {query.view !== "collections" && !libraryEmpty && <FilterBar query={query} facets={facets} onChange={change} />}
       {error ? <ErrorState message={error} />
         : !first ? <Loading />
-        : total === 0 ? (
+        : libraryEmpty ? (
+          <div className="discover-empty" data-testid="discover-empty-library">
+            <h2>Your library is empty</h2>
+            <p>Add a media folder on this PC or your network, and your movies and series will fill this wall.</p>
+            <button className="hbtn hbtn--primary" onClick={() => navigate("/settings")} data-testid="discover-add-folder">Add media folder</button>
+          </div>
+        ) : total === 0 ? (
           <div className="discover-empty" data-testid="discover-empty">
             <h2>{query.view === "collections" ? "No collections yet" : "Nothing matches"}</h2>
             <p>{query.view === "collections"
               ? "Collections appear when NFO files name a set, or when a folder holds several movies (if folder grouping is on in Library)."
-              : facets && Object.values(query.filters).some((f) => f.length) ? "Try removing a filter." : "Add a media folder in Library to fill Discover."}</p>
+              : filtered ? "Try removing a filter." : "Nothing of this kind in your library yet."}</p>
           </div>
         ) : (
           <PosterGrid key={qs} total={total} get={get} ensure={ensure} onOpen={open} initialIndex={initial?.index ?? null} initialScroll={initial?.scroll ?? null}
