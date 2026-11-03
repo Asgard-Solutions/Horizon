@@ -1,4 +1,4 @@
-import { episodeCode, formatTime } from "../format";
+import { episodeCode, formatTime, remainingLabel } from "../format";
 import type { HomeData, Progress } from "../types";
 
 /** Thin adapter between the real /api/home payload and the Home visuals. Only real fields are mapped. */
@@ -26,9 +26,7 @@ export interface FilmGroup {
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 function remaining(p: Progress | null): string | null {
-  if (!p?.duration || p.watched) return null;
-  const mins = Math.round((p.duration - p.position) / 60);
-  return mins > 0 ? `${mins} min left` : null;
+  return p && !p.watched ? remainingLabel(p) : null; // same wording as the detail pages
 }
 
 const resumable = (p: Progress | null) => !!p && !p.watched && p.position > 10;

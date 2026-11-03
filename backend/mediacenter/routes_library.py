@@ -42,11 +42,12 @@ def _runtime(row) -> float | None:
     return row["probe_duration"] or row["duration"]
 
 
-def _runtime_status(row, reading: bool) -> str:
-    """known | pending (background reader will fill it in) | unknown (unreadable or reader unavailable)."""
+def _runtime_status(row, reader) -> str:
+    """known | pending (background reader will fill it in) | unknown (unreadable, offline, or no reader)."""
     if _runtime(row):
         return "known"
-    return "pending" if reading and not row["probed"] else "unknown"
+    waiting = reader is not None and reader.enabled and not row["probed"] and not reader.is_unreachable(row["file_id"])
+    return "pending" if waiting else "unknown"
 
 
 def authorize_media_path(conn, path: str) -> str:
@@ -71,24 +72,24 @@ JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.path_key = f.pa
 """
 
 
-def _movie(row, reading: bool = False) -> dict:
+def _movie(row, reader=None) -> dict:
     return {
         "id": row["id"], "file_id": row["file_id"], "title": row["title"], "year": row["year"], "plot": row["plot"],
         "filename": row["filename"], "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "poster_url": _art("movie-poster", row["id"], row["poster_path"]),
         "fanart_url": _art("movie-fanart", row["id"], row["fanart_path"]),
-        "progress": _progress(row), "runtime": _runtime(row), "runtime_status": _runtime_status(row, reading),
+        "progress": _progress(row), "runtime": _runtime(row), "runtime_status": _runtime_status(row, reader),
     }
 
 
-def _episode(row, reading: bool = False) -> dict:
+def _episode(row, reader=None) -> dict:
     return {
         "id": row["id"], "file_id": row["file_id"], "show_id": row["show_id"], "show_title": row["show_title"],
         "season_number": row["season_number"], "episode_number": row["episode_number"],
         "episode_end": row["episode_end"], "title": row["title"], "plot": row["plot"], "filename": row["filename"],
         "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "thumb_url": _art("episode-thumb", row["id"], row["thumb_path"]), "progress": _progress(row),
-        "runtime": _runtime(row), "runtime_status": _runtime_status(row, reading),
+        "runtime": _runtime(row), "runtime_status": _runtime_status(row, reader),
     }
 
 
@@ -122,7 +123,7 @@ def metadata_status(request: Request):
 @router.get("/home")
 def home(request: Request):
     conn = request.state.db
-    rd = _reader(request).enabled
+    rd = _reader(request)
     cont = []
     for p in conn.execute(
         "SELECT f.id AS file_id, f.kind FROM progress p JOIN media_files f ON f.path_key = p.path_key"
@@ -162,7 +163,7 @@ HOME_LIMIT = 24
 
 @router.get("/movies")
 def list_movies(request: Request):
-    items = [_movie(r, _reader(request).enabled) for r in request.state.db.execute(MOVIE_SQL + " ORDER BY m.sort_title, m.year")]
+    items = [_movie(r, _reader(request)) for r in request.state.db.execute(MOVIE_SQL + " ORDER BY m.sort_title, m.year")]
     _read_first(request, items)
     return items
 
@@ -172,7 +173,7 @@ def get_movie(movie_id: int, request: Request):
     row = request.state.db.execute(MOVIE_SQL + " WHERE m.id = ?", (movie_id,)).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Movie not found")
-    item = _movie(row, _reader(request).enabled)
+    item = _movie(row, _reader(request))
     _read_first(request, [item])
     return item
 
@@ -189,7 +190,7 @@ def get_show(show_id: int, request: Request):
     row = conn.execute("SELECT * FROM shows WHERE id = ?", (show_id,)).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Show not found")
-    seasons, rd = [], _reader(request).enabled
+    seasons, rd = [], _reader(request)
     for s in conn.execute("SELECT * FROM seasons WHERE show_id = ? ORDER BY season_number", (show_id,)):
         eps = [_episode(e, rd) for e in conn.execute(
             EPISODE_SQL + " WHERE e.season_id = ? ORDER BY e.episode_number", (s["id"],))]

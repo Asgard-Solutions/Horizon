@@ -47,7 +47,7 @@ export function EpisodeJourney({ seasons, seasonIdx, onSeason, selectedId, onSel
 
   return (
     <section className="journey" aria-label="Episodes" data-testid="episode-journey">
-      <div className="journey-tabs" role="tablist" aria-label="Seasons" data-nav-prefer-selected data-testid="season-tabs">
+      <div className="journey-tabs" role="tablist" aria-label="Seasons" data-nav-row data-nav-prefer-selected data-testid="season-tabs">
         {seasons.map((s, i) => (
           <button key={s.id} role="tab" aria-selected={i === seasonIdx} className={i === seasonIdx ? "gtab gtab--active" : "gtab"}
             onFocus={() => i !== seasonIdx && onSeason(i)} onClick={() => onSeason(i)} data-testid={`season-tab-${s.season_number}`}>

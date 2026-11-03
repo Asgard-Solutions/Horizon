@@ -28,7 +28,7 @@ export function EpisodeCard({ ep, dist, selected, autofocus, onSelect, onPlay }:
         aria-label={`${code}, ${title}${runtime ? `, ${runtime}` : ""}. ${stateText}`}>
         <span className="ep-art">
           {ep.thumb_url ? <img src={mediaUrl(ep.thumb_url)} alt="" loading="lazy" decoding="async" />
-            : <span className="ep-art-fallback" aria-hidden="true">{code}</span>}
+            : <span className="ep-art-fallback" aria-hidden="true" data-testid={`episode-art-fallback-${ep.id}`} />}
           {state === "watched" && <span className="ep-badge ep-badge--watched" data-testid={`episode-watched-${ep.id}`}><Check size={16} strokeWidth={3} /> Watched</span>}
           {state === "partial" && <span className="ep-badge ep-badge--partial" data-testid={`episode-remaining-${ep.id}`}>{stateText}</span>}
           {state === "unwatched" && <span className="ep-dot" aria-hidden="true" />}

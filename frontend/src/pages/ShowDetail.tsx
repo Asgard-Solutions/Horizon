@@ -17,7 +17,7 @@ function NextUpActions({ up, autofocus, onPlay }: { up: NextUp; autofocus: boole
   const { ep, mode } = up;
   const code = episodeCode(ep.season_number, ep.episode_number, ep.episode_end);
   return (
-    <div className="dt-nextup" data-testid="show-next-up" data-mode={mode}>
+    <div className="dt-nextup" data-testid="show-next-up" data-mode={mode} data-nav-down='[data-testid="season-tabs"] [aria-selected="true"]'>
       <span className="dt-nextup-label">{mode === "resume" ? "Continue watching" : mode === "next" ? "Up next" : mode === "rewatch" ? "Seen it all" : "Start the series"}</span>
       <span className="dt-nextup-ep" data-testid="show-next-up-episode">{code}{ep.title ? ` · ${ep.title}` : ""}</span>
       {mode === "resume" && <WatchProgress progress={ep.progress} testId="show-next-up-progress" />}

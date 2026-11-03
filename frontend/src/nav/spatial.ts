@@ -103,7 +103,9 @@ export function move(dir: Dir): boolean {
     return true;
   }
   // Regions can name an explicit Up target (e.g. the Filmstrip header -> the Stage action) to avoid jumping to the top nav.
-  const upSel = dir === "up" ? active.closest<HTMLElement>("[data-nav-up]")?.dataset.navUp : undefined;
+  // ...and an explicit Down target (detail actions -> the selected season tab).
+  const upSel = dir === "up" ? active.closest<HTMLElement>("[data-nav-up]")?.dataset.navUp
+    : dir === "down" ? active.closest<HTMLElement>("[data-nav-down]")?.dataset.navDown : undefined;
   const upTarget = upSel ? document.querySelector<HTMLElement>(upSel) : null;
   if (upTarget && visible(upTarget)) {
     upTarget.focus({ preventScroll: true });

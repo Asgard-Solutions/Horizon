@@ -275,7 +275,7 @@ export default function Player() {
           title={ctx.title ?? info.filename} subtitle={ctx.subtitle}
           hasNext={!!ctx.next_file_id} playRef={playRef} onToggle={toggle} onSeekBy={seekBy} onSeekTo={seekTo}
           onVolumeBy={volumeBy} onMute={mute} onFullscreen={fullscreen} onExit={exit}
-          onNext={() => { persist(); navigate(`/play/${ctx.next_file_id}?start=0`, { replace: true }); }} />
+          onNext={() => { persist(); setMode("osd"); navigate(`/play/${ctx.next_file_id}?start=0`, { replace: true }); }} />
       )}
     </div>
   );

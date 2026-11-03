@@ -69,6 +69,10 @@ class DurationWorker:
             self._priority = (ids + [i for i in self._priority if i not in ids])[:MAX_PRIORITY]
             self._cond.notify_all()
 
+    def is_unreachable(self, file_id: int) -> bool:
+        with self._cond:
+            return file_id in self._skipped
+
     def status(self, conn) -> dict:
         row = conn.execute(
             "SELECT SUM(probe_json IS NULL) AS pending,"

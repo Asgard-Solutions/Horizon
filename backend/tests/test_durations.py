@@ -17,7 +17,7 @@ needs_ffmpeg = pytest.mark.skipif(not (shutil.which("ffmpeg") and shutil.which("
 
 def make_clip(path, seconds):
     path.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"testsrc2=size=160x90:rate=10",
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc2=size=160x90:rate=10",
                     "-t", str(seconds), "-c:v", "libx264", "-pix_fmt", "yuv420p", str(path)], check=True)
     return path
 
@@ -138,9 +138,15 @@ def test_missing_file_is_skipped_not_cached(app, host, media_root):
     host.post("/api/libraries", json={"path": str(media_root)})
     (media_root / "TV" / "Flat.Show.S03E07.720p.WEB-DL.mp4").unlink()  # e.g. NAS went offline after the scan
     w = DurationWorker(app.state.config.db_path, shutil.which("ffprobe") or "/bin/false", 1)
+    app.state.durations = w
     w.run_until_idle()
     assert rows(app)["Flat.Show.S03E07.720p.WEB-DL.mp4"] is None  # still pending: retried after a rescan/restart
     assert w.status(connect(app.state.config.db_path))["unreachable"] >= 1
+    flat = next(s for s in host.get("/api/shows").json() if s["title"].startswith("Flat"))
+    ep = host.get(f"/api/shows/{flat['id']}").json()["seasons"][0]["episodes"][0]
+    assert ep["runtime_status"] == "unknown"  # the UI must not show "Reading length…" for files it cannot reach
+    w.wake()  # a rescan clears the unreachable list, so the file is pending again
+    assert host.get(f"/api/shows/{flat['id']}").json()["seasons"][0]["episodes"][0]["runtime_status"] == "pending"
 
 
 def test_no_ffprobe_means_unknown_not_pending(app, host, media_root, monkeypatch):
