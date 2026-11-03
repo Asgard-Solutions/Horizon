@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import routes_admin, routes_auth, routes_library
+from . import routes_admin, routes_auth, routes_discover, routes_library
 from .config import APP_VERSION, Config, load_config
 from .db import connect, init_db
 from .durations import DurationWorker
@@ -60,6 +60,7 @@ def create_app(config: Config | None = None) -> FastAPI:
     app.include_router(routes_auth.router)
     app.include_router(routes_admin.router)
     app.include_router(routes_library.router)
+    app.include_router(routes_discover.router)
     _mount_frontend(app, cfg.frontend_dist)
     return app
 

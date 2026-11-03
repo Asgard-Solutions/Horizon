@@ -14,7 +14,7 @@ from .config import APP_VERSION
 from .db import get_setting, now_iso, set_setting
 from .parser import is_video
 from .probe import ffprobe_version, find_ffprobe
-from .scanner import cleanup_orphans, path_key, scan_library
+from .scanner import assign_collections, cleanup_orphans, folder_collections_enabled, path_key, scan_library
 from .security import hash_pin, lan_enabled, require_host, validate_new_pin
 from .winfs import list_windows_drives
 
@@ -110,8 +110,29 @@ def remove_library(library_id: int, request: Request):
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Library not found")
     cleanup_orphans(conn)
+    assign_collections(conn, folder_collections_enabled(conn))
     conn.commit()
     return {"ok": True}
+
+
+class LibraryPrefsIn(BaseModel):
+    folder_collections: bool
+
+
+@router.get("/settings/library")
+def get_library_prefs(request: Request):
+    return {"folder_collections": folder_collections_enabled(request.state.db)}
+
+
+@router.post("/settings/library")
+def set_library_prefs(body: LibraryPrefsIn, request: Request):
+    """Folder-based collections on/off. Only the catalog is regrouped; media files are never touched."""
+    conn = request.state.db
+    set_setting(conn, "folder_collections", "1" if body.folder_collections else "0")
+    assign_collections(conn, body.folder_collections)
+    conn.commit()
+    return {"folder_collections": body.folder_collections,
+            "collections": conn.execute("SELECT COUNT(*) FROM collections").fetchone()[0]}
 
 
 @router.post("/libraries/{library_id}/scan")

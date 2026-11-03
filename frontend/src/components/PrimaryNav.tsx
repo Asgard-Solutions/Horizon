@@ -7,8 +7,9 @@ export function PrimaryNav() {
   const { auth } = useAuth();
   const items = [
     { to: "/", label: "Home", id: "home" },
-    { to: "/movies", label: "Movies", id: "movies" },
-    { to: "/shows", label: "TV", id: "shows" },
+    { to: "/discover", label: "Discover", id: "discover" },
+    { to: "/atlas", label: "Atlas", id: "atlas" },
+    { to: "/search", label: "Search", id: "search" },
     { to: "/settings", label: auth.role === "host" ? "Library" : "This device", id: "settings" },
   ];
   return (

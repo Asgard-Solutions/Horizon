@@ -151,3 +151,85 @@ export interface Device {
   last_ip: string | null;
   revoked: number;
 }
+
+export type WatchState = "unwatched" | "in_progress" | "watched";
+
+export interface MediaItem {
+  key: string;
+  type: "movie" | "show";
+  id: number;
+  title: string;
+  year: number | null;
+  genres: string[];
+  collection_id: number | null;
+  poster_url: string | null;
+  fanart_url: string | null;
+  added_at: string | null;
+  state: WatchState;
+  progress: number;
+  episodes: number | null;
+}
+
+export interface CollectionItem {
+  key: string;
+  type: "collection";
+  id: number;
+  title: string;
+  source: "nfo" | "folder";
+  count: number;
+  year_from: number | null;
+  year_to: number | null;
+  poster_url: string | null;
+}
+
+export type BrowseItem = MediaItem | CollectionItem;
+
+export interface FacetValue { value: string; count: number }
+
+export interface DiscoverPage {
+  view: string;
+  total: number;
+  offset: number;
+  items: BrowseItem[];
+  facets: { genres: FacetValue[]; decades: FacetValue[]; states: FacetValue[]; types: FacetValue[] } | null;
+  collection?: { id: number; title: string; source: "nfo" | "folder" } | null;
+}
+
+export interface EpisodeHit {
+  key: string;
+  type: "episode";
+  id: number;
+  show_id: number;
+  show_title: string;
+  season_number: number;
+  episode_number: number;
+  title: string | null;
+  file_id: number;
+  thumb_url: string | null;
+  watched: boolean;
+}
+
+export interface SearchResponse {
+  query: string;
+  movies: MediaItem[];
+  shows: MediaItem[];
+  episodes: EpisodeHit[];
+  totals: { movies: number; shows: number; episodes: number };
+}
+
+export interface AtlasNode {
+  id: string;
+  kind: "type" | "genre" | "collection" | "more";
+  value: string | number;
+  label: string;
+  count: number;
+  source?: "nfo" | "folder";
+  posters: string[];
+  children?: AtlasNode[];
+}
+
+export interface AtlasData {
+  total: number;
+  rings: { id: string; label: string; nodes: AtlasNode[] }[];
+  sources: { total: number; unreachable: number };
+}

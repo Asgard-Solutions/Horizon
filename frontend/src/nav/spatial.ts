@@ -201,6 +201,8 @@ function pollGamepads() {
       else dispatchKey("Enter");
     }, false);
     pressed(`${pad.index}-b`, !!pad.buttons[1]?.pressed, now, () => dispatchKey("Escape"), false);
+    pressed(`${pad.index}-x`, !!pad.buttons[2]?.pressed, now, () => dispatchKey("PadX"), true);
+    pressed(`${pad.index}-y`, !!pad.buttons[3]?.pressed, now, () => dispatchKey("PadY"), false);
     pressed(`${pad.index}-lb`, !!pad.buttons[4]?.pressed, now, () => dispatchKey("PageUp"), false);
     pressed(`${pad.index}-rb`, !!pad.buttons[5]?.pressed, now, () => dispatchKey("PageDown"), false);
     pressed(`${pad.index}-play`, !!pad.buttons[9]?.pressed, now, () => dispatchKey("MediaPlayPause"), false);

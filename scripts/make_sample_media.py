@@ -28,7 +28,7 @@ GRADIENTS = [("Movies/Sample Movie (2024)-fanart.jpg", "1920x1080", "0x0a0e15:0x
 TEXT = {
     "TV/Sample Show/tvshow.nfo": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<tvshow><title>Sample Show</title><year>2023</year>"
                                  "<plot>A synthetic test series generated with FFmpeg test patterns.</plot></tvshow>\n",
-    "Movies/Sample Movie (2024).nfo": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<movie><title>Sample Movie</title><year>2024</year>"
+    "Movies/Sample Movie (2024).nfo": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<movie><title>Sample Movie</title><year>2024</year><genre>Documentary</genre>"
                                       "<plot>A 90-second synthetic H.264/AAC test pattern used to verify playback, seeking and resume.</plot></movie>\n",
     "Movies/readme.txt": "not a video - must be ignored by the scanner\n",
 }
@@ -50,7 +50,7 @@ DEMO_GRADIENTS = [
     (f"{NS}/Season 02/Northern Survey - S02E01 - Thaw-thumb.jpg", "640x360", "0x3a2a14:0xe7b778"),
 ]
 DEMO_TEXT = {
-    f"{NS}/tvshow.nfo": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<tvshow><title>Northern Survey</title><year>2022</year>"
+    f"{NS}/tvshow.nfo": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<tvshow><title>Northern Survey</title><year>2022</year><genre>Documentary</genre><genre>Science Fiction</genre>"
                         "<plot>A synthetic two-season test series: survey crews, long nights and test-pattern skies.</plot></tvshow>\n",
 }
 EPISODE_PLOTS = {

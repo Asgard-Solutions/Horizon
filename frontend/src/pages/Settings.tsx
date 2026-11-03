@@ -4,6 +4,7 @@ import { useAuth } from "../App";
 import { ErrorState, Loading, PageHeader } from "../components/States";
 import { useAsync } from "../hooks";
 import { LibrarySection } from "../settings/LibrarySection";
+import { CollectionsSection } from "../settings/CollectionsSection";
 import { NetworkSection } from "../settings/NetworkSection";
 import type { SystemInfo } from "../types";
 
@@ -31,6 +32,7 @@ function HostSettings() {
     <div className="page" data-testid="settings-page">
       <PageHeader title="Settings" />
       <LibrarySection />
+      <CollectionsSection />
       <NetworkSection system={data} onChange={setData} />
       <section className="panel" data-testid="settings-system">
         <h2>System</h2>

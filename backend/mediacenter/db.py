@@ -82,6 +82,15 @@ CREATE TABLE IF NOT EXISTS progress (
     updated_at TEXT NOT NULL
 );
 
+-- Groups of movies: explicit NFO <set> (source 'nfo') or a folder holding several movies (source 'folder').
+CREATE TABLE IF NOT EXISTS collections (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    sort_name TEXT NOT NULL,
+    source TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS devices (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
@@ -92,6 +101,12 @@ CREATE TABLE IF NOT EXISTS devices (
     revoked INTEGER NOT NULL DEFAULT 0
 );
 """
+
+# Stage 3 metadata columns, added in place to existing databases (genres are JSON arrays of NFO <genre> values).
+ADDED_COLUMNS = {
+    "movies": {"genres": "TEXT", "nfo_set": "TEXT", "group_path": "TEXT", "collection_id": "INTEGER"},
+    "shows": {"genres": "TEXT"},
+}
 
 
 def now_iso() -> str:
@@ -113,6 +128,11 @@ def init_db(db_path: Path) -> None:
         if "file_id" in cols:  # pre-release schema: progress keyed by file id
             conn.execute("DROP TABLE progress")
         conn.executescript(SCHEMA)
+        for table, columns in ADDED_COLUMNS.items():
+            have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+            for name, decl in columns.items():
+                if name not in have:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
         conn.commit()
     finally:
         conn.close()

@@ -7,6 +7,7 @@ import "./styles.css";
 import "./home/home.css";
 import "./detail/detail.css";
 import "./player/player.css";
+import "./discover/discover.css";
 import App from "./App";
 import { startUiScale } from "./theme/uiScale";
 

@@ -3,17 +3,22 @@
 Only os.walk / os.scandir / os.stat and read-mode opens are used on media folders.
 Nothing in a library folder is ever created, renamed, modified or deleted.
 """
+import json
 import os
 import threading
 import uuid
 import xml.etree.ElementTree as ET
 from sqlite3 import Connection
 
-from .db import now_iso
+from .db import get_setting, now_iso
 from .paths import is_link_or_junction, is_within
 from .parser import IMAGE_EXTENSIONS, is_video, parse_episode, parse_movie, season_from_dir, sort_key, split_ext
 
 SKIP_DIRS = {"$recycle.bin", "system volume information", "@eadir", "#recycle", ".trash", "extrafanart", "featurettes"}
+# Folders that organise a library rather than group related movies; never shown as collections.
+GENERIC_FOLDERS = {"movies", "movie", "films", "film", "media", "video", "videos", "tv", "tv shows", "tvshows", "shows",
+                   "series", "library", "collections", "collection", "4k", "uhd", "hd", "1080p", "720p", "2160p",
+                   "downloads", "download", "completed", "new", "unsorted", "misc", "other", "kids", "children"}
 MAX_NFO_BYTES = 1_000_000
 SCAN_LOCK = threading.Lock()
 
@@ -39,6 +44,19 @@ def _read_nfo(path: str | None) -> dict:
         el = root.find(tag)
         if el is not None and el.text and el.text.strip():
             out[tag] = el.text.strip()
+    genres: list[str] = []
+    for el in root.findall("genre"):
+        for part in (el.text or "").replace("|", "/").split("/"):
+            name = " ".join(part.split())
+            if name and name.casefold() not in {g.casefold() for g in genres}:
+                genres.append(name[:60])
+    if genres:
+        out["genres"] = genres[:12]
+    s = root.find("set")
+    if s is not None:  # Kodi: <set><name>X</name></set> or legacy <set>X</set>
+        name = s.findtext("name") if s.find("name") is not None else s.text
+        if name and name.strip():
+            out["set"] = " ".join(name.split())[:120]
     if "year" in out:
         try:
             out["year"] = int(out["year"][:4])
@@ -112,12 +130,20 @@ def _save_movie(conn, file_id, directory, name, rel_dirs, idx: DirIndex):
     dedicated = idx.video_count(directory) == 1 and bool(rel_dirs)
     poster = idx.find(directory, [f"{stem}-poster", stem] + (["poster", "folder", "cover", "movie"] if dedicated else []))
     fanart = idx.find(directory, [f"{stem}-fanart"] + (["fanart", "backdrop"] if dedicated else []))
+    # Folder grouping candidate: the folder that holds this movie's own folder, or the folder holding several movies.
+    group_dir = os.path.dirname(directory) if dedicated else directory
+    group_rel = rel_dirs[:-1] if dedicated else rel_dirs
+    group = group_dir if group_rel and group_rel[-1].strip().casefold() not in GENERIC_FOLDERS else None
+    genres = nfo.get("genres")
     conn.execute("DELETE FROM episodes WHERE file_id = ?", (file_id,))
     conn.execute(
-        "INSERT INTO movies (file_id, title, sort_title, year, plot, poster_path, fanart_path) VALUES (?,?,?,?,?,?,?)"
+        "INSERT INTO movies (file_id, title, sort_title, year, plot, poster_path, fanart_path, genres, nfo_set, group_path)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?)"
         " ON CONFLICT(file_id) DO UPDATE SET title=excluded.title, sort_title=excluded.sort_title, year=excluded.year,"
-        " plot=excluded.plot, poster_path=excluded.poster_path, fanart_path=excluded.fanart_path",
-        (file_id, title, sort_key(title), year, nfo.get("plot"), poster, fanart),
+        " plot=excluded.plot, poster_path=excluded.poster_path, fanart_path=excluded.fanart_path, genres=excluded.genres,"
+        " nfo_set=excluded.nfo_set, group_path=excluded.group_path",
+        (file_id, title, sort_key(title), year, nfo.get("plot"), poster, fanart,
+         json.dumps(genres) if genres else None, nfo.get("set"), group),
     )
 
 
@@ -137,13 +163,15 @@ def _save_episode(conn, file_id, root, directory, name, rel_dirs, info, idx: Dir
         poster = idx.find(show_dir, ["poster", "folder", "cover", "show"])
         fanart = idx.find(show_dir, ["fanart", "backdrop"])
         conn.execute(
-            "INSERT INTO shows (show_key, title, sort_title, year, plot, folder_path, poster_path, fanart_path)"
-            " VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(show_key) DO UPDATE SET title=excluded.title,"
+            "INSERT INTO shows (show_key, title, sort_title, year, plot, folder_path, poster_path, fanart_path, genres)"
+            " VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(show_key) DO UPDATE SET title=excluded.title,"
             " sort_title=excluded.sort_title, year=excluded.year, plot=COALESCE(excluded.plot, shows.plot),"
             " folder_path=COALESCE(excluded.folder_path, shows.folder_path),"
             " poster_path=COALESCE(excluded.poster_path, shows.poster_path),"
-            " fanart_path=COALESCE(excluded.fanart_path, shows.fanart_path)",
-            (key, title, sort_key(title), year, show_nfo.get("plot"), show_dir, poster, fanart),
+            " fanart_path=COALESCE(excluded.fanart_path, shows.fanart_path),"
+            " genres=CASE WHEN excluded.folder_path IS NOT NULL THEN excluded.genres ELSE shows.genres END",
+            (key, title, sort_key(title), year, show_nfo.get("plot"), show_dir, poster, fanart,
+             json.dumps(show_nfo["genres"]) if show_nfo.get("genres") else None),
         )
         show_cache[key] = conn.execute("SELECT id FROM shows WHERE show_key = ?", (key,)).fetchone()["id"]
     show_id = show_cache[key]
@@ -176,6 +204,34 @@ def _save_episode(conn, file_id, root, directory, name, rel_dirs, info, idx: Dir
 def cleanup_orphans(conn: Connection) -> None:
     conn.execute("DELETE FROM seasons WHERE id NOT IN (SELECT DISTINCT season_id FROM episodes)")
     conn.execute("DELETE FROM shows WHERE id NOT IN (SELECT DISTINCT show_id FROM seasons)")
+
+
+def folder_collections_enabled(conn: Connection) -> bool:
+    return get_setting(conn, "folder_collections", "1") == "1"
+
+
+def assign_collections(conn: Connection, folder_groups: bool) -> None:
+    """Explicit NFO sets win; otherwise (if enabled) a non-generic folder holding 2+ movies becomes a folder collection.
+    Collection ids stay stable across rescans (keyed by set name / folder path)."""
+    groups: dict[str, list] = {}
+    for r in conn.execute("SELECT id, nfo_set, group_path FROM movies"):
+        if r["nfo_set"]:
+            key, name, source = "nfo:" + r["nfo_set"].casefold(), r["nfo_set"], "nfo"
+        elif folder_groups and r["group_path"]:
+            key = "folder:" + os.path.normcase(r["group_path"])
+            name, source = os.path.basename(r["group_path"].rstrip("\\/")) or r["group_path"], "folder"
+        else:
+            continue
+        groups.setdefault(key, [name, source, []])[2].append(r["id"])
+    groups = {k: g for k, g in groups.items() if g[1] == "nfo" or len(g[2]) >= 2}
+    conn.execute("UPDATE movies SET collection_id = NULL")
+    for key, (name, source, ids) in groups.items():
+        conn.execute("INSERT INTO collections (key, name, sort_name, source) VALUES (?,?,?,?) ON CONFLICT(key)"
+                     " DO UPDATE SET name=excluded.name, sort_name=excluded.sort_name, source=excluded.source",
+                     (key, name, sort_key(name), source))
+        cid = conn.execute("SELECT id FROM collections WHERE key = ?", (key,)).fetchone()["id"]
+        conn.executemany("UPDATE movies SET collection_id = ? WHERE id = ?", [(cid, i) for i in ids])
+    conn.execute("DELETE FROM collections WHERE id NOT IN (SELECT collection_id FROM movies WHERE collection_id IS NOT NULL)")
 
 
 def scan_library(conn: Connection, library: dict) -> dict:
@@ -233,6 +289,7 @@ def scan_library(conn: Connection, library: dict) -> dict:
             )
             summary["removed"] = cur.rowcount
         cleanup_orphans(conn)
+        assign_collections(conn, folder_collections_enabled(conn))
         summary["finished_at"] = now_iso()
         conn.commit()
     return summary
