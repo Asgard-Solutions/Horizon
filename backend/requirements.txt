@@ -2,3 +2,12 @@ fastapi==0.110.1
 starlette==0.37.2
 uvicorn==0.25.0
 pydantic==2.14.1
+pydantic-core==2.50.1
+anyio==4.16.0
+h11==0.16.0
+click==8.5.0
+idna==3.20
+annotated-types==0.8.0
+typing-extensions==4.16.0
+typing-inspection==0.4.4
+colorama==0.4.6; sys_platform == "win32"

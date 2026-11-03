@@ -68,7 +68,7 @@ export function LibrarySection() {
       <h2>Library folders</h2>
       <p className="muted">Folders are scanned recursively for MP4, MKV, AVI, M4V and other video files. Media files are only read — never moved, renamed, changed or deleted.</p>
       <form className="add-folder" onSubmit={(e) => { e.preventDefault(); add(); }}>
-        <input value={path} onChange={(e) => setPath(e.target.value)} placeholder={String.raw`D:\Movies  or  \\NAS\Media`}
+        <input value={path} onChange={(e) => { setPath(e.target.value); setFormError(null); }} placeholder={String.raw`D:\Movies  or  \\NAS\Media`}
           aria-label="Folder path" data-testid="library-path-input" />
         <button type="button" className="btn" onClick={() => setBrowsing(true)} data-testid="library-browse-button">
           <FolderOpen size={22} /> Browse

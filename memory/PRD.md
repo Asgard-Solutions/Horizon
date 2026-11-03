@@ -30,3 +30,11 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - P0: run on real Windows hardware; Xbox Edge LAN test on hardware
 - P1: MKV remux / transcoding strategy (LGPL FFmpeg), background scanning, HTTPS on LAN, QR pairing
 - P2: native Xbox UWP client (needs authorization), packaging/installer, subtitles & audio-track selection
+
+## Phase 0.5 (2026-06) — Windows compatibility & deployment
+- Windows path rules (paths.py), Win32 drive list (winfs.py), junction/symlink pruning, pinned MIME types, exclusive port bind
+- run.py --check (deps, data dir, SQLite init/quick_check, UI, FFprobe, port, LAN), Setup.bat/Start.bat/RunTests.bat
+- Offline wheels vendor/wheels (cp311–cp314 win_amd64), fully pinned requirements
+- Docs: WINDOWS_TESTING, WINDOWS_ACCEPTANCE_CHECKLIST, SECURITY_REVIEW, PHASE0_5_STATUS, licenses/INVENTORY (scripts/license_inventory.py)
+- Tests: 158 backend pass (Linux); QA iteration 2 100%; Windows/Xbox NOT executed
+- Next: user runs Windows acceptance checklist; then Phase 1 planning

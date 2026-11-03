@@ -1,0 +1,29 @@
+{
+  "summary": "Phase 0.5 regression + Windows-hardening verification (Linux preview only; Windows/Xbox NOT tested). Backend unit suite: 158 passed / 16 skipped. Live API suite (tests_live, MC_LIVE_URL=preview): 16/16 passed (run before and after the remove/re-add). run.py --check exits 0 with all OK lines incl. 'SQLite database ready' (expected WARN about MC_ADMIN_NETWORKS). Also briefly started run.py on 127.0.0.1:8799 with a temp MC_DATA_DIR: served / and /api/libraries with HTTP 200 and shut down cleanly. Export ZIP downloads via /@fs/app/export/<zip> (HTTP 200, byte-identical to the local file, 12.4 MB, 126 entries). It contains all required files (Setup/Start/RunTests.bat, backend/, frontend/dist/index.html, 26 wheels, the 3 Windows/security docs, licenses/INVENTORY.md) and none of the forbidden ones (no .env, only .env.example; no sqlite, node_modules, __pycache__, .ruff_cache, memory/, sample_media/). UI: Home shows 3 movies · 2 shows · 3 episodes. Sample Movie plays to ready; ArrowRight seeks +10s; setting a position of 40s works; Escape goes back to the detail page; 'Resume from 0:43' restarts at about 44s. The AVI file shows the 'can't be played here' panel. Library path errors: 'Movies' gives a full-path error; '/nope' gives the mapped-drive/UNC hint; adding /app/sample_media again gives 'already in the library'; /app/sample_media/Movies gives an overlap error. Folder browser: focus starts on folder-root-0; / -> app -> sample_media works and lists folders only plus a video count; 'Up one level' works; at '/' the button reads 'All locations' and returns to the roots list. In the confirm dialog, focus starts on Cancel; Cancel keeps the library and Confirm removes it. Re-adding restores 3 movies/3 episodes, and Sample Movie progress (44.2s) survived and shows in Continue watching. LAN: OFF by default, toggled ON (shows address + unmanaged-bind notice) then OFF; PIN still set.",
+  "backend_issues": {"critical": [], "minor": [
+    {"endpoint": "vendor/wheels vs requirements.txt", "issue": "Only 4 top-level packages are pinned. Transitive wheels come from whatever is resolved at export time (e.g. bundled anyio 4.16.0 while the dev env runs 4.15.1). Offline install still works but is not fully reproducible. Consider a pinned runtime lock file used to build vendor/wheels."}
+  ]},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Settings > Library folders", "issues": ["library-form-error stays visible while the user edits the path. It only clears on the next submit. Consider clearing it in onChange (low)."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests", "/app/backend/tests_live/test_api_live.py", "/app/test_reports/pytest/live_results.xml"],
+  "action_items": [
+    "Optional: clear library form error when the path input changes",
+    "Optional: pin transitive runtime deps (anyio, h11, click, typing_extensions, annotated_types, typing_inspection, colorama) so vendor/wheels matches the tested environment"
+  ],
+  "critical_code_review_comments": [
+    "run.py pre-binds the socket (SO_EXCLUSIVEADDRUSE on Windows, SO_REUSEADDR elsewhere) and passes it to uvicorn. This is correct, and the clear port-in-use message is good.",
+    "scanner prunes symlinked/junction dirs from os.walk and skips file links that point outside the library. is_link_or_junction treats only SYMLINK/MOUNT_POINT reparse tags as links, which is the right choice for OneDrive placeholders. The Windows behaviour is only unit-tested via ntpath/mocks and has not been verified on a real Windows machine.",
+    "The export test files contain the test PIN 48151623 (test fixtures only, not a secret). That is acceptable."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (158 unit + 16 live)", "frontend": "100% of requested flows"},
+  "seed_data_creation": "None. Library /app/sample_media removed and re-added via UI (IDs came back as library 1, movies 1-3). Sample Movie progress is about 44s.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "End state: LAN OFF, PIN 48151623 set, library /app/sample_media present (3 movies, 2 shows, 3 episodes), Sample Movie (id 2) has resume progress at ~44s. Live suite: cd /app/backend && MC_LIVE_URL=<preview url> python -m pytest tests_live -n 0. Export zip: /app/export/open-media-center-phase0.5-20261103-013218.zip. I deleted /tmp/mcdata (a temp data dir I used for a run.py smoke start)."
+}
