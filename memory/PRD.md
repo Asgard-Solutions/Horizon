@@ -38,3 +38,10 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - Docs: WINDOWS_TESTING, WINDOWS_ACCEPTANCE_CHECKLIST, SECURITY_REVIEW, PHASE0_5_STATUS, licenses/INVENTORY (scripts/license_inventory.py)
 - Tests: 158 backend pass (Linux); QA iteration 2 100%; Windows/Xbox NOT executed
 - Next: user runs Windows acceptance checklist; then Phase 1 planning
+
+## Horizon Stage 1 (2026-06) — Home redesign
+- StageHero, LivingFilmstrip (aurora focus), FirstRun, PrimaryNav, horizon.theme.css
+- Spatial nav: tabs->strip ArrowDown lands on selected card; back restores focus; strip edges stop
+- QA iteration 5: frontend 100%
+- Open cosmetic: selected-card label offset, duplicate title on fallback art, 4K UI scale
+- Next: Stage 2 (Movie/Show detail, Player, Settings in Horizon style)

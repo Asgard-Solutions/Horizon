@@ -1,0 +1,24 @@
+{
+  "summary": "Frontend-only retest at 1920x1080 using keyboard D-pad events. All requested items pass. (1) Home loads with StageHero, the filmstrip track, film cards and stage-primary-action, with no console or page errors. (2) NEW FIX: after moving Right or Left in the strip, ArrowUp to the tabs and then ArrowDown returns focus to the .film--selected card. Checked in all 3 groups and at several positions (recent: movie-1 and movie-2; series: show-2 and show-1; continue: cw-2). 6 of 6 passed. (3) Left/Right stay inside the strip and stop at both edges. PageDown/PageUp switch groups and focus the new group's first card. (4) Down from the stage lands on the aria-selected tab (continue at first, series after PageDown x2). (5) Enter on movie-2, movie-1 and show-1 opens the detail page. Escape and Backspace return to Home with focus restored to the same card (3 of 3). (6) Up path: series tab -> stage-primary-action -> nav-home, so the iteration_4 issue where the Series tab jumped to Library is fixed. Up from the view toggle also goes to the stage. Nav Left/Right and Enter open Movies (3 titles), TV (2 shows) and Library/Settings, and each page loads with focus on its first item.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "TV Shows page", "issues": ["The 'Sample Show' poster is a flat maroon block with no title art. This looks like the poster is a solid frame from the synthetic media, while 'Other Series' uses the styled fallback. Cosmetic only."]},
+      {"screen": "Carried over from iteration 4 (not re-checked)", "issues": ["The selected card's label sits lower than its neighbours.", "Fallback cards repeat the title inside the art and below it.", "4K UI scale has not been addressed."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "spatial.ts: the prefer-selected redirect in pickNext only applies when the target container does not contain `from`, so moving inside the strip is unaffected. This is correct.",
+    "Escape on a page reached from the nav (e.g. Settings) does history back to the previous page (/shows), not to Home. This is acceptable browser-style behaviour; confirm it is the intended controller UX."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (frontend-only request)", "frontend": "100%"},
+  "seed_data_creation": "None. No data was changed. Detail pages were opened but the player was not started.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Testids: filmstrip-group-continue/recent/series, filmstrip-view-toggle, film-card-cw-2, film-card-movie-{1,2,3}, film-card-show-{1,2}, stage-primary-action, nav-home/movies/shows/settings, movie-resume-button, season-tab-*. Recent group order: movie-3, movie-2, movie-1. FirstRun and the player were not re-tested in this iteration."
+}
