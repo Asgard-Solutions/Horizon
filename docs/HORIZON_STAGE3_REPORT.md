@@ -1,7 +1,42 @@
 # Horizon Stage 3 — Completion report (Discover, Search, Library Atlas)
 
-Status: **ready for your review**. Stage 4 has not been started.
-Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass, 7 bugs found), `iteration_10.json` (retest: 6 fixed, 1 partly fixed; the remaining sheet-focus case was then fixed and checked by hand).
+Status: **final closeout complete — awaiting your final approval**. Stage 4 has not been started.
+Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass, 7 bugs), `iteration_10.json` (96%), `iteration_11.json` (closeout pass 1: 126/129), `iteration_12.json` (**final regression: 130/132 automated checks = 98.5%**).
+
+## 0. Final closeout (this round)
+| Item | Result |
+|---|---|
+| Search entry from the top menu (Enter, click, `/` or Y) | Focus lands on the **last-used keyboard key** (A the first time), so typing on a physical keyboard works immediately and the on-screen keyboard stays visible. Up from any top-row key goes to the search box, and Up again to the top menu. The key is remembered across visits. The query and selected result are restored on Back. Automated: 12/12 Up checks, 19/20 Search checks. The one failure (focus lost after "Clear search") was fixed afterwards; see below. |
+| Empty-library screens, tested in the browser | Ran on a **separate temporary server with its own empty data folder** (port 8766). Covered: Home first-run, Discover "Your library is empty" with an Add media folder button and no filter bar, Atlas "Your Atlas is waiting", and Search with no results. 12/13 automated; the 1 failure was the same Clear-search bug. |
+| Removing a title while its details are open, then pressing Back | Ran on a **separate temporary server with copied test media** (port 8767). The files were deleted mid-test and rescanned. Discover (a middle and the last index), Search, Atlas orbit, Atlas grid and a nested "More genres" group all recovered to the nearest remaining item. A cluster that disappears zooms out one level. Focus never fell to an empty page. 24/24 automated. |
+| Your preview libraries | Not detached, rescanned or modified. One side effect: QA played a 1-second test clip (Test Title 0011) to the end, which marked it watched; I cleared that progress again. The temporary servers, data folders, copied media and helper script were all deleted afterwards. |
+| 4K | The test browser stops at **3840×1920**, so a true 3840×2160 render was **not** verified. Layouts at 3840×1920 passed 4/4. |
+
+**Fixes made in this round:**
+- Search entry focus.
+- Up from the keyboard's top row now always goes to the search box.
+- Atlas rebuilds "More …" groups from fresh data, so removed genres disappear. The saved state now holds only ids, not group contents.
+- Atlas restores focus by node id when counts re-sort the rings.
+- "Clear search" can be reached with the D-pad, and focus returns to the last-used key after pressing it (fixed after iteration 12, checked by a scripted browser run).
+- X deletes a character while a result is focused.
+- Grid tiles show "1 title" rather than "1 titles".
+- The focused title label on the inner ring no longer covers the cluster name in the centre.
+- The selected node is slightly smaller in the overview so neighbouring labels stay readable.
+- There is a dedicated Discover empty-library state.
+
+**Automated pass rate (iteration 12, final full regression):** **130 / 132 = 98.5%**. Manual observations are not counted, and 4 invalid checks were excluded: a wrong premise, a wrong selector, a by-design two-step B in the player, and the 4K height cap.
+| Area | Passed |
+|---|---|
+| OSK Up from the top row | 12/12 |
+| Search (preview) | 19/20 |
+| Isolated removed-title | 24/24 |
+| Isolated empty library | 12/13 |
+| Discover (preview) | 25/25 |
+| Atlas (preview) | 17/17 |
+| Home / detail / player / Settings / reduced motion | 17/17 |
+| 4K at 3840×1920 | 4/4 |
+
+Both failures were the same Clear-search focus bug. It has been fixed, and the fix was verified by one scripted browser check. **The fix has not been rerun through the full automated suite.**
 
 > **All controller testing was SIMULATED** in a desktop Chromium browser. Arrow keys stood in for the D-pad, Enter for A, Escape for B,
 > PageUp/PageDown for LB/RB, and synthetic `PadX`/`PadY` key events for X/Y.
@@ -32,7 +67,7 @@ Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass
 ### 1A — Edge cases
 | Case | Result |
 |---|---|
-| Empty library | Backend `test_empty_library` passes. The UI empty states (`discover-empty`, `atlas-empty` with an "Add media folder" button) were checked **by reading the code only**; we did not clear your libraries. "Nothing matches" (a filter with no results) was tested in the browser. |
+| Empty library | Tested in the browser on an isolated empty server (see section 0). The backend `test_empty_library` also passes. |
 | Missing metadata | Monogram and arc fallback art, an "Uncategorized" genre and "Year unknown" were exercised by the synthetic library. |
 | Large collections | A synthetic library of 3,900 files (3,003 movies, 153 shows, 908 episodes, 30+ collections) was used throughout. |
 | Reduced motion | Emulated `prefers-reduced-motion: reduce` showed no smooth scrolling and no zoom or entrance animations, and navigation still worked. |
@@ -52,9 +87,11 @@ Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass
 | Suite | Result |
 |---|---|
 | Backend unit (`pytest tests`) | **185 passed** |
-| Live API (`MC_LIVE_URL=… pytest tests_live -n 0`) | **30 passed**, run against the standard sample libraries. The large synthetic library was detached for this run because the live tests check exact sample counts, then re-attached. |
+| Live API (`MC_LIVE_URL=… pytest tests_live -n 0`) | **30 passed**, run against the standard sample libraries. The large synthetic library was detached for this run because the live tests check exact sample counts, then re-attached. The backend has not changed since, and it was not rerun in the final round because your preview libraries were not to be modified. |
 | Browser QA, iteration 9 | About 78% passed; 7 bugs found |
 | Browser QA, iteration 10 | 96% passed. The one remaining item, sheet focus when nothing is selected, was then fixed and checked by hand. |
+| Browser QA, iteration 11 | 126/129 automated; 4 issues found and fixed |
+| Browser QA, iteration 12 (final) | **130/132 automated (98.5%)**; the 1 bug behind both failures was fixed and checked by a scripted browser run |
 | Regression (Phase 0, Stages 1–2) | Home filmstrip, movie and show detail, Episode Journey, the player (play, and B to exit) and Settings all passed |
 
 ## 5. Performance (preview container, synthetic 3,900-file library)
@@ -69,10 +106,21 @@ Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass
 | Grid DOM size | About 6 rows × 8 cards, plus overscan, at any scroll depth |
 
 ## 6. Screenshots
-`/app/docs/screenshots/stage3/`: discover_all_1080p, discover_all_4k, discover_collections_1080p, discover_collection_detail_1080p, discover_nothing_matches_1080p, search_results_1080p, search_results_4k, atlas_overview_1080p, atlas_overview_4k, atlas_cluster_1080p, atlas_grid_overview_1080p, atlas_grid_cluster_1080p.
+`/app/docs/screenshots/stage3/` (refreshed in iteration 12):
+- Discover with movies and filters: `discover_movies_filters_1080p`, `discover_all_1080p`, `discover_all_4k`
+- Search with the keyboard and results: `search_osk_results_1080p`, `search_results_4k`
+- Atlas overview: `atlas_overview_1080p`, `atlas_overview_4k`, `atlas_grid_overview_1080p`
+- Atlas zoomed into a genre: `atlas_cluster_genre_1080p`, `atlas_grid_cluster_1080p`
+- Atlas with a selected title: `atlas_selected_title_1080p`
+- Empty library: `empty_home_1080p`, `empty_discover_1080p`, `empty_atlas_1080p`, `empty_search_1080p`
+- Removed-title recovery: `removed_title_recovery_1080p`
+- Other: discover_all_1080p, discover_all_4k, discover_collections_1080p, discover_collection_detail_1080p, discover_nothing_matches_1080p, search_results_1080p, search_results_4k, atlas_overview_1080p, atlas_overview_4k, atlas_cluster_1080p, atlas_grid_overview_1080p, atlas_grid_cluster_1080p.
 
 ## 7. Outstanding issues and notes
-- Opening Search from the top nav leaves focus on the nav link, like every other screen. Down then enters the keyboard near column F rather than at A. This is unchanged app-wide behaviour.
+- The last small CSS tweaks (inner-ring label placement, selected-node scale, "1 title" wording) were made after the screenshots were taken. They are checked in one later scripted screenshot, but the files in the folder do not show them.
+- In "More genres" and other sparse orbit levels, unfocused nodes show only initials, so two genres can look alike (Music / Mystery). Only the focused node shows its full name. This is cosmetic.
+- At 1080p the focus ring of a large overview node can touch the label above it. It stays readable.
+- Re-adding removed files gives them new title ids, so their watch progress is not carried over. This is existing scanner behaviour.
 - In the player, the first B press hides the controls and the second exits. This is the intended Stage 2 behaviour.
 - Typing while focus is on the top nav (rather than inside the Search page) does not edit the query.
 
@@ -80,7 +128,7 @@ Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass
 - A physical Xbox Series X|S, an Xbox controller over the Gamepad API, and Xbox Edge.
 - Native Windows 10/11 runs and browsers on Windows.
 - A real 4K TV at viewing distance, and HDR.
-- A true 3840×2160 viewport (the test browser stops at 3840×1920).
 - Real NAS or UNC libraries, and the behaviour when a source goes offline mid-session (covered only by a backend unit test).
-- A live deletion of a title between opening it and pressing Back (code path only).
-- The empty-library UI in the browser (checked by reading the code, plus a backend unit test).
+- A true 3840×2160 viewport. The test browser maxes out at 3840×1920, so full 4K is **not** claimed.
+
+All results above come from browser simulation in a Linux container. No testing was done on actual Windows PCs, Xbox consoles, physical controllers, NAS devices or 4K televisions.

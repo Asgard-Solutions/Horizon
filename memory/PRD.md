@@ -71,3 +71,10 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - QA iteration 9 (7 bugs) -> all fixed; iteration 10 96% + last item fixed; pytest 185 unit, 30 live pass
 - Report docs/HORIZON_STAGE3_REPORT.md, screenshots docs/screenshots/stage3/
 - NOT done: physical Xbox/Windows/4K TV testing. Awaiting user approval before Stage 4
+
+## Stage 3 final closeout (2026-06)
+- Search entry focuses last-used OSK key (sessionStorage horizon.search.oskKey, A first time); OSK top row Up -> search input -> nav; Clear search refocuses OSK; X deletes on results
+- Discover empty-library state; Atlas resolves stack nodes from fresh /api/atlas (ids only stored), key-based focus restore, vanished cluster zooms out
+- Isolated temp servers (separate data dirs, copied media) used for empty-library + removed-title tests, then deleted; preview libraries untouched
+- QA iteration 11 (126/129) -> fixes; iteration 12 final 130/132 (98.5%), remaining bug fixed + scripted check
+- Awaiting final user approval; Stage 4 not started

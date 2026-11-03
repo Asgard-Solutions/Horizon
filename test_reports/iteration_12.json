@@ -1,0 +1,33 @@
+{
+  "summary": "Stage 3 FINAL closeout regression, frontend only, driven by D-pad key simulation (Arrow/Enter/Escape/Backspace/PageUp/PageDown + synthetic PadX/PadY). EXACT automated result: 130 of 132 checks passed (98.5%). Manual observations are not counted. 4 checks were excluded as invalid (not app bugs): (a) 8767 'More genres lists Adventure': wrong premise, because Adventure is a top-level overview node in the current isolated data, so the test used Western (inside More genres) instead; (b) 8766 'home-page testid': wrong selector, because the first-run screen renders first-run/home-add-folder-button; (c) player single-B exit: by design, the first B collapses the expanded controls and the second B exits (retested: 3/3 PASS); (d) 4K height: the browser tool caps the viewport at 3840x1920. Results by area: OSK Up retest A..F 12/12; Search on preview 19/20; isolated removed-title on 8767 (Atlas orbit, Atlas grid, More genres, Discover, Search) 24/24; isolated empty library on 8766 12/13; Discover on preview 25/25; Atlas on preview 17/17; Home/movie+show detail/player/Settings/reduced motion 17/17; 4K (3840x1920) 4/4. The 2 failures are the same bug: after pressing Enter on 'Clear search' in the no-results state, document.activeElement becomes BODY, because the button unmounts and nothing receives focus. All iteration_11 issues are FIXED: Up from every top-row OSK key goes to search-input and then to the top nav. After a genre inside More genres vanishes (Western, 2 titles removed and rescanned), Back lands on More genres showing '9 groups' without Western, with focus on Family (the same index), and the grid view also lacks Western. The stored horizon.atlas.stack contains no children. The overview restores focus by id (Documentary 3->2 -> Back -> atlas-node-genre:Documentary, in both orbit and grid). 'Clear search' is reachable with ArrowRight from the OSK right edge. If the only search result vanishes, the no-results state shows and focus goes to the last-used OSK key (q). The overview selected-node transform is matrix(1.16).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Search no-results 'Clear search' (pages/Search.tsx:111)", "issue": "Pressing Enter/A on Clear search clears the query, but the button unmounts and focus drops to BODY (reproduced on the preview and on empty library 8766). A TV user then has no focused element.", "selector": "[data-testid='search-clear-button']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Atlas cluster (orbit, e.g. Science Fiction page 1)", "issues": ["The focused title's label pill (e.g. 'Test Title 0056' on the inner ring) overlaps the core label, so the core reads 'Scien.. Fiction'"]},
+      {"screen": "Atlas overview (orbit, 1080p)", "issues": ["Even at scale 1.16, the focus ring of 'Science Fiction' still touches the bottom of the 'More collections' label above it. Readable but tight."]},
+      {"screen": "Atlas grid overview (pages/Atlas.tsx:174)", "issues": ["Tiles with count 1 say '1 titles' (e.g. 'Test Set 00 1 titles' on 8767). The orbit info panel correctly says '1 title'."]},
+      {"screen": "Atlas 'More genres' level (orbit)", "issues": ["Unfocused nodes show only initials (M, F, W, H...), so two different genres can look identical (Music/Mystery). Only the focused node shows its label."]}
+    ]
+  },
+  "test_report_links": ["/tmp/iso.py (helper for isolated rm/rescan/restore, only touches /tmp/horizon_iso)"],
+  "action_items": [
+    "Search.tsx: on Clear search, setQ('') and then move focus to the last-used OSK key (sessionStorage horizon.search.oskKey) or to search-input, so focus never lands on body",
+    "Atlas.tsx:174: pluralise the grid tile count ({n.count === 1 ? 'title' : 'titles'})",
+    "Atlas cluster: keep the focused title label from covering the core text (offset the label outward, or raise the core label z-index)",
+    "Optional: show short labels for unfocused nodes in sparse levels like More genres"
+  ],
+  "critical_code_review_comments": [
+    "Search.tsx onPageKey handles Backspace but not PadX when a result is focused. The OSK hint says 'X delete', but X only deletes while focus is in the OSK (manual observation, not counted)",
+    "Atlas IDs: restoring the isolated media and rescanning gives re-added files new movie ids (e.g. Sample Movie movie-2 -> movie-60). This is expected scanner behaviour, but watch progress for re-added files is lost"
+  ],
+  "updated_files": ["/app/docs/screenshots/stage3/*.jpeg (15 refreshed: search_osk_results_1080p, atlas_overview_1080p, atlas_cluster_genre_1080p, atlas_selected_title_1080p, removed_title_recovery_1080p, empty_home/discover/atlas/search_1080p, discover_movies_filters_1080p, discover_collection_detail_1080p, atlas_grid_overview_1080p, discover_all_4k, atlas_overview_4k, search_results_4k)"],
+  "success_rate": {"backend": "N/A (frontend only)", "frontend": "98.5% (130/132)"},
+  "seed_data_creation": "None. Isolated 8767: /tmp/horizon_iso/media was backed up to /tmp/horizon_iso_media_backup, files were removed mid-test, then restored (diff -rq IDENTICAL, 105 files) and rescanned: 52 movies + 3 episodes. Preview side effect: playing movie 7 (Test Title 0011, 1 s clip) to the end marked it Watched. Discover sort was changed and reset back to Title.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The browser tool saves page.screenshot files to /root/.emergent/automation_output/<run>/, NOT to the given path. Copy them to /app/docs afterwards (done this iteration). The viewport is capped at 3840x1920. 8767 data: Adventure/Documentary/SciFi/Thriller are top-level. More genres = Music, Mystery, Western(0016, 0034), Family, Fantasy, History, Romance, Sport, War, Uncategorized. Documentary = Sample Movie (2024) + 0003 + 0021. /tmp/iso.py rm|rmid <movieId>|restore|scan. The player's first B collapses the expanded controls; the second B exits."
+}

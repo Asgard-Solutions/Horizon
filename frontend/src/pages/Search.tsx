@@ -87,7 +87,7 @@ export default function Search() {
   const onPageKey = (e: React.KeyboardEvent) => {
     const t = e.target as HTMLElement;
     if (t.tagName === "INPUT" || t.closest(".osk") || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === "Backspace" && q) { e.preventDefault(); setQ((v) => v.slice(0, -1)); }
+    if (e.key === "Backspace" || e.key === "PadX") { if (q) { e.preventDefault(); setQ((v) => v.slice(0, -1)); } }
     else if (e.key.length === 1 && /[\p{L}\p{N} '\-.:&!?,]/u.test(e.key)) { e.preventDefault(); setQ((v) => v + e.key); }
   };
 
@@ -108,7 +108,7 @@ export default function Search() {
           <div className="search-empty" data-testid="search-idle"><h2>Find anything in your library</h2><p>Type a title, a series or an episode name. Search runs on this PC, offline.</p></div>
         ) : res && total === 0 && !busy ? (
           <div className="search-empty" data-testid="search-no-results"><h2>No matches for “{q.trim()}”</h2><p>Check the spelling or try fewer words.</p>
-            <button className="hbtn" onClick={() => setQ("")} data-testid="search-clear-button">Clear search</button></div>
+            <button className="hbtn" onClick={() => { setQ(""); (document.querySelector<HTMLElement>(`[data-testid="${sessionStorage.getItem("horizon.search.oskKey") ?? "osk-key-a"}"]`) ?? document.querySelector<HTMLElement>(".osk-key"))?.focus(); }} data-testid="search-clear-button">Clear search</button></div>
         ) : res ? (
           <>
             <p className="search-count" data-testid="search-count">{busy ? "Searching…" : `${total} result${total === 1 ? "" : "s"}`}</p>

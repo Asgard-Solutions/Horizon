@@ -171,7 +171,7 @@ export default function Atlas() {
               ) : (
                 <button key={n.key} role="listitem" className={`atlas-gcard star--${n.kind}${n.source ? ` star--${n.source}` : ""}`} aria-current={on ? "true" : undefined}
                   data-autofocus={on || undefined} onFocus={() => focusAt(r, i)} onClick={() => openAt(r, i)} data-testid={`atlas-gnode-${n.key}`}>
-                  <b>{n.label}</b><span>{n.count} {n.kind === "more" ? "groups" : "titles"}</span>
+                  <b>{n.label}</b><span>{n.count} {n.kind === "more" ? (n.count === 1 ? "group" : "groups") : n.count === 1 ? "title" : "titles"}</span>
                 </button>
               );
             }))}

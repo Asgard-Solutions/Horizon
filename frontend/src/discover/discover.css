@@ -161,6 +161,8 @@
 .star--selected .star-label { color: var(--text); font-size: var(--fs-meta); max-width: 260px; z-index: 4; background: rgb(10 14 21 / 0.8); padding: 2px 8px; border-radius: 8px; }
 .star:focus-visible .star-body, body[data-input="keys"] .star:focus .star-body, body[data-input="pad"] .star:focus .star-body { box-shadow: var(--focus); }
 .sky--cluster .star--selected .star-label { top: calc(100% + 14px); max-width: 260px; }
+/* Inner-ring labels in a cluster sit outside the ring so they never cover the core's name. */
+.sky--cluster .star[data-ring="0"][data-half="top"].star--selected .star-label { top: auto; bottom: calc(100% + 14px); }
 
 .atlas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 20px; align-self: start; --gap: 20px; }
 .atlas-gcard { display: flex; flex-direction: column; gap: 6px; justify-content: flex-end; min-height: 120px; padding: 18px; border-radius: var(--h-radius-card);

@@ -58,7 +58,7 @@ export function Sky({ rings, focus, level, center, onFocus, onOpen, onExitUp, zo
           return (
             <button key={n.key} className={`star star--${n.kind}${n.source ? ` star--${n.source}` : ""}${n.state ? ` star--${n.state}` : ""}${on ? " star--selected" : ""}`}
               style={{ left: `${pos.x}%`, top: `${pos.y}%`, "--s": `${px}px`, "--d": `${(r * 6 + i) * 18}ms` } as React.CSSProperties}
-              data-ring={r} data-idx={i} aria-current={on ? "true" : undefined} data-autofocus={on || undefined}
+              data-ring={r} data-idx={i} data-half={pos.y < 50 ? "top" : "bottom"} aria-current={on ? "true" : undefined} data-autofocus={on || undefined}
               onFocus={() => !on && onFocus(r, i)} onClick={() => onOpen(r, i)} data-testid={`atlas-node-${n.key}`}
               aria-label={`${n.label}${n.count !== undefined ? `, ${n.count} title${n.count === 1 ? "" : "s"}` : ""}`}>
               <span className="star-body">
