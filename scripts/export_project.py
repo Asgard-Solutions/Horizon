@@ -14,12 +14,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EXCLUDE_DIRS = {".git", "node_modules", ".venv", "__pycache__", ".pytest_cache", "data", "export",
-                "sample_media", "test_reports", ".emergent"}
-EXCLUDE_FILES = {".env", "*.pyc", "*.sqlite3", "*.sqlite3-*", "test_result.md", ".DS_Store"}
+                "sample_media", "test_reports", ".emergent", "memory", ".ruff_cache", ".mypy_cache", ".vite"}
+EXCLUDE_FILES = {".env", "*.pyc", "*.sqlite3", "*.sqlite3-*", "test_result.md", ".DS_Store", "test-results-*.xml",
+                 "yarn-error.log"}
+EXCLUDE_TOP = {"tests"}  # empty template folder of the development environment
 
 
 def included(rel: Path, with_dist: bool) -> bool:
     parts = rel.parts
+    if len(parts) > 1 and parts[0] in EXCLUDE_TOP:
+        return False
     if any(p in EXCLUDE_DIRS for p in parts[:-1]):
         return False
     if not with_dist and parts[:2] == ("frontend", "dist"):
@@ -35,7 +39,7 @@ def main():
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    zip_path = out_dir / f"open-media-center-phase0-{stamp}.zip"
+    zip_path = out_dir / f"open-media-center-phase0.5-{stamp}.zip"
     manifest = []
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for dirpath, dirnames, filenames in os.walk(ROOT):

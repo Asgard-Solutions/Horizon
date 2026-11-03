@@ -4,6 +4,12 @@ Generated from the actual lockfiles on 2026-06 (Python: fresh venv from `backend
 Node: `yarn licenses list`). Full machine-generated lists: `docs/licenses/python-packages.md`,
 `docs/licenses/node-packages-runtime.txt`, `docs/licenses/node-packages-full.txt`.
 
+**Phase 0.5:** the exact Windows wheels shipped in `vendor/wheels` (CPython 3.11–3.14, win_amd64) and every installed Node package
+(direct + transitive) are listed with verdicts in `docs/licenses/INVENTORY.md`, generated offline by `scripts/license_inventory.py`
+(exit code 1 if a shipped dependency is not permissive). Result: **0 problems in shipped dependencies**; only build/test tools
+`lightningcss` (MPL-2.0) and `certifi` (MPL-2.0) need the weak-copyleft note below. Redistributing the wheels in `vendor/wheels`
+is allowed by each package's license; their license texts are inside each wheel (`*.dist-info/`).
+
 No dependency is GPL. No dependency calls a paid or online service. Nothing is downloaded at runtime (fonts are bundled).
 
 ## Shipped at runtime — Python server
@@ -21,6 +27,7 @@ No dependency is GPL. No dependency calls a paid or online service. Nothing is d
 | annotated-types | 0.8.0 | MIT | keep notice |
 | typing-extensions | 4.16.0 | PSF-2.0 | keep notice |
 | typing-inspection | 0.4.4 | MIT | keep notice |
+| colorama (Windows only, dependency of click/pytest) | 0.4.6 | BSD-3-Clause | keep notice |
 | Python 3.11+ | — | PSF-2.0 | keep notice if bundling the interpreter |
 | SQLite (via Python `sqlite3`) | bundled with Python | Public domain | none |
 

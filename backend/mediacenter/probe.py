@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .config import PROJECT_DIR
 
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # no console window flashes on Windows
 BROWSER_SAFE_CONTAINERS = {"mp4", "m4v", "mov", "webm"}
 BROWSER_UNSUPPORTED_CONTAINERS = {"avi", "wmv", "flv", "mpg", "mpeg", "ts", "m2ts", "mts", "vob", "divx", "3gp"}
 SAFE_VIDEO = {"h264", "vp8", "vp9", "av1"}
@@ -32,7 +33,8 @@ def ffprobe_version(ffprobe: str | None) -> str | None:
     if not ffprobe:
         return None
     try:
-        out = subprocess.run([ffprobe, "-version"], capture_output=True, text=True, timeout=10)
+        out = subprocess.run([ffprobe, "-version"], capture_output=True, text=True, timeout=10,
+                             stdin=subprocess.DEVNULL, creationflags=NO_WINDOW)
         return out.stdout.splitlines()[0] if out.stdout else None
     except (OSError, subprocess.SubprocessError):
         return None
@@ -40,7 +42,8 @@ def ffprobe_version(ffprobe: str | None) -> str | None:
 
 def probe_file(ffprobe: str, path: str) -> dict:
     cmd = [ffprobe, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", path]
-    out = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    out = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30,
+                         stdin=subprocess.DEVNULL, creationflags=NO_WINDOW)
     if out.returncode != 0:
         return {"error": (out.stderr or "ffprobe failed").strip()[:500]}
     data = json.loads(out.stdout or "{}")

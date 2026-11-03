@@ -22,31 +22,31 @@ plus optional, PIN-protected LAN access so another device (e.g. the Xbox browser
 * `frontend/` — web UI. `yarn build` produces `frontend/dist`, which the Python server serves at `/`.
 * The JSON API is client-agnostic (cookie **or** `Authorization: Bearer` token), so a future native Xbox/UWP client can reuse it. See [`docs/API.md`](docs/API.md).
 
-## Windows installation
+## Windows installation (quick start)
 
-Requirements: Windows 10/11, **Python 3.11+** (python.org installer, tick "Add to PATH").
-Node.js 20.19+ is only needed if `frontend/dist` is not present (exports include a prebuilt UI by default).
-Optional: **FFprobe** for codec inspection (see below).
+Requirements: Windows 10/11 x64 and **Python 3.11–3.13** from python.org ("Add python.exe to PATH"). Nothing else.
+The release zip already contains every Python package as wheels (`vendor/wheels`) and the built UI (`frontend/dist`),
+so **installation and use work without internet**. Node.js is only needed to rebuild the UI.
 
-```bat
-:: 1) one-time setup (creates backend\.venv, installs Python packages, builds UI if needed)
-scripts\windows\setup.bat
+1. Extract the zip to a folder you own (e.g. `C:\OpenMediaCenter`).
+2. Double-click **`Setup.bat`** – creates `backend\.venv`, installs the bundled wheels offline, runs the startup checks.
+3. Double-click **`Start.bat`** – checks dependencies, initialises/verifies the SQLite database, starts the server, opens `http://127.0.0.1:8765`.
+4. Optional: **`RunTests.bat`** – runs the automated test suite and writes `test-results-windows.xml`.
 
-:: 2) start the server (opens http://127.0.0.1:8765 in your browser)
-scripts\windows\start.bat
-```
+Detailed Windows test procedure, NAS/mapped-drive notes and firewall troubleshooting: [`docs/WINDOWS_TESTING.md`](docs/WINDOWS_TESTING.md).
+Acceptance checklist: [`docs/WINDOWS_ACCEPTANCE_CHECKLIST.md`](docs/WINDOWS_ACCEPTANCE_CHECKLIST.md). Security review: [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md).
 
 Manual equivalent (PowerShell):
 
 ```powershell
 cd backend
 py -3 -m venv .venv
-.venv\Scripts\python -m pip install -r requirements-dev.txt
-cd ..\frontend; corepack enable; yarn install --frozen-lockfile; yarn build; cd ..
-backend\.venv\Scripts\python backend\run.py --port 8765
+.venv\Scripts\python -m pip install --no-index --find-links ..\vendor\wheels -r requirements-dev.txt
+.venv\Scripts\python run.py --check
+.venv\Scripts\python run.py --open-browser
 ```
 
-Everything runs offline after installation. Data is stored in `data\` next to the project (change with `MC_DATA_DIR`, see `backend/.env.example`).
+Data is stored in `data\` next to the project (change with `MC_DATA_DIR`, see `backend/.env.example`).
 
 ### Development mode (hot reload)
 
@@ -124,9 +124,9 @@ host requests (DNS-rebinding defence). No router/UPnP configuration is ever perf
 ## Tests
 
 ```bat
-scripts\windows\run_tests.bat
+RunTests.bat
 ```
-or `cd backend && .venv\Scripts\python -m pytest -v`. Covers filename parsing, scan structure, duplicate handling, rescans,
+or `cd backend && .venv\Scripts\python -m pytest -v -n 0`. Covers filename parsing, scan structure, duplicate handling, rescans,
 read-only guarantee, media-path authorization (traversal, symlink escape, artwork), LAN/PIN/device auth, and HTTP range streaming.
 `python scripts/make_sample_media.py D:\TestMedia` generates a synthetic test library (needs ffmpeg).
 Latest results: [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
@@ -141,7 +141,8 @@ excluding `.env`, local data, virtualenvs and `node_modules`. No GitHub or Emerg
 
 ## Licenses
 
-Project code: MIT (see `LICENSE`). Third-party inventory: [`docs/THIRD_PARTY_LICENSES.md`](docs/THIRD_PARTY_LICENSES.md).
+Project code: MIT (see `LICENSE`). Third-party inventory: [`docs/THIRD_PARTY_LICENSES.md`](docs/THIRD_PARTY_LICENSES.md);
+full generated list incl. transitive packages: `python scripts/license_inventory.py` → [`docs/licenses/INVENTORY.md`](docs/licenses/INVENTORY.md).
 
 ## Known limitations (Phase 0)
 

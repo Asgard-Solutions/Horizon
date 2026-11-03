@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       allowedHosts: true,
       hmr: hmrPort ? { clientPort: hmrPort } : undefined,
+      // Dev-server only: lets the release zip in ../export be downloaded from the development preview.
+      fs: { allow: [".", "../export"] },
       // Local development: forward API calls to the Python server started with `python run.py`.
       proxy: { "/api": { target: env.MC_DEV_API || "http://127.0.0.1:8765", changeOrigin: false } },
     },

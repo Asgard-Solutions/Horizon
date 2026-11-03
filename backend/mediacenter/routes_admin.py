@@ -5,17 +5,18 @@ import os
 import platform
 import socket
 import stat
-import string
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from . import paths
 from .config import APP_VERSION
 from .db import get_setting, now_iso, set_setting
 from .parser import is_video
 from .probe import ffprobe_version, find_ffprobe
 from .scanner import cleanup_orphans, path_key, scan_library
 from .security import hash_pin, lan_enabled, require_host, validate_new_pin
+from .winfs import list_windows_drives
 
 router = APIRouter(prefix="/api", dependencies=[Depends(require_host)])
 MAX_DIR_ENTRIES = 3000
@@ -48,12 +49,20 @@ class LibraryIn(BaseModel):
 
 
 def normalize_user_path(raw: str) -> str:
-    path = raw.strip().strip('"').strip("'")
-    if not path or "\x00" in path:
-        raise HTTPException(status_code=400, detail="Enter a folder path.")
-    if not os.path.isabs(path):
-        raise HTTPException(status_code=400, detail=r"Use a full path, e.g. D:\Movies or \\NAS\Media.")
-    return os.path.normpath(path)
+    try:
+        return paths.normalize_user_path(raw)
+    except paths.PathError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+UNREACHABLE_HINT = (" If this is a network share or mapped drive: check it opens in File Explorer for the same Windows user that runs"
+                    r" the server (mapped drive letters are not visible to elevated/admin or service processes - use \\SERVER\Share).")
+
+
+def _read_error(exc: OSError) -> str:
+    if isinstance(exc, PermissionError):
+        return "Access denied: the Windows account running the server cannot read this folder."
+    return f"Folder cannot be read: {exc.strerror or exc}"
 
 
 def _run_scan(conn, row) -> dict:
@@ -69,22 +78,18 @@ def add_library(body: LibraryIn, request: Request):
     conn = request.state.db
     path = normalize_user_path(body.path)
     if not os.path.isdir(path):
-        raise HTTPException(status_code=400, detail=f"Folder not found or not reachable: {path}")
+        raise HTTPException(status_code=400, detail=f"Folder not found or not reachable: {path}." + UNREACHABLE_HINT)
     try:
         with os.scandir(path) as it:
             next(it, None)
     except OSError as exc:
-        raise HTTPException(status_code=400, detail=f"Folder cannot be read: {exc.strerror or exc}")
+        raise HTTPException(status_code=400, detail=_read_error(exc))
     key = path_key(path)
     for lib in conn.execute("SELECT path, path_key FROM libraries"):
         other = lib["path_key"]
-        try:
-            common = os.path.commonpath([key, other])
-        except ValueError:
-            continue
         if key == other:
             raise HTTPException(status_code=409, detail="This folder is already in the library.")
-        if common in (key, other):
+        if paths.is_within(key, other) or paths.is_within(other, key):
             raise HTTPException(status_code=409, detail=f"This folder overlaps an existing library folder: {lib['path']}")
     name = (body.name or "").strip() or os.path.basename(path.rstrip("\\/")) or path
     cur = conn.execute("INSERT INTO libraries (path, path_key, name, created_at) VALUES (?,?,?,?)",
@@ -130,9 +135,10 @@ def _is_hidden(entry: os.DirEntry) -> bool:
 def fs_roots(request: Request):
     roots = []
     if os.name == "nt":
-        drives = os.listdrives() if hasattr(os, "listdrives") else [f"{c}:\\" for c in string.ascii_uppercase
-                                                                    if os.path.exists(f"{c}:\\")]
-        roots += [{"name": d, "path": d, "type": "drive"} for d in drives]
+        for d in list_windows_drives():
+            label = {"network": "Network drive", "removable": "Removable drive", "optical": "Disc drive"}.get(d["type"], "Drive")
+            name = f"{label} {d['path']}" + (f" -> {d['target']}" if d["target"] else "")
+            roots.append({"name": name, "path": d["path"], "type": "drive", "drive_type": d["type"], "target": d["target"]})
     else:
         roots.append({"name": "/", "path": "/", "type": "drive"})
     home = os.path.expanduser("~")
@@ -151,7 +157,7 @@ def fs_roots(request: Request):
 def fs_list(path: str, request: Request):
     path = normalize_user_path(path)
     if not os.path.isdir(path):
-        raise HTTPException(status_code=404, detail=f"Folder not found or not reachable: {path}")
+        raise HTTPException(status_code=404, detail=f"Folder not found or not reachable: {path}." + UNREACHABLE_HINT)
     dirs, videos = [], 0
     try:
         with os.scandir(path) as it:
@@ -166,10 +172,8 @@ def fs_list(path: str, request: Request):
                 except OSError:
                     continue
     except OSError as exc:
-        raise HTTPException(status_code=400, detail=f"Folder cannot be read: {exc.strerror or exc}")
-    parent = os.path.dirname(path.rstrip("\\/")) if path.rstrip("\\/") else None
-    if parent == path or not parent:
-        parent = None
+        raise HTTPException(status_code=400, detail=_read_error(exc))
+    parent = paths.parent_dir(path)
     return {"path": path, "parent": parent, "dirs": sorted(dirs, key=lambda d: d["name"].lower()),
             "video_files_here": videos}
 

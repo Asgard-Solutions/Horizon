@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from .db import now_iso
 from .parser import IMAGE_EXTENSIONS
+from .paths import is_within
 from .probe import MIME, assess_playback, find_ffprobe, probe_file
 from .scanner import path_key
 from .security import require_viewer
@@ -41,12 +42,8 @@ def authorize_media_path(conn, path: str) -> str:
     real = os.path.realpath(path)
     key = os.path.normcase(real)
     for lib in conn.execute("SELECT path FROM libraries"):
-        root = os.path.normcase(os.path.realpath(lib["path"]))
-        try:
-            if os.path.commonpath([root, key]) == root:
-                return real
-        except ValueError:
-            continue
+        if is_within(os.path.normcase(os.path.realpath(lib["path"])), key):
+            return real
     raise HTTPException(status_code=403, detail="File is outside the configured library folders.")
 
 

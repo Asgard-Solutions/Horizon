@@ -1,4 +1,5 @@
 """FastAPI application factory."""
+import mimetypes
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -8,6 +9,13 @@ from fastapi.staticfiles import StaticFiles
 from . import routes_admin, routes_auth, routes_library
 from .config import APP_VERSION, Config, load_config
 from .db import connect, init_db
+
+# Windows reads MIME types from the registry, which is often wrong (e.g. .js as text/plain) and breaks the UI
+# because responses carry X-Content-Type-Options: nosniff. Pin the types we serve.
+for _ext, _type in {".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".html": "text/html",
+                    ".svg": "image/svg+xml", ".woff2": "font/woff2", ".woff": "font/woff", ".json": "application/json",
+                    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}.items():
+    mimetypes.add_type(_type, _ext)
 
 UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 CSRF_HEADER = "x-mc-client"

@@ -111,9 +111,11 @@ def client_ip(request: Request) -> str:
 
 def _ip(addr: str):
     try:
-        return ipaddress.ip_address(addr.split("%")[0])
+        ip = ipaddress.ip_address(addr.split("%")[0])
     except ValueError:
         return None
+    # IPv4-mapped IPv6 (::ffff:a.b.c.d) is judged by its IPv4 address (older Pythons call all of ::ffff:0:0/96 private).
+    return ip.ipv4_mapped if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped else ip
 
 
 def _request_hostname(request: Request) -> str:

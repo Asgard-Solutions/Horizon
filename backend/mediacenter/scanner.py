@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from sqlite3 import Connection
 
 from .db import now_iso
+from .paths import is_link_or_junction, is_within
 from .parser import IMAGE_EXTENSIONS, is_video, parse_episode, parse_movie, season_from_dir, sort_key, split_ext
 
 SKIP_DIRS = {"$recycle.bin", "system volume information", "@eadir", "#recycle", ".trash", "extrafanart", "featurettes"}
@@ -187,18 +188,24 @@ def scan_library(conn: Connection, library: dict) -> dict:
         return summary
 
     scan_id = uuid.uuid4().hex
+    root_key = path_key(root)
     idx = DirIndex()
     show_cache: dict = {}
     walk_errors: list[str] = []
 
     with SCAN_LOCK:
         for directory, dirnames, filenames in os.walk(root, onerror=lambda e: walk_errors.append(str(e))):
-            dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d.lower() not in SKIP_DIRS)
+            # Never descend into symlinks/NTFS junctions: they could point outside the library folder.
+            dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d.lower() not in SKIP_DIRS
+                                 and not is_link_or_junction(os.path.join(directory, d)))
             rel_dirs = _rel_dirs(root, directory)
             for name in sorted(filenames):
                 if not is_video(name) or name.startswith("._"):
                     continue
                 full = os.path.join(directory, name)
+                if is_link_or_junction(full) and not is_within(root_key, path_key(full)):
+                    walk_errors.append(f"Skipped link pointing outside the library: {full}")
+                    continue
                 try:
                     st = os.stat(full)
                 except OSError as exc:
