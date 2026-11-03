@@ -88,7 +88,7 @@ function pickNext(from: HTMLElement, dir: Dir): HTMLElement | null {
   // Entering a tab list from outside lands on its selected tab, so passing through never switches groups by accident.
   const tabs = best?.closest("[data-nav-prefer-selected]");
   if (best && tabs && !tabs.contains(from)) {
-    const sel = tabs.querySelector<HTMLElement>('[aria-selected="true"]');
+    const sel = tabs.querySelector<HTMLElement>('[aria-selected="true"], [aria-current="true"]');
     if (sel && visible(sel)) return sel;
   }
   return best;
@@ -100,6 +100,14 @@ export function move(dir: Dir): boolean {
   if (!active || active === document.body || !list.includes(active)) {
     const modal = document.querySelector('[data-nav-scope="modal"]');
     focusFirst(modal ? null : document.querySelector("main"));
+    return true;
+  }
+  // Regions can name an explicit Up target (e.g. the Filmstrip header -> the Stage action) to avoid jumping to the top nav.
+  const upSel = dir === "up" ? active.closest<HTMLElement>("[data-nav-up]")?.dataset.navUp : undefined;
+  const upTarget = upSel ? document.querySelector<HTMLElement>(upSel) : null;
+  if (upTarget && visible(upTarget)) {
+    upTarget.focus({ preventScroll: true });
+    upTarget.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     return true;
   }
   const next = pickNext(active, dir);

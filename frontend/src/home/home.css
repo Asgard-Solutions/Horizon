@@ -67,7 +67,7 @@ body[data-input="keys"] .film:focus .film-art, body[data-input="pad"] .film:focu
 .film:hover .film-art { border-color: var(--h-color-border-strong); }
 .film-label { display: flex; flex-direction: column; gap: 2px; padding: 0 4px; min-width: 0; transition: transform var(--h-duration-poster) var(--h-cubicBezier-focus); }
 .filmstrip--strip .film-label { transform: translateY(calc(var(--dist) * var(--dist) * 2.2px)); }
-.filmstrip--strip .film--selected .film-label { transform: translateY(14px); }
+.filmstrip--strip .film--selected .film-label { transform: none; }
 .film-title { font-weight: 600; font-size: var(--fs-meta); color: var(--muted); line-height: 1.25;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .film--selected .film-title { color: var(--text); }

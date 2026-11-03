@@ -1,0 +1,30 @@
+{
+  "summary": "Frontend-only retest of the iteration 3 fixes at 1920x1080 and 1366x768, plus reduced motion. All 5 fixes and the new tab rule pass. (1) PageDown/PageUp from a film card switches the group and moves focus to the new group's first card (show-1, movie-3, cw-2). From the stage primary button, focus stays on stage-primary-action through PageDown, PageDown, PageUp. (2) Resume from Home opens /play/2?start=44 and the video reaches readyState 4. Escape returns to / with focus on stage-primary-action. Details opens /movies/2, Enter opens the player, Escape returns to /movies/2 (focus on movie-resume-button), and Escape again returns to / with no loop into the player. A deep link to /play/2 falls back to /movies/2. (3) The grid view focus ring is fully visible when reached by keyboard. (4) /movies/2 (Sample Movie) and /shows/1 (Other Series) show the art-fallback TitleArt card with the styled title. Poster x=96 lines up with the nav brand at 1920. (5) At 1366x768 scrollHeight equals 768 and the footer bottom is at 723. NEW: going Up or Down into the tab row lands on the aria-selected tab, and Left/Right across tabs switches groups. Regression checks pass: edge-stop, grid toggle, Explore series for series items, footer counts, Movies/TV/Settings/Show detail pages, reduced motion (transform none), and no console errors. Two minor spatial-nav quirks were found. The first-run flow and backend pytest were not re-run (frontend-only request).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Spatial nav: Up from the right-most group tab", "issue": "With 3 tabs (Continue/Recent/Series), ArrowUp from the 'Series' tab skips the Stage and focuses the top-nav 'Library' link (nav-settings). Cause: in the pickNext score in spatial.ts, the Library link is almost directly above (small secondary offset), and the Stage button is about 500px to the left (secondary*1.2 is about 620). A controller user then presses A and lands on /settings by mistake. Fix: make Up from the filmstrip head go to the Stage first. For example, add a data-nav-up target or a preference so the stage-actions container wins over the nav when moving up from .filmstrip-head. Or score elements in the nearest vertical band (stage) before farther ones.", "selector": "[data-testid=filmstrip-group-series] -> ArrowUp", "priority": "MEDIUM"},
+      {"component": "Spatial nav: Down from tabs into the strip", "issue": "ArrowDown from a tab lands on the geometrically nearest card, not the selected or first card. Example: in the Recent group the Stage shows Big Test Pattern (movie-3, the first card), but Down from the 'Recently added movies' tab focuses film-card-movie-2. The Stage then jumps to Sample Movie. Fix: apply the prefer-selected idea to the track. When entering [data-nav-row] from outside, prefer .film--selected (data-nav-prefer-selected on the track, with [aria-current] or .film--selected as the target).", "selector": "[data-testid=filmstrip-track]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Home filmstrip (carried over)", "issues": ["The selected card's label still sits lower than its neighbours, so label gaps are uneven. At 1366 the selected label is very close to the footer line.", "Procedural fallback cards still repeat the title inside the art and in the label below."]},
+      {"screen": "Home 4K (carried over, not re-tested)", "issues": ["UI scale at 3840x2160 has not been addressed (from iteration 3)."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Make ArrowUp from any filmstrip tab go to the Stage primary action, not the top nav. Today the Series tab jumps to the Library nav.",
+    "Optional: entering the strip from the tabs with ArrowDown should land on the selected card (.film--selected), not the geometrically nearest one."
+  ],
+  "critical_code_review_comments": [
+    "spatial.ts pickNext: vertical moves use secondary*1.2, so wide horizontal gaps lose to small elements far away vertically (the top nav). Consider limiting to the nearest vertical 'band' first.",
+    "Player exit uses history.state.idx > 0 to decide navigate(-1). This is correct for in-app entry. A deep link falls back to context.back with replace (verified working)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (frontend-only request)", "frontend": "95%"},
+  "seed_data_creation": "None. Note: a deep-link test to /play/2?start=10 saved progress at 10s, which removed Sample Movie from Continue watching (the threshold is >10). I restored it with PUT /api/progress/2 {position:44,duration:90}. Later tests raised it to about 54s. Continue watching shows Sample Movie again.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Group tab testids: filmstrip-group-continue/recent/series. Card testids: film-card-cw-2, film-card-movie-{1,2,3}, film-card-show-{1,2}. Sample Movie = movie/file 2, Other Series = /shows/1, Sample Show = /shows/2. Continue watching requires progress >10s. Use the keyboard (not programmatic focus) to see the focus-visible rings. First-run flow was not re-run in iteration 4."
+}

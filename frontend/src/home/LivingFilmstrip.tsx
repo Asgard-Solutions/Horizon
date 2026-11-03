@@ -68,7 +68,7 @@ export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect,
 
   return (
     <section className={`filmstrip filmstrip--${view}`} aria-label="Browse your library" data-testid="living-filmstrip">
-      <div className="filmstrip-head">
+      <div className="filmstrip-head" data-nav-up='[data-testid="stage-primary-action"]'>
         <div className="filmstrip-groups" role="tablist" aria-label="Groups" data-nav-prefer-selected>
           {groups.map((g) => (
             <button key={g.id} role="tab" aria-selected={g.id === group.id} className={g.id === group.id ? "gtab gtab--active" : "gtab"}
@@ -84,7 +84,7 @@ export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect,
           {view === "strip" ? "Grid view" : "Filmstrip view"}
         </button>
       </div>
-      <div className="filmstrip-track" ref={track} data-nav-noscroll={view === "strip" || undefined} data-nav-row={view === "strip" || undefined} role="list" data-testid="filmstrip-track">
+      <div className="filmstrip-track" ref={track} data-nav-noscroll={view === "strip" || undefined} data-nav-row={view === "strip" || undefined} data-nav-prefer-selected role="list" data-testid="filmstrip-track">
         {group.items.map((item, i) => {
           const d = i - index;
           const ratio = progressRatio(item.progress);
@@ -93,6 +93,7 @@ export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect,
               <button
                 className={item.key === selectedKey ? "film film--selected" : "film"}
                 data-key={item.key}
+                aria-current={item.key === selectedKey ? "true" : undefined}
                 data-autofocus={item.key === restoreKey || undefined}
                 style={{ "--dist": Math.min(Math.abs(d), 5), "--side": Math.sign(d) } as React.CSSProperties}
                 onFocus={() => onSelect(item)}
