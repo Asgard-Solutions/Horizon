@@ -17,7 +17,12 @@ export function FolderBrowser({ onPick, onClose }: { onPick: (path: string) => v
   useBack(() => onClose());
 
   useEffect(() => {
-    api<{ roots: Root[]; hint: string }>("/api/fs/roots").then((r) => { setRoots(r.roots); setHint(r.hint); })
+    api<{ roots: Root[]; hint: string }>("/api/fs/roots")
+      .then((r) => {
+        setRoots(r.roots);
+        setHint(r.hint);
+        window.setTimeout(() => focusFirst(document.querySelector(".modal")), 30);
+      })
       .catch((e: Error) => setError(e.message));
   }, []);
 

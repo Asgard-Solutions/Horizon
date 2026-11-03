@@ -1,0 +1,42 @@
+{
+  "summary": "Ran full E2E tests of the Phase 0 media center through the public preview URL. Backend: added public-URL regression suite tests/test_api_public.py, 16 tests covering catalog, NFO, shows/seasons, art, playback compatibility, range streaming 206/HEAD/416/suffix, progress + CSRF, rescan without duplicates, add-library errors, fs browser, PIN validation and LAN. All 16 passed, and the existing unit suite passes too (120 total). Frontend (Playwright, 1920x1080): Home counts and rows; keyboard spatial nav on /movies (gold focus ring, Enter opens detail, Esc/Backspace go back); Sample Movie detail (2024, NFO plot, 'Plays in browser'); player reaches data-phase=ready and time advances; on the seek bar ArrowRight +10s and ArrowLeft -10s; Enter/Space toggle pause; M mutes; volume control ArrowLeft/Right gives 100->90->100; Esc exits to detail. Resume: Esc at ~41s -> 'Resume from 0:41' button plus a Continue watching row on Home; resume starts at ~42s; /play/2 without ?start shows resume-prompt with autofocus. AVI: 'Not playable in browser' with reasons -> unsupported-panel -> Try anyway -> playback-error-panel (no fake playing state). Shows: Sample Show (poster) S01E01 mkv / S01E02 mp4 (mkv played, next-episode button present); Other Series Season 2 E05. Settings: rescan summary '6 videos found, 0 new'; typed /nope, relative and duplicate paths give clear errors; folder browser / -> app -> sample_media -> Use this folder -> 'already in the library'. Network: OFF by default, toggle disabled without a PIN, 7-digit PIN keeps Save disabled, 12345678 rejected (sequence), 48151623 saved, LAN ON shown with address, then turned OFF. Removed the library via UI (counts went to 0) and re-added it via typed path (6 new, counts restored). Only minor UX issues found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/system (lan.addresses)", "issue": "When started directly by uvicorn, port is None, so addresses are bare IPs ('10.31.135.93') with no http:// scheme or port. The UI tells the user to 'Open one of these on the other device', but the URL as shown won't work. Use request.url.port or the configured port as a fallback."},
+      {"endpoint": "/api/stream/{id}", "issue": "If-Range is compared only against the ETag. An HTTP-date If-Range never matches, so the full body (200) is returned. This is RFC-compliant but less efficient. Very low priority."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Spatial nav (nav/spatial.ts pickNext)", "issue": "On /movies, ArrowDown from a card in the last grid row jumps to the far-left sidebar 'Settings' link. Its centre y is slightly below the card's centre, so it passes the 'down' filter despite the +400 overlap penalty. Expected: stay put, or only move to items that are below the card's bottom edge.", "selector": "[data-testid=movie-card-1] -> [data-testid=nav-settings]", "priority": "LOW"},
+      {"component": "Player keyboard (Player.tsx onKey, controls hidden)", "issue": "After the controls auto-hide (4s), ArrowRight seeks +30s while ArrowLeft seeks -10s. On the visible seek bar both are 10s. This asymmetry is not shown in the hint text and is inconsistent.", "selector": "[data-testid=player-page]", "priority": "LOW"},
+      {"component": "FolderBrowser", "issue": "When the modal opens, focus stays on the Browse button behind the modal. focusFirst runs only after a folder listing loads, not on the initial roots view. The first arrow press moves focus in, but pressing Enter immediately acts on the hidden page button.", "selector": "[data-testid=folder-browser]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Home / TV shows cards", "issues": ["Pluralisation: 'Other Series · 1 episodes' should read '1 episode'"]},
+      {"screen": "Settings library list", "issues": ["No loading indicator while /api/libraries is fetched. The list area is briefly blank: neither the 'No folders added yet' message nor the items are shown."]},
+      {"screen": "Settings library", "issues": ["formError is not cleared after a successful rescan or remove, so a stale error (e.g. 'already in the library') stays visible."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_api_public.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "(Low) Fix the spatial-nav down/up candidate filter so the last grid row doesn't jump to the sidebar",
+    "(Low) Make the hidden-controls ArrowRight seek symmetric (+10s) or document +30s in the hint",
+    "(Low) Autofocus the first root in FolderBrowser when it opens",
+    "(Low) Include scheme and port in the LAN addresses shown when bind/port are unmanaged",
+    "(Low) Fix the '1 episodes' plural; clear formError on successful actions; add a loading state to the library list"
+  ],
+  "critical_code_review_comments": [
+    "Removing a library cascades to watch progress (cleanup_orphans); re-adding creates new file IDs, so 'Continue watching' history is lost. That's acceptable for Phase 0, but consider keying progress by path_key so it survives remove/re-add.",
+    "Remove uses window.confirm. It works, but on TV/Xbox browsers a native confirm can be awkward with a gamepad. Consider an in-app confirm dialog with data-nav-scope=modal.",
+    "The 30s start timeout only checks readyState<1. A stalled stream after metadata loads has no user-facing recovery. Fine for Phase 0."
+  ],
+  "updated_files": ["/app/backend/tests/test_api_public.py"],
+  "success_rate": {"backend": "100%", "frontend": "100% of requested flows (3 low-priority UX issues)"},
+  "seed_data_creation": "None. Library /app/sample_media was removed and re-added via UI (file IDs regenerated). PIN 48151623 is now configured (there is no API to unset it); LAN is OFF.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Movie IDs after re-add may differ from earlier (previously Legacy Clip=1, Sample Movie=2, Big Test Pattern=3). Look them up via /api/movies. State-changing requests need the X-MC-Client header. Run the public API suite with: cd /app/backend && REACT_APP_BACKEND_URL=<url> python -m pytest tests/test_api_public.py. Playwright Chromium here plays H.264/AAC and the MKV episode. End state: LAN OFF, PIN set, library present (3 movies, 2 shows, 3 episodes)."
+}

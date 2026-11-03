@@ -60,7 +60,7 @@ export default function Home() {
       {data.shows.length > 0 && (
         <Row title="TV shows" testId="row-shows">
           {data.shows.map((s) => (
-            <PosterCard key={s.id} kind="show" title={s.title} subtitle={`${s.episode_count} episodes`}
+            <PosterCard key={s.id} kind="show" title={s.title} subtitle={`${s.episode_count} episode${s.episode_count === 1 ? "" : "s"}`}
               image={s.poster_url} to={`/shows/${s.id}`} testId={`home-show-card-${s.id}`} />
           ))}
         </Row>

@@ -197,7 +197,7 @@ def system_info(request: Request):
     ffprobe = find_ffprobe(cfg.ffprobe_path)
     enabled = lan_enabled(conn)
     bind = cfg.bind_host
-    port = cfg.port
+    port = cfg.port or request.url.port or (443 if request.url.scheme == "https" else 80)
     restart_required = bind is not None and ((enabled and bind in ("127.0.0.1", "localhost")) or
                                              (not enabled and bind not in ("127.0.0.1", "localhost")))
     return {
@@ -206,7 +206,7 @@ def system_info(request: Request):
         "ffprobe": {"path": ffprobe, "version": ffprobe_version(ffprobe)},
         "lan": {"enabled": enabled, "pin_configured": bool(get_setting(conn, "pin_hash")),
                 "bind_host": bind, "port": port, "restart_required": restart_required,
-                "addresses": [f"http://{a}:{port}" for a in lan_addresses()] if port else lan_addresses()},
+                "addresses": [f"http://{a}:{port}" for a in lan_addresses()]},
     }
 
 

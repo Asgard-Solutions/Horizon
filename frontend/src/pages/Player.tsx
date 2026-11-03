@@ -154,7 +154,7 @@ export default function Player() {
       if (!visible) {
         stop();
         if (e.key === "ArrowLeft") seekBy(-10);
-        else if (e.key === "ArrowRight") seekBy(30);
+        else if (e.key === "ArrowRight") seekBy(10);
         else if (e.key === "Enter") toggle();
         else { poke(); seekRef.current?.focus(); }
         return;

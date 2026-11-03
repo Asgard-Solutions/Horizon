@@ -1,6 +1,7 @@
 import { FolderOpen, FolderPlus, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { api, del, post } from "../api";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { FolderBrowser } from "../components/FolderBrowser";
 import { useAsync } from "../hooks";
 import type { Library, ScanSummary } from "../types";
@@ -20,12 +21,13 @@ function Summary({ s, testId }: { s: ScanSummary; testId: string }) {
 }
 
 export function LibrarySection() {
-  const { data, error, reload } = useAsync(() => api<Library[]>("/api/libraries"), []);
+  const { data, error, loading, reload } = useAsync(() => api<Library[]>("/api/libraries"), []);
   const [path, setPath] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [browsing, setBrowsing] = useState(false);
   const [lastScan, setLastScan] = useState<{ id: number; summary: ScanSummary } | null>(null);
+  const [confirming, setConfirming] = useState<Library | null>(null);
 
   const add = async (p = path) => {
     setFormError(null);
@@ -43,6 +45,7 @@ export function LibrarySection() {
   };
   const rescan = async (id: number) => {
     setBusy(`scan-${id}`);
+    setFormError(null);
     try {
       const lib = await post<Library>(`/api/libraries/${id}/scan`);
       if (lib.scan) setLastScan({ id, summary: lib.scan });
@@ -54,7 +57,8 @@ export function LibrarySection() {
     }
   };
   const remove = async (lib: Library) => {
-    if (!window.confirm(`Remove "${lib.name}" from the catalog?\nYour files will not be touched.`)) return;
+    setConfirming(null);
+    setFormError(null);
     await del(`/api/libraries/${lib.id}`).catch((e: Error) => setFormError(e.message));
     reload();
   };
@@ -76,6 +80,7 @@ export function LibrarySection() {
       {formError && <p className="form-error" role="alert" data-testid="library-form-error">{formError}</p>}
       {error && <p className="form-error">{error}</p>}
       <div className="lib-list" data-testid="library-list">
+        {loading && !data && <p className="muted" data-testid="library-list-loading">Loading folders…</p>}
         {data?.length === 0 && <p className="muted" data-testid="library-list-empty">No folders added yet.</p>}
         {data?.map((lib) => (
           <div key={lib.id} className="lib-item" data-testid={`library-item-${lib.id}`}>
@@ -92,12 +97,17 @@ export function LibrarySection() {
             <button className="btn" onClick={() => rescan(lib.id)} disabled={busy === `scan-${lib.id}`} data-testid={`library-rescan-button-${lib.id}`}>
               <RefreshCw size={20} className={busy === `scan-${lib.id}` ? "spin" : ""} /> Rescan
             </button>
-            <button className="btn btn--danger" onClick={() => remove(lib)} data-testid={`library-remove-button-${lib.id}`}>
+            <button className="btn btn--danger" onClick={() => setConfirming(lib)} data-testid={`library-remove-button-${lib.id}`}>
               <Trash2 size={20} /> Remove
             </button>
           </div>
         ))}
       </div>
+      {confirming && (
+        <ConfirmDialog title={`Remove "${confirming.name}"?`} confirmLabel="Remove from library"
+          message="Only the catalog entries are removed. Your files on disk are not touched. Watch progress is kept."
+          onConfirm={() => remove(confirming)} onCancel={() => setConfirming(null)} />
+      )}
       {browsing && (
         <FolderBrowser onClose={() => setBrowsing(false)} onPick={(p) => { setBrowsing(false); setPath(p); add(p); }} />
       )}

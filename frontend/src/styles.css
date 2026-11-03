@@ -73,7 +73,7 @@ body[data-input="mouse"] :focus:not(:focus-visible) { box-shadow: none; }
 .side-link:focus { transform: translateX(4px); }
 .side-foot { margin-top: auto; color: var(--muted); font-size: 14px; padding: 0 12px; }
 .main { min-width: 0; }
-.page { padding: 48px 56px 80px; animation: rise 0.35s ease-out both; }
+.page { padding: 48px 56px 80px; animation: rise 0.35s ease-out backwards; }
 .page-head { display: flex; align-items: baseline; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
 .page-head h1, .detail-info h1, .player-panel h1, .pair h1 {
   font-family: var(--display); font-weight: 800; letter-spacing: -0.025em; margin: 0; font-size: clamp(36px, 4vw, 60px); line-height: 1.02;
@@ -144,7 +144,7 @@ body[data-input="mouse"] :focus:not(:focus-visible) { box-shadow: none; }
 .empty p { color: var(--muted); margin: 0 0 24px; }
 
 /* Detail pages */
-.detail { position: relative; min-height: 100vh; animation: rise 0.35s ease-out both; }
+.detail { position: relative; min-height: 100vh; animation: rise 0.35s ease-out backwards; }
 .detail-backdrop { position: absolute; inset: 0 0 auto 0; height: 70vh; background-size: cover; background-position: center top; opacity: 0.28;
   mask-image: linear-gradient(to bottom, #000 30%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); }
 .detail-body { position: relative; display: grid; grid-template-columns: 300px 1fr; gap: 56px; padding: 64px 56px; align-items: start; }
@@ -213,6 +213,8 @@ input:focus { border-color: var(--accent); }
 /* Modal / folder browser */
 .modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(5, 6, 8, 0.78); backdrop-filter: blur(14px); display: grid; place-items: center; padding: 32px; }
 .modal { width: min(960px, 100%); max-height: 88vh; overflow: auto; background: var(--bg-2); border: 1px solid var(--line); border-radius: 22px; padding: 28px 32px; animation: rise 0.25s ease-out both; }
+.modal--small { width: min(640px, 100%); }
+.modal--small h2 { margin: 0 0 8px; font-family: var(--display); font-size: 28px; }
 .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .modal-head h2 { margin: 0; font-family: var(--display); font-size: 28px; }
 .fb-current { font-family: ui-monospace, Consolas, monospace; background: var(--bg); padding: 14px 18px; border-radius: 12px; overflow-wrap: anywhere; color: var(--accent); }

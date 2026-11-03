@@ -52,13 +52,13 @@ def authorize_media_path(conn, path: str) -> str:
 
 MOVIE_SQL = """
 SELECT m.*, f.filename, f.container, f.size, f.added_at, p.position, p.duration, p.watched
-FROM movies m JOIN media_files f ON f.id = m.file_id LEFT JOIN progress p ON p.file_id = m.file_id
+FROM movies m JOIN media_files f ON f.id = m.file_id LEFT JOIN progress p ON p.path_key = f.path_key
 """
 EPISODE_SQL = """
 SELECT e.*, s.season_number, s.show_id, sh.title AS show_title, f.filename, f.container, f.size, f.added_at,
        p.position, p.duration, p.watched
 FROM episodes e JOIN seasons s ON s.id = e.season_id JOIN shows sh ON sh.id = s.show_id
-JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.file_id = e.file_id
+JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.path_key = f.path_key
 """
 
 
@@ -100,7 +100,7 @@ def home(request: Request):
     conn = request.state.db
     cont = []
     for p in conn.execute(
-        "SELECT p.file_id, f.kind FROM progress p JOIN media_files f ON f.id = p.file_id"
+        "SELECT f.id AS file_id, f.kind FROM progress p JOIN media_files f ON f.path_key = p.path_key"
         " WHERE p.watched = 0 AND p.position > 10 ORDER BY p.updated_at DESC LIMIT 12"
     ):
         if p["kind"] == "movie":
@@ -207,7 +207,7 @@ def playback_info(file_id: int, request: Request):
                 subtitle=f"S{e['season_number']:02d}E{e['episode_number']:02d}" + (f" · {e['title']}" if e["title"] else ""),
                 back=f"/shows/{e['show_id']}", next_file_id=nxt["file_id"] if nxt else None,
             )
-    prog = conn.execute("SELECT position, duration, watched FROM progress WHERE file_id = ?", (file_id,)).fetchone()
+    prog = conn.execute("SELECT position, duration, watched FROM progress WHERE path_key = ?", (row["path_key"],)).fetchone()
     return {
         "file_id": file_id, "filename": row["filename"], "container": row["container"], "size": row["size"],
         "stream_url": f"/api/stream/{file_id}", "probe": probe,
@@ -224,13 +224,13 @@ class ProgressIn(BaseModel):
 @router.put("/progress/{file_id}")
 def save_progress(file_id: int, body: ProgressIn, request: Request):
     conn = request.state.db
-    _file_row(conn, file_id)
+    row = _file_row(conn, file_id)
     watched = int(bool(body.duration) and body.position / body.duration >= WATCHED_RATIO)
     conn.execute(
-        "INSERT INTO progress (file_id, position, duration, watched, updated_at) VALUES (?,?,?,?,?)"
-        " ON CONFLICT(file_id) DO UPDATE SET position=excluded.position, duration=excluded.duration,"
+        "INSERT INTO progress (path_key, position, duration, watched, updated_at) VALUES (?,?,?,?,?)"
+        " ON CONFLICT(path_key) DO UPDATE SET position=excluded.position, duration=excluded.duration,"
         " watched=excluded.watched, updated_at=excluded.updated_at",
-        (file_id, body.position, body.duration, watched, now_iso()),
+        (row["path_key"], body.position, body.duration, watched, now_iso()),
     )
     conn.commit()
     return {"file_id": file_id, "position": body.position, "duration": body.duration, "watched": bool(watched)}
@@ -238,7 +238,8 @@ def save_progress(file_id: int, body: ProgressIn, request: Request):
 
 @router.delete("/progress/{file_id}")
 def clear_progress(file_id: int, request: Request):
-    request.state.db.execute("DELETE FROM progress WHERE file_id = ?", (file_id,))
+    row = _file_row(request.state.db, file_id)
+    request.state.db.execute("DELETE FROM progress WHERE path_key = ?", (row["path_key"],))
     request.state.db.commit()
     return {"ok": True}
 

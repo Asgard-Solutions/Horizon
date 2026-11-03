@@ -73,8 +73,9 @@ CREATE TABLE IF NOT EXISTS episodes (
     thumb_path TEXT
 );
 
+-- Keyed by normalized file path so watch progress survives removing/re-adding a library folder.
 CREATE TABLE IF NOT EXISTS progress (
-    file_id INTEGER PRIMARY KEY REFERENCES media_files(id) ON DELETE CASCADE,
+    path_key TEXT PRIMARY KEY,
     position REAL NOT NULL,
     duration REAL,
     watched INTEGER NOT NULL DEFAULT 0,
@@ -108,6 +109,9 @@ def connect(db_path: Path) -> sqlite3.Connection:
 def init_db(db_path: Path) -> None:
     conn = connect(db_path)
     try:
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(progress)")]
+        if "file_id" in cols:  # pre-release schema: progress keyed by file id
+            conn.execute("DROP TABLE progress")
         conn.executescript(SCHEMA)
         conn.commit()
     finally:

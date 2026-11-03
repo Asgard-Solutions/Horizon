@@ -87,7 +87,7 @@ export function PlayerControls(p: Props) {
             {s.fullscreen ? <Minimize size={30} /> : <Maximize size={30} />}
           </button>
         </div>
-        <div className="pc-hint">←/→ seek (on the bar) · Enter play/pause · ↑/↓ controls · F fullscreen · M mute · Esc back</div>
+        <div className="pc-hint">←/→ seek 10 s · Enter play/pause · ↑/↓ controls · F fullscreen · M mute · Esc back</div>
       </div>
     </div>
   );

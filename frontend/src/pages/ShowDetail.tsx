@@ -52,7 +52,7 @@ export default function ShowDetail() {
           <div className="detail-meta">
             {data.year && <span>{data.year}</span>}
             <span>{data.season_count} season{data.season_count === 1 ? "" : "s"}</span>
-            <span>{data.episode_count} episodes</span>
+            <span>{data.episode_count} episode{data.episode_count === 1 ? "" : "s"}</span>
           </div>
           {data.plot && <p className="detail-plot">{data.plot}</p>}
           <div className="season-tabs" role="tablist" data-testid="season-tabs">

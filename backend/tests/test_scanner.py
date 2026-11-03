@@ -126,3 +126,12 @@ def test_progress_save_and_restore(host, library):
     # progress survives a rescan
     host.post(f"/api/libraries/{library['id']}/scan")
     assert host.get(f"/api/files/{movie['file_id']}/playback").json()["progress"]["position"] == 95
+
+
+def test_progress_survives_library_remove_and_readd(host, library, media_root):
+    movie = next(m for m in host.get("/api/movies").json() if m["title"] == "Sample Movie")
+    host.put(f"/api/progress/{movie['file_id']}", json={"position": 33, "duration": 100})
+    host.delete(f"/api/libraries/{library['id']}")
+    host.post("/api/libraries", json={"path": str(media_root)})
+    again = next(m for m in host.get("/api/movies").json() if m["title"] == "Sample Movie")
+    assert again["progress"]["position"] == 33

@@ -101,7 +101,7 @@ Without FFprobe everything still works; codec compatibility is just reported as 
 | Arrow keys / D-pad / left stick | Move focus (spatial navigation) |
 | Enter / Space / A | Activate |
 | Escape / Backspace / B | Back |
-| Player: ←/→ on the seek bar (or when controls are hidden) | Seek −10 s / +10 s (+30 s when hidden) |
+| Player: ←/→ on the seek bar (or when controls are hidden) | Seek −10 s / +10 s |
 | Player: ←/→ on volume | Volume −/+ 10 % |
 | Player: F / M / K or Space | Fullscreen / mute / play-pause |
 

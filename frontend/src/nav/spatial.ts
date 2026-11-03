@@ -67,15 +67,16 @@ function pickNext(from: HTMLElement, dir: Dir): HTMLElement | null {
     const b = el.getBoundingClientRect();
     const bx = b.left + b.width / 2;
     const by = b.top + b.height / 2;
+    const EDGE = 8; // candidates must lie beyond the current element's edge in the travel direction
     let primary: number;
     let secondary: number;
     switch (dir) {
-      case "right": primary = b.left - a.right; secondary = Math.abs(by - ay); if (bx <= ax + 1) continue; break;
-      case "left": primary = a.left - b.right; secondary = Math.abs(by - ay); if (bx >= ax - 1) continue; break;
-      case "down": primary = b.top - a.bottom; secondary = Math.abs(bx - ax); if (by <= ay + 1) continue; break;
-      default: primary = a.top - b.bottom; secondary = Math.abs(bx - ax); if (by >= ay - 1) continue;
+      case "right": if (b.left < a.right - EDGE) continue; primary = b.left - a.right; secondary = Math.abs(by - ay); break;
+      case "left": if (b.right > a.left + EDGE) continue; primary = a.left - b.right; secondary = Math.abs(by - ay); break;
+      case "down": if (b.top < a.bottom - EDGE) continue; primary = b.top - a.bottom; secondary = Math.abs(bx - ax); break;
+      default: if (b.bottom > a.top + EDGE) continue; primary = a.top - b.bottom; secondary = Math.abs(bx - ax);
     }
-    const score = Math.max(0, primary) + secondary * 2.5 + (primary < -4 ? 400 : 0);
+    const score = Math.max(0, primary) + secondary * 2.5;
     if (score < bestScore) {
       bestScore = score;
       best = el;
