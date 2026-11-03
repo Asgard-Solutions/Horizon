@@ -85,6 +85,12 @@ function pickNext(from: HTMLElement, dir: Dir): HTMLElement | null {
       best = el;
     }
   }
+  // Entering a tab list from outside lands on its selected tab, so passing through never switches groups by accident.
+  const tabs = best?.closest("[data-nav-prefer-selected]");
+  if (best && tabs && !tabs.contains(from)) {
+    const sel = tabs.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (sel && visible(sel)) return sel;
+  }
   return best;
 }
 

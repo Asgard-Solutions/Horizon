@@ -33,6 +33,7 @@ function HomeStage({ data }: { data: HomeData }) {
   const [stageItem, setStageItem] = useState<StageItem>(
     () => group.items.find((i) => i.key === selectedKey) ?? group.items[0]);
   const [view, setView] = useState(loadView);
+  const [restoreKey, setRestoreKey] = useState(restored?.key ?? null);
   const [anchor, setAnchor] = useState<number | null>(null);
   const [width, setWidth] = useState(0);
   const timer = useRef<number>(0);
@@ -60,6 +61,7 @@ function HomeStage({ data }: { data: HomeData }) {
     setGroupId(id);
     setSelectedKey(g.items[0].key);
     setStageItem(g.items[0]);
+    setRestoreKey(null);
     rememberFocus(id, g.items[0].key);
   }, [groups]);
 
@@ -70,7 +72,7 @@ function HomeStage({ data }: { data: HomeData }) {
       <StageHero item={stageItem} autofocus={!restored} />
       <HorizonLine anchor={view === "strip" ? anchor : null} width={width} />
       <LivingFilmstrip groups={groups} group={group} onGroup={changeGroup} selectedKey={selectedKey} onSelect={select}
-        view={view} onView={changeView} restoreKey={restored?.key ?? null} onAnchor={setAnchor} />
+        view={view} onView={changeView} restoreKey={restoreKey} onAnchor={setAnchor} />
       <LibraryStatus data={data} />
     </div>
   );

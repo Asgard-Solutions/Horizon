@@ -21,7 +21,8 @@ export function StageHero({ item, autofocus }: { item: StageItem; autofocus: boo
         )}
       </div>
       <div className="stage-scrim" aria-hidden="true" />
-      <div className="stage-copy" key={`copy-${item.key}`}>
+      <div className="stage-copy">
+        <div className="stage-text" key={`copy-${item.key}`}>
         <span className="stage-eyebrow" data-testid="stage-eyebrow">{item.eyebrow}</span>
         <h1 className="stage-title" data-testid="stage-title">{item.title}</h1>
         {item.subtitle && <p className="stage-subtitle" data-testid="stage-subtitle">{item.subtitle}</p>}
@@ -33,6 +34,7 @@ export function StageHero({ item, autofocus }: { item: StageItem; autofocus: boo
           <div className="stage-progress" role="progressbar" aria-valuenow={Math.round(ratio * 100)} aria-valuemin={0} aria-valuemax={100}
             aria-label="Watched" data-testid="stage-progress"><span style={{ width: `${ratio * 100}%` }} /></div>
         )}
+        </div>
         <div className="stage-actions">
           <button className="hbtn hbtn--primary" data-autofocus={autofocus || undefined} onClick={() => navigate(item.primary.to)}
             data-testid="stage-primary-action">

@@ -66,7 +66,10 @@ export default function Player() {
   const exit = useCallback(() => {
     persist();
     if (document.fullscreenElement) document.exitFullscreen().catch(() => undefined);
-    navigate(info?.context.back ?? "/", { replace: false });
+    // Return to wherever playback was started from (Home, details...); deep links fall back to the item's page.
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else navigate(info?.context.back ?? "/", { replace: true });
   }, [persist, navigate, info]);
   useBack(() => exit());
 

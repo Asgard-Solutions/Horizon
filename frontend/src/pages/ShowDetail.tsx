@@ -2,6 +2,7 @@ import { CheckCircle2, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, mediaUrl } from "../api";
+import { TitleArt } from "../components/TitleArt";
 import { ErrorState, Loading } from "../components/States";
 import { episodeCode, formatTime, progressRatio } from "../format";
 import { useAsync } from "../hooks";
@@ -45,7 +46,7 @@ export default function ShowDetail() {
         <div className="detail-poster">
           {season?.poster_url || data.poster_url
             ? <img src={mediaUrl(season?.poster_url || data.poster_url)} alt="" />
-            : <div className="art-fallback"><span>{data.title}</span></div>}
+            : <TitleArt image={null} title={data.title} kind="show" />}
         </div>
         <div className="detail-info">
           <h1 data-testid="show-title">{data.title}</h1>

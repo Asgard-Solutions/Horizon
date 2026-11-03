@@ -39,8 +39,8 @@ No dependency is GPL. No dependency calls a paid or online service. Nothing is d
 | react-router, react-router-dom | 7.18.5 | MIT | keep notice |
 | cookie, set-cookie-parser (react-router deps) | 1.1.1 / 2.7.3 | MIT | keep notice |
 | lucide-react (icons) | 1.66.0 | ISC | keep notice |
-| @fontsource-variable/lexend (Lexend font) | 5.3.0 | SIL OFL 1.1 | fonts may be bundled/redistributed; include OFL text; can't sell the font by itself; reserved font names |
-| @fontsource-variable/bricolage-grotesque | 5.3.0 | SIL OFL 1.1 | same as above |
+| @fontsource-variable/sora (Sora, Horizon display font) | 5.3.0 | SIL OFL 1.1 | fonts may be bundled/redistributed; include OFL text (`docs/licenses/OFL-sora.txt`); can't sell the font by itself; reserved font names |
+| @fontsource-variable/inter (Inter, Horizon body font) | 5.3.0 | SIL OFL 1.1 | same as above (`docs/licenses/OFL-inter.txt`) |
 
 ## Build / test only (not shipped)
 

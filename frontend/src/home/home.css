@@ -16,8 +16,8 @@
     linear-gradient(90deg, rgba(10, 14, 21, 0.98) 0%, rgba(10, 14, 21, 0.90) 30%, rgba(10, 14, 21, 0.44) 68%, rgba(10, 14, 21, 0.20) 100%),
     linear-gradient(0deg, var(--h-color-bg-canvas) 0%, rgba(10, 14, 21, 0) 38%),
     linear-gradient(180deg, rgba(10, 14, 21, 0.85) 0%, rgba(10, 14, 21, 0) 22%); }
-.stage-copy { width: min(46%, 860px); min-width: min(560px, 100%); padding: 110px var(--safe-x) 28px; display: flex; flex-direction: column; gap: 14px;
-  animation: h-rise var(--h-duration-stage) var(--h-cubicBezier-settle) both; }
+.stage-copy { width: min(46%, 860px); min-width: min(560px, 100%); padding: 110px var(--safe-x) 28px; display: flex; flex-direction: column; gap: 14px; }
+.stage-text { display: flex; flex-direction: column; gap: 14px; animation: h-rise var(--h-duration-stage) var(--h-cubicBezier-settle) both; }
 .stage-eyebrow { color: var(--amber); font-weight: 600; font-size: var(--fs-meta); letter-spacing: 0.04em; }
 .stage-title { margin: 0; font-family: var(--display); font-weight: 600; font-size: var(--fs-hero); line-height: var(--h-lineHeight-tight);
   letter-spacing: -0.02em; text-wrap: balance; overflow-wrap: anywhere;
@@ -79,7 +79,6 @@ body[data-input="keys"] .film:focus .film-art, body[data-input="pad"] .film:focu
 
 .filmstrip--grid .filmstrip-track { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--poster-w), 1fr)); overflow: visible;
   gap: 32px clamp(16px, 1.4vw, 28px); perspective: none; }
-.filmstrip--grid .film-slot { content-visibility: auto; contain-intrinsic-size: auto 340px; }
 .filmstrip--grid .film--selected .film-art { border-color: var(--h-color-border-strong); }
 
 /* ---------- Status & hints ---------- */
@@ -115,10 +114,13 @@ kbd { font-family: var(--font); font-size: 0.85em; padding: 1px 8px; border-radi
   .stage-scrim { background: linear-gradient(0deg, var(--h-color-bg-canvas) 5%, rgba(10, 14, 21, 0.72) 60%, rgba(10, 14, 21, 0.55) 100%); }
 }
 @media (max-height: 799px) {
-  .stage { min-height: clamp(320px, 50vh, 420px); }
-  .stage-copy { padding-top: 96px; gap: 10px; }
+  .stage { min-height: clamp(300px, 46vh, 380px); }
+  .stage-copy, .stage-text { gap: 8px; }
+  .stage-copy { padding-top: 84px; padding-bottom: 16px; }
+  .stage-actions { margin-top: 4px; }
+  .stage-actions .hbtn { min-height: 56px; }
   .stage-plot { -webkit-line-clamp: 2; }
-  .filmstrip { --poster-w: clamp(116px, 9vw, 150px); }
+  .filmstrip { --poster-w: clamp(110px, 8.5vw, 136px); }
   .filmstrip-track { padding-top: 40px; padding-bottom: 12px; }
   .libstatus { padding-top: 8px; }
 }

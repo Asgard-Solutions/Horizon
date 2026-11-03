@@ -57,7 +57,10 @@ export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect,
       const i = groups.findIndex((g) => g.id === group.id) + (e.key === "PageDown" ? 1 : -1);
       if (i < 0 || i >= groups.length) return;
       e.preventDefault();
+      const inside = !!track.current?.contains(document.activeElement);
       onGroup(groups[i].id);
+      // Keep a controller user's place: if focus was in the strip, move it to the new group's first card.
+      if (inside) window.setTimeout(() => track.current?.querySelector<HTMLElement>(".film")?.focus({ preventScroll: true }), 0);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -66,7 +69,7 @@ export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect,
   return (
     <section className={`filmstrip filmstrip--${view}`} aria-label="Browse your library" data-testid="living-filmstrip">
       <div className="filmstrip-head">
-        <div className="filmstrip-groups" role="tablist" aria-label="Groups">
+        <div className="filmstrip-groups" role="tablist" aria-label="Groups" data-nav-prefer-selected>
           {groups.map((g) => (
             <button key={g.id} role="tab" aria-selected={g.id === group.id} className={g.id === group.id ? "gtab gtab--active" : "gtab"}
               onClick={() => onGroup(g.id)} onFocus={() => g.id !== group.id && onGroup(g.id)}

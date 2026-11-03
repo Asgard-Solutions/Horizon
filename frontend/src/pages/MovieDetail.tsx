@@ -1,6 +1,7 @@
 import { Play, RotateCcw } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, mediaUrl } from "../api";
+import { TitleArt } from "../components/TitleArt";
 import { CompatBadge } from "../components/CompatBadge";
 import { ErrorState, Loading } from "../components/States";
 import { formatBytes, formatTime } from "../format";
@@ -27,7 +28,7 @@ export default function MovieDetail() {
       {movie.fanart_url && <div className="detail-backdrop" style={{ backgroundImage: `url(${mediaUrl(movie.fanart_url)})` }} />}
       <div className="detail-body">
         <div className="detail-poster">
-          {movie.poster_url ? <img src={mediaUrl(movie.poster_url)} alt="" /> : <div className="art-fallback"><span>{movie.title}</span></div>}
+          {movie.poster_url ? <img src={mediaUrl(movie.poster_url)} alt="" /> : <TitleArt image={null} title={movie.title} kind="movie" />}
         </div>
         <div className="detail-info">
           <h1 data-testid="movie-title">{movie.title}</h1>
