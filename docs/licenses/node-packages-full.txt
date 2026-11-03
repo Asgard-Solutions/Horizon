@@ -1,0 +1,114 @@
+yarn licenses v1.22.22
+├─ Apache-2.0
+│  ├─ detect-libc@2.1.2
+│  │  ├─ URL: git://github.com/lovell/detect-libc.git
+│  │  └─ VendorName: Lovell Fuller
+│  └─ typescript@5.9.3
+│     ├─ URL: https://github.com/microsoft/TypeScript.git
+│     ├─ VendorName: Microsoft Corp.
+│     └─ VendorUrl: https://www.typescriptlang.org/
+├─ BSD-3-Clause
+│  └─ source-map-js@1.2.2
+│     ├─ URL: https://github.com/7rulnik/source-map-js.git
+│     ├─ VendorName: Valentin 7rulnik Semirulnik
+│     └─ VendorUrl: https://github.com/7rulnik/source-map-js
+├─ ISC
+│  ├─ lucide-react@1.66.0
+│  │  ├─ URL: https://github.com/lucide-icons/lucide.git
+│  │  ├─ VendorName: Eric Fennis
+│  │  └─ VendorUrl: https://lucide.dev/
+│  └─ picocolors@1.1.1
+│     ├─ URL: https://github.com/alexeyraspopov/picocolors.git
+│     └─ VendorName: Alexey Raspopov
+├─ MIT
+│  ├─ @oxc-project/types@0.156.0
+│  │  ├─ URL: git+https://github.com/oxc-project/oxc.git
+│  │  ├─ VendorName: Boshen and oxc contributors
+│  │  └─ VendorUrl: https://oxc.rs/
+│  ├─ @rolldown/binding-linux-arm64-gnu@1.2.16
+│  │  ├─ URL: git+https://github.com/rolldown/rolldown.git
+│  │  └─ VendorUrl: https://rolldown.rs/
+│  ├─ @rolldown/binding-linux-arm64-musl@1.2.16
+│  │  ├─ URL: git+https://github.com/rolldown/rolldown.git
+│  │  └─ VendorUrl: https://rolldown.rs/
+│  ├─ @rolldown/pluginutils@1.0.1
+│  │  ├─ URL: git+https://github.com/rolldown/plugins.git
+│  │  └─ VendorUrl: https://github.com/rolldown/plugins/tree/main/packages/pluginutils#readme
+│  ├─ @types/react-dom@19.3.0
+│  │  ├─ URL: https://github.com/DefinitelyTyped/DefinitelyTyped.git
+│  │  └─ VendorUrl: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom
+│  ├─ @types/react@19.3.0
+│  │  ├─ URL: https://github.com/DefinitelyTyped/DefinitelyTyped.git
+│  │  └─ VendorUrl: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react
+│  ├─ @vitejs/plugin-react@6.2.1
+│  │  ├─ URL: git+https://github.com/vitejs/vite-plugin-react.git
+│  │  ├─ VendorName: Evan You
+│  │  └─ VendorUrl: https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#readme
+│  ├─ cookie@1.1.1
+│  │  ├─ URL: https://github.com/jshttp/cookie.git
+│  │  └─ VendorName: Roman Shtylman
+│  ├─ csstype@3.2.3
+│  │  ├─ URL: https://github.com/frenic/csstype
+│  │  └─ VendorName: Fredrik Nicol
+│  ├─ fdir@6.5.0
+│  │  ├─ URL: git+https://github.com/thecodrr/fdir.git
+│  │  ├─ VendorName: thecodrr
+│  │  └─ VendorUrl: https://github.com/thecodrr/fdir#readme
+│  ├─ nanoid@3.3.20
+│  │  ├─ URL: https://github.com/ai/nanoid.git
+│  │  └─ VendorName: Andrey Sitnik
+│  ├─ picomatch@4.0.7
+│  │  ├─ URL: https://github.com/micromatch/picomatch.git
+│  │  ├─ VendorName: Jon Schlinkert
+│  │  └─ VendorUrl: https://github.com/micromatch/picomatch
+│  ├─ postcss@8.5.32
+│  │  ├─ URL: https://github.com/postcss/postcss.git
+│  │  ├─ VendorName: Andrey Sitnik
+│  │  └─ VendorUrl: https://postcss.org/
+│  ├─ react-dom@19.3.1
+│  │  ├─ URL: https://github.com/react/react.git
+│  │  └─ VendorUrl: https://react.dev/
+│  ├─ react-router-dom@7.18.5
+│  │  ├─ URL: https://github.com/remix-run/react-router
+│  │  └─ VendorName: Remix Software
+│  ├─ react-router@7.18.5
+│  │  ├─ URL: https://github.com/remix-run/react-router
+│  │  └─ VendorName: Remix Software
+│  ├─ react@19.3.1
+│  │  ├─ URL: https://github.com/react/react.git
+│  │  └─ VendorUrl: https://react.dev/
+│  ├─ rolldown@1.2.16
+│  │  ├─ URL: git+https://github.com/rolldown/rolldown.git
+│  │  └─ VendorUrl: https://rolldown.rs/
+│  ├─ scheduler@0.28.0
+│  │  ├─ URL: https://github.com/react/react.git
+│  │  └─ VendorUrl: https://react.dev/
+│  ├─ set-cookie-parser@2.7.3
+│  │  ├─ URL: https://github.com/nfriedly/set-cookie-parser.git
+│  │  ├─ VendorName: Nathan Friedly
+│  │  └─ VendorUrl: https://github.com/nfriedly/set-cookie-parser
+│  ├─ tinyglobby@0.2.17
+│  │  ├─ URL: git+https://github.com/SuperchupuDev/tinyglobby.git
+│  │  ├─ VendorName: Superchupu
+│  │  └─ VendorUrl: https://superchupu.dev/tinyglobby
+│  └─ vite@8.3.5
+│     ├─ URL: git+https://github.com/vitejs/vite.git
+│     ├─ VendorName: Evan You
+│     └─ VendorUrl: https://vite.dev/
+├─ MPL-2.0
+│  ├─ lightningcss-linux-arm64-gnu@1.33.0
+│  │  └─ URL: https://github.com/parcel-bundler/lightningcss.git
+│  ├─ lightningcss-linux-arm64-musl@1.33.0
+│  │  └─ URL: https://github.com/parcel-bundler/lightningcss.git
+│  └─ lightningcss@1.33.0
+│     └─ URL: https://github.com/parcel-bundler/lightningcss.git
+└─ OFL-1.1
+   ├─ @fontsource-variable/bricolage-grotesque@5.3.0
+   │  ├─ URL: git+https://github.com/fontsource/font-files.git
+   │  ├─ VendorName: Google Inc.
+   │  └─ VendorUrl: https://fontsource.org/fonts/bricolage-grotesque
+   └─ @fontsource-variable/lexend@5.3.0
+      ├─ URL: git+https://github.com/fontsource/font-files.git
+      ├─ VendorName: Google Inc.
+      └─ VendorUrl: https://fontsource.org/fonts/lexend
+Done in 0.09s.
