@@ -36,8 +36,8 @@ Scope *runtime* = compiled into `frontend/dist` (shipped). Everything else is a 
 
 | Package | Version | License | Scope | Verdict |
 |---|---|---|---|---|
-| @fontsource-variable/bricolage-grotesque | 5.3.0 | OFL-1.1 | runtime | OK |
-| @fontsource-variable/lexend | 5.3.0 | OFL-1.1 | runtime | OK |
+| @fontsource-variable/inter | 5.3.0 | OFL-1.1 | runtime | OK |
+| @fontsource-variable/sora | 5.3.0 | OFL-1.1 | runtime | OK |
 | @oxc-project/types | 0.156.0 | MIT | build | OK |
 | @rolldown/binding-linux-arm64-gnu | 1.2.16 | MIT | build | OK |
 | @rolldown/binding-linux-arm64-musl | 1.2.16 | MIT | build | OK |

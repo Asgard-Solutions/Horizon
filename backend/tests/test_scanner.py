@@ -135,3 +135,21 @@ def test_progress_survives_library_remove_and_readd(host, library, media_root):
     host.post("/api/libraries", json={"path": str(media_root)})
     again = next(m for m in host.get("/api/movies").json() if m["title"] == "Sample Movie")
     assert again["progress"]["position"] == 33
+
+
+def test_home_reports_source_status_without_paths(host, lan_client_factory, library, media_root, tmp_path):
+    home = host.get("/api/home").json()
+    assert home["sources"]["total"] == 1 and home["sources"]["unreachable"] == 0 and home["sources"]["last_scan_at"]
+    media_root.rename(tmp_path / "offline")
+    home = host.get("/api/home").json()
+    assert home["sources"]["unreachable"] == 1
+    assert home["counts"]["movies"] == 3  # catalog kept while the source is unavailable
+    assert str(media_root) not in str(home["sources"])
+
+
+def test_home_continue_episode_includes_show_art(host, library):
+    show = next(s for s in host.get("/api/shows").json() if s["title"] == "Sample Show")
+    ep = host.get(f"/api/shows/{show['id']}").json()["seasons"][0]["episodes"][0]
+    host.put(f"/api/progress/{ep['file_id']}", json={"position": 30, "duration": 100})
+    item = host.get("/api/home").json()["continue_watching"][0]
+    assert item["type"] == "episode" and item["show_poster_url"] == show["poster_url"]

@@ -1,79 +1,77 @@
-import { FolderPlus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api";
-import { useAuth } from "../App";
-import { PosterCard, Row } from "../components/PosterCard";
-import { Empty, ErrorState, Loading, PageHeader } from "../components/States";
-import { episodeCode } from "../format";
+import { ErrorState, Loading } from "../components/States";
+import { buildGroups, loadView, recallFocus, rememberFocus, saveView, type FilmGroup, type StageItem } from "../home/adapter";
+import { FirstRun } from "../home/FirstRun";
+import { HorizonLine } from "../home/HorizonLine";
+import { LibraryStatus } from "../home/LibraryStatus";
+import { LivingFilmstrip } from "../home/LivingFilmstrip";
+import { StageHero } from "../home/StageHero";
 import { useAsync } from "../hooks";
 import type { HomeData } from "../types";
 
+const STAGE_DEBOUNCE_MS = 120;
+
 export default function Home() {
   const { data, error, reload } = useAsync(() => api<HomeData>("/api/home"), []);
-  const { auth } = useAuth();
-  const navigate = useNavigate();
   if (error) return <ErrorState message={error} onRetry={reload} />;
-  if (!data) return <Loading />;
-  const { counts } = data;
-  const empty = counts.movies + counts.episodes === 0;
+  if (!data) return <Loading label="Opening your library" />;
+  if (data.counts.movies + data.counts.episodes === 0) return <FirstRun hasFolders={data.counts.libraries > 0} />;
+  return <HomeStage data={data} />;
+}
+
+function HomeStage({ data }: { data: HomeData }) {
+  const groups = useMemo(() => buildGroups(data), [data]);
+  const restored = useMemo(() => {
+    const r = recallFocus();
+    const g = r && groups.find((x) => x.id === r.group);
+    return g && g.items.some((i) => i.key === r.key) ? r : null;
+  }, [groups]);
+  const [groupId, setGroupId] = useState<FilmGroup["id"]>((restored?.group as FilmGroup["id"]) ?? groups[0].id);
+  const group = groups.find((g) => g.id === groupId) ?? groups[0];
+  const [selectedKey, setSelectedKey] = useState(restored?.key ?? group.items[0].key);
+  const [stageItem, setStageItem] = useState<StageItem>(
+    () => group.items.find((i) => i.key === selectedKey) ?? group.items[0]);
+  const [view, setView] = useState(loadView);
+  const [anchor, setAnchor] = useState<number | null>(null);
+  const [width, setWidth] = useState(0);
+  const timer = useRef<number>(0);
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const select = useCallback((item: StageItem) => {
+    setSelectedKey(item.key);
+    rememberFocus(groupId, item.key);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setStageItem(item), STAGE_DEBOUNCE_MS);
+  }, [groupId]);
+
+  const changeGroup = useCallback((id: FilmGroup["id"]) => {
+    const g = groups.find((x) => x.id === id);
+    if (!g) return;
+    setGroupId(id);
+    setSelectedKey(g.items[0].key);
+    setStageItem(g.items[0]);
+    rememberFocus(id, g.items[0].key);
+  }, [groups]);
+
+  const changeView = (v: "strip" | "grid") => { setView(v); saveView(v); };
 
   return (
-    <div className="page" data-testid="home-page">
-      <PageHeader
-        title="Home"
-        meta={<span data-testid="home-counts">{counts.movies} movies · {counts.shows} shows · {counts.episodes} episodes</span>}
-      />
-      {empty && (
-        <Empty title={counts.libraries ? "No videos found in your folders yet" : "Your library is empty"}>
-          <p>Add a folder that contains movies or TV episodes. Files are only read, never changed.</p>
-          {auth.role === "host" && (
-            <button className="btn btn--primary" data-autofocus onClick={() => navigate("/settings")} data-testid="home-add-folder-button">
-              <FolderPlus size={22} /> Add a media folder
-            </button>
-          )}
-        </Empty>
-      )}
-      {data.continue_watching.length > 0 && (
-        <Row title="Continue watching" testId="row-continue-watching">
-          {data.continue_watching.map((item) =>
-            item.type === "movie" ? (
-              <PosterCard key={`m${item.file_id}`} wide title={item.title} subtitle={item.year ? String(item.year) : null}
-                image={item.fanart_url ?? item.poster_url} to={`/play/${item.file_id}`} progress={item.progress}
-                testId={`continue-card-${item.file_id}`} />
-            ) : (
-              <PosterCard key={`e${item.file_id}`} wide title={item.show_title}
-                subtitle={`${episodeCode(item.season_number, item.episode_number)}${item.title ? ` · ${item.title}` : ""}`}
-                image={item.thumb_url} to={`/play/${item.file_id}`} progress={item.progress}
-                testId={`continue-card-${item.file_id}`} />
-            )
-          )}
-        </Row>
-      )}
-      {data.recent_movies.length > 0 && (
-        <Row title="Recently added movies" testId="row-recent-movies">
-          {data.recent_movies.map((m) => (
-            <PosterCard key={m.id} title={m.title} subtitle={m.year ? String(m.year) : null} image={m.poster_url}
-              to={`/movies/${m.id}`} progress={m.progress} testId={`home-movie-card-${m.id}`} />
-          ))}
-        </Row>
-      )}
-      {data.shows.length > 0 && (
-        <Row title="TV shows" testId="row-shows">
-          {data.shows.map((s) => (
-            <PosterCard key={s.id} kind="show" title={s.title} subtitle={`${s.episode_count} episode${s.episode_count === 1 ? "" : "s"}`}
-              image={s.poster_url} to={`/shows/${s.id}`} testId={`home-show-card-${s.id}`} />
-          ))}
-        </Row>
-      )}
-      {data.recent_episodes.length > 0 && (
-        <Row title="Recently added episodes" testId="row-recent-episodes">
-          {data.recent_episodes.map((e) => (
-            <PosterCard key={e.id} wide title={e.show_title}
-              subtitle={`${episodeCode(e.season_number, e.episode_number, e.episode_end)}${e.title ? ` · ${e.title}` : ""}`}
-              image={e.thumb_url} to={`/shows/${e.show_id}`} progress={e.progress} testId={`home-episode-card-${e.id}`} />
-          ))}
-        </Row>
-      )}
+    <div className="home" ref={root} data-testid="home-page">
+      <StageHero item={stageItem} autofocus={!restored} />
+      <HorizonLine anchor={view === "strip" ? anchor : null} width={width} />
+      <LivingFilmstrip groups={groups} group={group} onGroup={changeGroup} selectedKey={selectedKey} onSelect={select}
+        view={view} onView={changeView} restoreKey={restored?.key ?? null} onAnchor={setAnchor} />
+      <LibraryStatus data={data} />
     </div>
   );
 }

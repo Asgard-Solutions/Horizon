@@ -1,0 +1,405 @@
+{
+  "format": "DTCG-inspired design token JSON with Horizon runtime extensions",
+  "name": "Horizon",
+  "version": "1.0.0",
+  "description": "Proposed visual tokens for Horizon - The Living Cinema. Values are design targets, not measured runtime behavior.",
+  "color": {
+    "bg": {
+      "canvas": {
+        "$type": "color",
+        "$value": "#0A0E15"
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "#101925"
+      },
+      "raised": {
+        "$type": "color",
+        "$value": "#172737"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#1C2B39"
+      }
+    },
+    "border": {
+      "default": {
+        "$type": "color",
+        "$value": "#344656"
+      },
+      "strong": {
+        "$type": "color",
+        "$value": "#506477"
+      }
+    },
+    "text": {
+      "primary": {
+        "$type": "color",
+        "$value": "#F4F6F8"
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "#BFCDD8"
+      },
+      "tertiary": {
+        "$type": "color",
+        "$value": "#91A4B5"
+      }
+    },
+    "accent": {
+      "aurora": {
+        "$type": "color",
+        "$value": "#87E8D0"
+      },
+      "strong": {
+        "$type": "color",
+        "$value": "#55D9BE"
+      },
+      "ink": {
+        "$type": "color",
+        "$value": "#061A18"
+      },
+      "amber": {
+        "$type": "color",
+        "$value": "#E7B778"
+      }
+    },
+    "status": {
+      "success": {
+        "$type": "color",
+        "$value": "#88D9AF"
+      },
+      "error": {
+        "$type": "color",
+        "$value": "#FF898F"
+      }
+    }
+  },
+  "fontFamily": {
+    "display": {
+      "$type": "fontFamily",
+      "$value": [
+        "Sora",
+        "Inter",
+        "Segoe UI",
+        "sans-serif"
+      ]
+    },
+    "body": {
+      "$type": "fontFamily",
+      "$value": [
+        "Inter",
+        "Segoe UI",
+        "Arial",
+        "sans-serif"
+      ]
+    }
+  },
+  "fontWeight": {
+    "regular": {
+      "$type": "fontWeight",
+      "$value": 400
+    },
+    "medium": {
+      "$type": "fontWeight",
+      "$value": 500
+    },
+    "semibold": {
+      "$type": "fontWeight",
+      "$value": 600
+    }
+  },
+  "fontSize": {
+    "tv": {
+      "hero": {
+        "$type": "dimension",
+        "$value": "72px"
+      },
+      "page": {
+        "$type": "dimension",
+        "$value": "40px"
+      },
+      "section": {
+        "$type": "dimension",
+        "$value": "28px"
+      },
+      "card": {
+        "$type": "dimension",
+        "$value": "24px"
+      },
+      "body": {
+        "$type": "dimension",
+        "$value": "22px"
+      },
+      "action": {
+        "$type": "dimension",
+        "$value": "22px"
+      },
+      "meta": {
+        "$type": "dimension",
+        "$value": "19px"
+      },
+      "fine": {
+        "$type": "dimension",
+        "$value": "16px"
+      }
+    },
+    "desktop": {
+      "hero": {
+        "$type": "dimension",
+        "$value": "56px"
+      },
+      "page": {
+        "$type": "dimension",
+        "$value": "32px"
+      },
+      "section": {
+        "$type": "dimension",
+        "$value": "24px"
+      },
+      "card": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "body": {
+        "$type": "dimension",
+        "$value": "18px"
+      },
+      "action": {
+        "$type": "dimension",
+        "$value": "18px"
+      },
+      "meta": {
+        "$type": "dimension",
+        "$value": "15px"
+      },
+      "fine": {
+        "$type": "dimension",
+        "$value": "13px"
+      }
+    }
+  },
+  "lineHeight": {
+    "tight": {
+      "$type": "number",
+      "$value": 1.12
+    },
+    "heading": {
+      "$type": "number",
+      "$value": 1.2
+    },
+    "body": {
+      "$type": "number",
+      "$value": 1.5
+    }
+  },
+  "spacing": {
+    "1": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "3": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": "24px"
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": "32px"
+    },
+    "12": {
+      "$type": "dimension",
+      "$value": "48px"
+    },
+    "16": {
+      "$type": "dimension",
+      "$value": "64px"
+    },
+    "20": {
+      "$type": "dimension",
+      "$value": "80px"
+    },
+    "24": {
+      "$type": "dimension",
+      "$value": "96px"
+    }
+  },
+  "radius": {
+    "field": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "button": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "card": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "panel": {
+      "$type": "dimension",
+      "$value": "24px"
+    },
+    "pill": {
+      "$type": "dimension",
+      "$value": "999px"
+    }
+  },
+  "borderWidth": {
+    "normal": {
+      "$type": "dimension",
+      "$value": "1px"
+    },
+    "focus": {
+      "$type": "dimension",
+      "$value": "3px"
+    }
+  },
+  "duration": {
+    "focus": {
+      "$type": "duration",
+      "$value": "120ms"
+    },
+    "poster": {
+      "$type": "duration",
+      "$value": "200ms"
+    },
+    "filmstrip": {
+      "$type": "duration",
+      "$value": "240ms"
+    },
+    "stage": {
+      "$type": "duration",
+      "$value": "380ms"
+    },
+    "details": {
+      "$type": "duration",
+      "$value": "300ms"
+    },
+    "dialog": {
+      "$type": "duration",
+      "$value": "200ms"
+    },
+    "osd": {
+      "$type": "duration",
+      "$value": "180ms"
+    }
+  },
+  "cubicBezier": {
+    "settle": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.22,
+        1,
+        0.36,
+        1
+      ]
+    },
+    "focus": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.2,
+        0.8,
+        0.2,
+        1
+      ]
+    }
+  },
+  "layout": {
+    "gridColumns": 12,
+    "referenceViewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "tvSafeInsetPercent": 5,
+    "desktopMinInsetPx": 24,
+    "tvHeroHeightRangePx": [
+      380,
+      480
+    ],
+    "tvFilmstripHeightRangePx": [
+      260,
+      340
+    ],
+    "targetRatio": "16:9",
+    "breakpointsPx": {
+      "compact": 768,
+      "standard": 1100,
+      "wide": 1600
+    },
+    "shortWindowHeightPx": 800
+  },
+  "component": {
+    "poster": {
+      "ratio": "2:3",
+      "referenceWidthPx": 190,
+      "referenceHeightPx": 285,
+      "focusedScale": 1.12,
+      "maxPerspectiveDegrees": 8,
+      "tvGapRangePx": [
+        20,
+        28
+      ]
+    },
+    "button": {
+      "minTargetDesktopPx": 44,
+      "targetTVPx": 64,
+      "horizontalPaddingRangePx": [
+        24,
+        32
+      ],
+      "verticalPaddingRangePx": [
+        14,
+        20
+      ]
+    },
+    "focus": {
+      "outlinePx": 3,
+      "outlineColor": "{color.accent.aurora}",
+      "ringOffsetRangePx": [
+        2,
+        4
+      ],
+      "noContinuousPulse": true
+    },
+    "player": {
+      "osdIdleHideMs": 4000,
+      "keepVisibleWhenPaused": true,
+      "preserveExistingResumeSemantics": true
+    },
+    "horizonLine": {
+      "thicknessPx": 2,
+      "activeColor": "{color.accent.aurora}",
+      "trailingColor": "{color.accent.amber}",
+      "visibleOnlyForFocusedItem": true,
+      "disableMotionWhenReduced": true
+    }
+  },
+  "behavior": {
+    "noAutoplayTrailers": true,
+    "noAutoRotatingHero": true,
+    "reducedMotionDisablesParallax": true,
+    "offlineFirst": true,
+    "realLibraryDataOnly": true,
+    "preserveMediaFileBytes": true,
+    "atlasOptionalUntilCoreReady": true
+  },
+  "caveats": [
+    "TV sizes are design targets in logical CSS pixels, not verified physical Xbox outputs.",
+    "Controller input bindings must be tested in the actual host runtime.",
+    "Token file follows Design Tokens Community Group style but contains additional application-specific metadata sections.",
+    "No Windows or Xbox testing has been confirmed as of creation of this document."
+  ]
+}

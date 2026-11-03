@@ -4,7 +4,7 @@ import { api } from "./api";
 import { useAsync } from "./hooks";
 import { focusFirst, installNavigation, setFallbackBack } from "./nav/spatial";
 import type { AuthStatus } from "./types";
-import { Sidebar } from "./components/Sidebar";
+import { PrimaryNav } from "./components/PrimaryNav";
 import { Loading } from "./components/States";
 import Home from "./pages/Home";
 import Movies from "./pages/Movies";
@@ -46,7 +46,7 @@ function Shell() {
   const inPlayer = pathname.startsWith("/play/");
   return (
     <div className={inPlayer ? "shell shell--player" : "shell"}>
-      {!inPlayer && <Sidebar />}
+      {!inPlayer && <PrimaryNav />}
       <main className="main" data-testid="main-content">
         <Routes>
           <Route path="/" element={<Home />} />

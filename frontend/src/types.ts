@@ -58,7 +58,9 @@ export interface ShowDetail extends ShowSummary {
   seasons: Season[];
 }
 
-export type ContinueItem = (Movie & { type: "movie" }) | (Episode & { type: "episode" });
+export type ContinueItem =
+  | (Movie & { type: "movie" })
+  | (Episode & { type: "episode"; show_poster_url: string | null; show_fanart_url: string | null });
 
 export interface HomeData {
   continue_watching: ContinueItem[];
@@ -66,6 +68,7 @@ export interface HomeData {
   recent_episodes: Episode[];
   shows: ShowSummary[];
   counts: { movies: number; shows: number; episodes: number; libraries: number };
+  sources: { total: number; unreachable: number; last_scan_at: string | null };
 }
 
 export interface Compatibility {

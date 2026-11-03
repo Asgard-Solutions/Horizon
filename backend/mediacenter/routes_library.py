@@ -107,10 +107,17 @@ def home(request: Request):
         else:
             row = conn.execute(EPISODE_SQL + " WHERE e.file_id = ?", (p["file_id"],)).fetchone()
             if row:
-                cont.append({"type": "episode", **_episode(row)})
-    movies = [_movie(r) for r in conn.execute(MOVIE_SQL + " ORDER BY f.added_at DESC, m.sort_title LIMIT 16")]
-    episodes = [_episode(r) for r in conn.execute(EPISODE_SQL + " ORDER BY f.added_at DESC LIMIT 16")]
-    shows = [_show_summary(conn, r) for r in conn.execute("SELECT * FROM shows ORDER BY sort_title LIMIT 16")]
+                show = conn.execute("SELECT id, poster_path, fanart_path FROM shows WHERE id = ?", (row["show_id"],)).fetchone()
+                cont.append({"type": "episode", **_episode(row),
+                             "show_poster_url": _art("show-poster", show["id"], show["poster_path"]),
+                             "show_fanart_url": _art("show-fanart", show["id"], show["fanart_path"])})
+    movies = [_movie(r) for r in conn.execute(MOVIE_SQL + f" ORDER BY f.added_at DESC, m.sort_title LIMIT {HOME_LIMIT}")]
+    episodes = [_episode(r) for r in conn.execute(EPISODE_SQL + f" ORDER BY f.added_at DESC LIMIT {HOME_LIMIT}")]
+    shows = [_show_summary(conn, r) for r in conn.execute(f"SELECT * FROM shows ORDER BY sort_title LIMIT {HOME_LIMIT}")]
+    libs = conn.execute("SELECT path, last_scan_at FROM libraries").fetchall()
+    # Viewer-safe source status: counts only, never paths (devices must not learn host paths).
+    sources = {"total": len(libs), "unreachable": sum(1 for lib in libs if not os.path.isdir(lib["path"])),
+               "last_scan_at": max((lib["last_scan_at"] for lib in libs if lib["last_scan_at"]), default=None)}
     counts = {
         "movies": conn.execute("SELECT COUNT(*) FROM movies").fetchone()[0],
         "shows": conn.execute("SELECT COUNT(*) FROM shows").fetchone()[0],
@@ -118,7 +125,10 @@ def home(request: Request):
         "libraries": conn.execute("SELECT COUNT(*) FROM libraries").fetchone()[0],
     }
     return {"continue_watching": cont, "recent_movies": movies, "recent_episodes": episodes,
-            "shows": shows, "counts": counts}
+            "shows": shows, "counts": counts, "sources": sources}
+
+
+HOME_LIMIT = 24
 
 
 @router.get("/movies")

@@ -57,13 +57,15 @@ export function focusFirst(container?: Element | null) {
 }
 
 function pickNext(from: HTMLElement, dir: Dir): HTMLElement | null {
+  // Inside a horizontal rail (data-nav-row), Left/Right stay in the rail and stop at its edges (no wrap, no jump out).
+  const row = dir === "left" || dir === "right" ? from.closest("[data-nav-row]") : null;
   const a = from.getBoundingClientRect();
   const ax = a.left + a.width / 2;
   const ay = a.top + a.height / 2;
   let best: HTMLElement | null = null;
   let bestScore = Infinity;
   for (const el of focusables()) {
-    if (el === from) continue;
+    if (el === from || (row && !row.contains(el))) continue;
     const b = el.getBoundingClientRect();
     const bx = b.left + b.width / 2;
     const by = b.top + b.height / 2;
@@ -76,7 +78,8 @@ function pickNext(from: HTMLElement, dir: Dir): HTMLElement | null {
       case "down": if (b.top < a.bottom - EDGE) continue; primary = b.top - a.bottom; secondary = Math.abs(bx - ax); break;
       default: if (b.bottom > a.top + EDGE) continue; primary = a.top - b.bottom; secondary = Math.abs(bx - ax);
     }
-    const score = Math.max(0, primary) + secondary * 2.5;
+    // Rows: strongly prefer the same line. Columns: allow reasonable sideways offset (e.g. tabs -> buttons above).
+    const score = Math.max(0, primary) + secondary * (dir === "left" || dir === "right" ? 2.5 : 1.2);
     if (score < bestScore) {
       bestScore = score;
       best = el;
@@ -94,9 +97,18 @@ export function move(dir: Dir): boolean {
     return true;
   }
   const next = pickNext(active, dir);
+  if (!next && active.closest("[data-nav-row]") && (dir === "left" || dir === "right")) {
+    active.classList.remove("nav-edge");
+    void active.offsetWidth;
+    active.classList.add("nav-edge");
+    return true;
+  }
   if (next) {
     next.focus({ preventScroll: true });
-    next.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    // Containers marked data-nav-noscroll (the Filmstrip) position their own content.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (next.closest("[data-nav-noscroll]")) next.closest("section, main")?.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    else next.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduce ? "auto" : "smooth" });
     return true;
   }
   return false;
@@ -173,6 +185,8 @@ function pollGamepads() {
       else dispatchKey("Enter");
     }, false);
     pressed(`${pad.index}-b`, !!pad.buttons[1]?.pressed, now, () => dispatchKey("Escape"), false);
+    pressed(`${pad.index}-lb`, !!pad.buttons[4]?.pressed, now, () => dispatchKey("PageUp"), false);
+    pressed(`${pad.index}-rb`, !!pad.buttons[5]?.pressed, now, () => dispatchKey("PageDown"), false);
     pressed(`${pad.index}-play`, !!pad.buttons[9]?.pressed, now, () => dispatchKey("MediaPlayPause"), false);
   }
   rafId = requestAnimationFrame(pollGamepads);

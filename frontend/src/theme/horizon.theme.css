@@ -1,0 +1,81 @@
+/* Horizon: The Living Cinema - token-derived starter variables. */
+:root {
+  --h-color-bg-canvas: #0A0E15;
+  --h-color-bg-surface: #101925;
+  --h-color-bg-raised: #172737;
+  --h-color-bg-active: #1C2B39;
+  --h-color-border-default: #344656;
+  --h-color-border-strong: #506477;
+  --h-color-text-primary: #F4F6F8;
+  --h-color-text-secondary: #BFCDD8;
+  --h-color-text-tertiary: #91A4B5;
+  --h-color-accent-aurora: #87E8D0;
+  --h-color-accent-strong: #55D9BE;
+  --h-color-accent-ink: #061A18;
+  --h-color-accent-amber: #E7B778;
+  --h-color-status-success: #88D9AF;
+  --h-color-status-error: #FF898F;
+  --h-fontFamily-display: "Sora", "Inter", "Segoe UI", sans-serif;
+  --h-fontFamily-body: "Inter", "Segoe UI", Arial, sans-serif;
+  --h-fontWeight-regular: 400;
+  --h-fontWeight-medium: 500;
+  --h-fontWeight-semibold: 600;
+  --h-fontSize-tv-hero: 72px;
+  --h-fontSize-tv-page: 40px;
+  --h-fontSize-tv-section: 28px;
+  --h-fontSize-tv-card: 24px;
+  --h-fontSize-tv-body: 22px;
+  --h-fontSize-tv-action: 22px;
+  --h-fontSize-tv-meta: 19px;
+  --h-fontSize-tv-fine: 16px;
+  --h-fontSize-desktop-hero: 56px;
+  --h-fontSize-desktop-page: 32px;
+  --h-fontSize-desktop-section: 24px;
+  --h-fontSize-desktop-card: 20px;
+  --h-fontSize-desktop-body: 18px;
+  --h-fontSize-desktop-action: 18px;
+  --h-fontSize-desktop-meta: 15px;
+  --h-fontSize-desktop-fine: 13px;
+  --h-lineHeight-tight: 1.12;
+  --h-lineHeight-heading: 1.2;
+  --h-lineHeight-body: 1.5;
+  --h-spacing-1: 4px;
+  --h-spacing-2: 8px;
+  --h-spacing-3: 12px;
+  --h-spacing-4: 16px;
+  --h-spacing-6: 24px;
+  --h-spacing-8: 32px;
+  --h-spacing-12: 48px;
+  --h-spacing-16: 64px;
+  --h-spacing-20: 80px;
+  --h-spacing-24: 96px;
+  --h-radius-field: 8px;
+  --h-radius-button: 12px;
+  --h-radius-card: 16px;
+  --h-radius-panel: 24px;
+  --h-radius-pill: 999px;
+  --h-borderWidth-normal: 1px;
+  --h-borderWidth-focus: 3px;
+  --h-duration-focus: 120ms;
+  --h-duration-poster: 200ms;
+  --h-duration-filmstrip: 240ms;
+  --h-duration-stage: 380ms;
+  --h-duration-details: 300ms;
+  --h-duration-dialog: 200ms;
+  --h-duration-osd: 180ms;
+  --h-cubicBezier-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --h-cubicBezier-focus: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Honor motion preference even if additional animations are added. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --h-duration-focus: 0ms;
+    --h-duration-poster: 0ms;
+    --h-duration-filmstrip: 0ms;
+    --h-duration-stage: 0ms;
+    --h-duration-details: 0ms;
+    --h-duration-dialog: 0ms;
+    --h-duration-osd: 0ms;
+  }
+}
