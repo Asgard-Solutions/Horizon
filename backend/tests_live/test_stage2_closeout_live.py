@@ -8,8 +8,10 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL") or os.environ["MC_LIVE_URL"]).rstrip("/")
+BASE_URL = (os.environ.get("MC_LIVE_URL") or os.environ["REACT_APP_BACKEND_URL"]).rstrip("/")
 H = {"X-MC-Client": "web"}
+SAMPLE = os.environ.get("MC_LIVE_SAMPLE") or "/app/sample_media"
+DEMO = os.environ.get("MC_LIVE_DEMO") or "/app/test_media/horizon_demo"
 
 
 @pytest.fixture(scope="module")
@@ -38,10 +40,10 @@ def test_metadata_status_shape(s):
 # libraries: production vs test-only demo library
 def test_library_isolation(s):
     libs = {l["path"]: l for l in s.get(f"{BASE_URL}/api/libraries").json()}
-    assert "/app/sample_media" in libs and "/app/test_media/horizon_demo" in libs
-    assert libs["/app/test_media/horizon_demo"]["name"] == "Horizon demo (test only)"
-    assert libs["/app/test_media/horizon_demo"]["counts"] == {"movies": 0, "episodes": 5}
-    assert not any("Northern" in d for _, dirs, _ in os.walk("/app/sample_media") for d in dirs)
+    assert SAMPLE in libs and DEMO in libs
+    assert libs[DEMO]["name"] == "Horizon demo (test only)"
+    assert libs[DEMO]["counts"] == {"movies": 0, "episodes": 5}
+    assert not any("Northern" in d for _, dirs, _ in os.walk(SAMPLE) for d in dirs)
 
 
 # Northern Survey runtimes read in background (unplayed)
@@ -82,7 +84,7 @@ def test_scan_requires_client_header():
 def test_background_reader_new_library(s):
     root = f"/tmp/TEST_mc_{uuid.uuid4().hex[:6]}"
     os.makedirs(f"{root}/Movies")
-    shutil.copy("/app/sample_media/Movies/Sample Movie (2024).mp4", f"{root}/Movies/TEST Bgread Film (2001).mp4")
+    shutil.copy(f"{SAMPLE}/Movies/Sample Movie (2024).mp4", f"{root}/Movies/TEST Bgread Film (2001).mp4")
     lib_id = None
     try:
         t = time.time()

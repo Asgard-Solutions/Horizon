@@ -6,9 +6,11 @@ import uuid
 
 import requests
 
-BASE_URL = (os.environ.get("REACT_APP_BACKEND_URL") or os.environ["MC_LIVE_URL"]).rstrip("/")
+BASE_URL = (os.environ.get("MC_LIVE_URL") or os.environ["REACT_APP_BACKEND_URL"]).rstrip("/")
 H = {"X-MC-Client": "web"}
-SRC = "/app/test_media/horizon_demo/TV/Northern Survey (2022)/Season 01/Northern Survey - S01E01 - Arrival.mp4"
+SAMPLE = os.environ.get("MC_LIVE_SAMPLE") or "/app/sample_media"
+DEMO = os.environ.get("MC_LIVE_DEMO") or "/app/test_media/horizon_demo"
+SRC = f"{DEMO}/TV/Northern Survey (2022)/Season 01/Northern Survey - S01E01 - Arrival.mp4"
 N = 150
 GONE = [N - 4, N - 3, N - 2, N - 1, N]
 

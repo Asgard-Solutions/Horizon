@@ -29,6 +29,13 @@ export function pageRings<T>(items: T[]): T[][] {
 }
 
 // The inner ring starts at 9 o'clock so its few large nodes and labels sit clear of the genre ring.
+/** Sparse group levels (e.g. "More genres") use the roomier outer orbits first so every name stays readable. */
+export function groupRings<T>(items: T[]): { rings: T[][]; offset: number } {
+  if (items.length <= 16) return { rings: items.length ? [items] : [], offset: 2 };
+  if (items.length <= 28) return { rings: [items.slice(0, items.length - 16), items.slice(items.length - 16)], offset: 1 };
+  return { rings: pageRings(items), offset: 0 };
+}
+
 export const angle = (i: number, n: number, ring: number) => -90 + (360 / n) * i + (ring === 0 ? -90 : ring * 22.5);
 
 export function position(i: number, n: number, ring: number) {
@@ -41,15 +48,15 @@ const diff = (a: number, b: number) => Math.abs((((a - b) % 360) + 540) % 360 - 
 
 /** Deterministic orbit navigation: Left/Right step around the ring, Up/Down jump to the nearest angle on the
  *  inner/outer ring. Returns null when the move leaves the Atlas (Up from the innermost ring). */
-export function step(sizes: number[], ring: number, idx: number, key: string): [number, number] | null | "stay" {
+export function step(sizes: number[], ring: number, idx: number, key: string, off = 0): [number, number] | null | "stay" {
   const n = sizes[ring];
   if (key === "ArrowRight") return [ring, (idx + 1) % n];
   if (key === "ArrowLeft") return [ring, (idx - 1 + n) % n];
   const target = key === "ArrowUp" ? ring - 1 : key === "ArrowDown" ? ring + 1 : -2;
   if (target === -1) return null;
   if (target < 0 || target >= sizes.length) return "stay";
-  const a = angle(idx, n, ring);
+  const a = angle(idx, n, ring + off);
   let best = 0;
-  for (let j = 1; j < sizes[target]; j++) if (diff(angle(j, sizes[target], target), a) < diff(angle(best, sizes[target], target), a)) best = j;
+  for (let j = 1; j < sizes[target]; j++) if (diff(angle(j, sizes[target], target + off), a) < diff(angle(best, sizes[target], target + off), a)) best = j;
   return [target, best];
 }

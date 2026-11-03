@@ -8,6 +8,8 @@ import pytest
 requests = pytest.importorskip("requests")
 BASE = (os.environ.get("MC_LIVE_URL") or os.environ.get("REACT_APP_BACKEND_URL", "")).rstrip("/")
 H = {"X-MC-Client": "pytest"}
+SAMPLE = os.environ.get("MC_LIVE_SAMPLE") or "/app/sample_media"
+DEMO = os.environ.get("MC_LIVE_DEMO") or "/app/test_media/horizon_demo"
 pytestmark = pytest.mark.skipif(not BASE, reason="MC_LIVE_URL not set")
 
 
@@ -113,14 +115,14 @@ def test_progress_roundtrip_and_csrf(s):
 
 # --- admin ---
 def test_rescan_no_duplicates(s):
-    lib = next(l for l in s.get(f"{BASE}/api/libraries").json() if l["path"] == "/app/sample_media")
+    lib = next(l for l in s.get(f"{BASE}/api/libraries").json() if l["path"] == SAMPLE)
     r = s.post(f"{BASE}/api/libraries/{lib['id']}/scan", headers=H).json()
     assert r["scan"]["added"] == 0 and r["scan"]["files_found"] == 6
     assert s.get(f"{BASE}/api/home").json()["counts"]["movies"] == 3
 
 
 def test_add_library_errors(s):
-    for path, code in [("/app/sample_media", 409), ("/app/sample_media/Movies", 409), ("/app", 409),
+    for path, code in [(SAMPLE, 409), (f"{SAMPLE}/Movies", 409), (os.path.dirname(SAMPLE), 409),
                        ("/nope", 400), ("relative/path", 400), ("", 422)]:
         r = s.post(f"{BASE}/api/libraries", json={"path": path}, headers=H)
         assert r.status_code == code, (path, r.status_code, r.text)
@@ -129,8 +131,8 @@ def test_add_library_errors(s):
 def test_fs_browser(s):
     roots = s.get(f"{BASE}/api/fs/roots").json()["roots"]
     assert any(r["path"] == "/" for r in roots)
-    d = s.get(f"{BASE}/api/fs/list", params={"path": "/app"}).json()
-    assert any(x["name"] == "sample_media" for x in d["dirs"]) and d["parent"] == "/"
+    d = s.get(f"{BASE}/api/fs/list", params={"path": os.path.dirname(SAMPLE)}).json()
+    assert any(x["name"] == os.path.basename(SAMPLE) for x in d["dirs"]) and d["parent"] == os.path.dirname(os.path.dirname(SAMPLE))
     assert s.get(f"{BASE}/api/fs/list", params={"path": "/nope"}).status_code == 404
     assert s.get(f"{BASE}/api/fs/list", params={"path": "x"}).status_code == 400
 

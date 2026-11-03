@@ -2,7 +2,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, LayoutGrid, Orbit } from "lucide-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
-import { pageRings, PAGE_SIZE, overviewRings } from "../atlas/layout";
+import { groupRings, pageRings, PAGE_SIZE, overviewRings } from "../atlas/layout";
 import { InfoPanel } from "../atlas/InfoPanel";
 import { Sky, type SkyNode } from "../atlas/Sky";
 import { ErrorState, Loading } from "../components/States";
@@ -57,7 +57,7 @@ export default function Atlas() {
   const total = node ? (node.kind === "more" ? node.children?.length ?? 0 : page?.total ?? node.count) : data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const rings: SkyNode[][] = !node ? overview.map((r) => r.map(toSky))
-    : groupItems ? pageRings(groupItems.map(toSky)) : titles ? pageRings(titles.map(itemSky)) : [];
+    : groupItems ? groupRings(groupItems.map(toSky)).rings : titles ? pageRings(titles.map(itemSky)) : [];
   const flat = !node ? overview.flat() : groupItems ?? titles ?? [];
   const focusIdx = rings.slice(0, level.focus[0]).reduce((a, r) => a + r.length, 0) + level.focus[1];
   const focused = rings[level.focus[0]]?.[level.focus[1]] ? flat[focusIdx] : undefined;
@@ -154,7 +154,7 @@ export default function Atlas() {
       <div className="atlas-body">
         <InfoPanel node={focused} level={node ? "cluster" : "overview"} />
         {node && !groupItems && !titles ? <Loading /> : mode === "orbit" ? (
-          <Sky key={`${node?.id ?? "root"}-${level.page}`} rings={rings} focus={level.focus} level={node ? "cluster" : "overview"} zoom={zoom}
+          <Sky key={`${node?.id ?? "root"}-${level.page}`} rings={rings} focus={level.focus} level={node ? "cluster" : "overview"} zoom={zoom} offset={groupItems ? groupRings(groupItems).offset : 0}
             onFocus={focusAt} onOpen={openAt}
             onExitUp={() => toolbar.current?.querySelector<HTMLElement>("button:not([disabled]):not([hidden])")?.focus()}
             center={<><b>{crumb}</b><span>{total}</span></>} />
