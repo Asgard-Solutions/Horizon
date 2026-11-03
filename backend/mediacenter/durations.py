@@ -81,7 +81,7 @@ class DurationWorker:
         ).fetchone()
         with self._cond:
             active, skipped = len(self._claimed), len(self._skipped)
-        return {"available": self.enabled, "workers": self.workers, "pending": row["pending"] or 0,
+        return {"available": self.enabled, "workers": self.workers, "pending": max(0, (row["pending"] or 0) - skipped),
                 "known": row["known"] or 0, "unknown": row["unknown"] or 0, "active": active, "unreachable": skipped}
 
     def _next(self, conn):

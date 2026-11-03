@@ -55,3 +55,11 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - QA iteration 6 pass (1 bug fixed by QA); pytest 167 pass. Report: /app/docs/HORIZON_STAGE2_REPORT.md
 - NOT done: physical Xbox/Windows test; 4K scale; scan-time runtime probing
 - Next: Stage 3 (await user go-ahead)
+
+## Stage 2 closeout (2026-06)
+- Background duration reader (backend/mediacenter/durations.py): read-only FFprobe after scans, cached probe_json, MC_PROBE_WORKERS=2, visible-first, resumes on restart, unreachable->unknown; GET /api/metadata/status; runtime_status known/pending/unknown; UI "Reading length…" + quiet refresh
+- Demo series moved to /app/test_media/horizon_demo (library 2 "Horizon demo (test only)"); make_sample_media.py --demo-series; tests/test_demo_isolation.py; live stage2 test moved to tests_live (run with -n 0)
+- 4K: src/theme/uiScale.ts zoom when viewport >=1.25x 1080p; CSS viewport units via --vw/--vh
+- Fixes: dt-primary focus ring, data-nav-down (actions->season tab), season tabs edge stop, ep fallback arcs (no dup text), unified remaining label, player next -> osd
+- Tests: 174 unit, 30 live (-n 0), QA iteration 7+8 100%. Report docs/HORIZON_STAGE2_REPORT.md, screenshots docs/screenshots/stage2/
+- Awaiting user approval before Stage 3. No hardware (Xbox/Windows/4K TV) validation done.

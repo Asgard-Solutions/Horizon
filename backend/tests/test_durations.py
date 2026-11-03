@@ -142,6 +142,7 @@ def test_missing_file_is_skipped_not_cached(app, host, media_root):
     w.run_until_idle()
     assert rows(app)["Flat.Show.S03E07.720p.WEB-DL.mp4"] is None  # still pending: retried after a rescan/restart
     assert w.status(connect(app.state.config.db_path))["unreachable"] >= 1
+    assert host.get("/api/metadata/status").json()["pending"] == 0  # unreachable files are not counted as pending
     flat = next(s for s in host.get("/api/shows").json() if s["title"].startswith("Flat"))
     ep = host.get(f"/api/shows/{flat['id']}").json()["seasons"][0]["episodes"][0]
     assert ep["runtime_status"] == "unknown"  # the UI must not show "Reading length…" for files it cannot reach
