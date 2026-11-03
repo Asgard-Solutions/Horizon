@@ -78,6 +78,8 @@ export default function Atlas() {
       if (el || ++tries > 40) window.clearInterval(t);
     }, 50);
   };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => focusSelected(), []); // returning from a title lands on that exact title in orbit or grid mode
   const openAt = (r: number, i: number) => {
     const idx = rings.slice(0, r).reduce((a, x) => a + x.length, 0) + i;
     const target = flat[idx];
@@ -158,7 +160,7 @@ export default function Atlas() {
           </div>
         )}
       </div>
-      <p className="atlas-hints" aria-hidden="true"><kbd>◀ ▶</kbd> around the orbit · <kbd>▲ ▼</kbd> between orbits · <kbd>A</kbd> {node ? "open" : "explore"} · <kbd>B</kbd> {node ? "zoom out" : "back"}{node && pages > 1 ? " · LB / RB page" : ""}</p>
+      <p className="atlas-hints" aria-hidden="true">{mode === "orbit" ? <><kbd>◀ ▶</kbd> around the orbit · <kbd>▲ ▼</kbd> between orbits</> : <><kbd>◀ ▶ ▲ ▼</kbd> move</>} · <kbd>A</kbd> {node ? "open" : "explore"} · <kbd>B</kbd> {node ? "zoom out" : "back"}{node && pages > 1 ? " · LB / RB page" : ""}</p>
     </div>
   );
 }

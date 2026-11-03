@@ -28,7 +28,8 @@ export function pageRings<T>(items: T[]): T[][] {
   return out;
 }
 
-export const angle = (i: number, n: number, ring: number) => -90 + (360 / n) * i + ring * 22.5;
+// The inner ring starts at 9 o'clock so its few large nodes and labels sit clear of the genre ring.
+export const angle = (i: number, n: number, ring: number) => -90 + (360 / n) * i + (ring === 0 ? -90 : ring * 22.5);
 
 export function position(i: number, n: number, ring: number) {
   const a = (angle(i, n, ring) * Math.PI) / 180;

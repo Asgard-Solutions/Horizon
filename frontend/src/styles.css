@@ -83,6 +83,8 @@ body[data-input="mouse"] :focus:not(:focus-visible) { box-shadow: none; }
   min-height: clamp(64px, calc(8 * var(--vh)), 88px); padding: 0 var(--safe-x);
   background: linear-gradient(to bottom, rgba(10, 14, 21, 0.96) 0%, rgba(10, 14, 21, 0.82) 70%, rgba(10, 14, 21, 0) 100%);
 }
+/* Scrolling walls (Discover, Search, Atlas grid) need a solid bar so posters never run under the nav text. */
+.shell:has(.discover, .search, .atlas--grid) .topnav { background: rgba(10, 14, 21, 0.94); backdrop-filter: blur(16px); }
 .h-wordmark { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 600; font-size: 20px;
   letter-spacing: 0.24em; color: var(--text); }
 .h-mark { color: var(--text); flex: none; }

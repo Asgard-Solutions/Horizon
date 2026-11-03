@@ -8,19 +8,19 @@ const PAGE = 120;
 export function usePagedItems(query: string) {
   const pages = useRef(new Map<number, BrowseItem[]>());
   const pending = useRef(new Set<number>());
-  const [first, setFirst] = useState<DiscoverPage | null>(null);
+  const [cur, setCur] = useState<{ q: string; d: DiscoverPage } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [, setTick] = useState(0);
   const seq = useRef(0);
 
+  // The previous result (and its facets) stays available while the next one loads, so filter controls never unmount mid-use.
   useEffect(() => {
     const n = ++seq.current;
     pages.current = new Map();
     pending.current = new Set();
-    setFirst(null);
     setError(null);
     api<DiscoverPage>(`/api/discover?${query}${query ? "&" : ""}offset=0&limit=${PAGE}`)
-      .then((d) => { if (n === seq.current) { pages.current.set(0, d.items); setFirst(d); } })
+      .then((d) => { if (n === seq.current) { pages.current.set(0, d.items); setCur({ q: query, d }); } })
       .catch((e: Error) => n === seq.current && setError(e.message));
   }, [query]);
 
@@ -36,5 +36,6 @@ export function usePagedItems(query: string) {
   }, [query]);
 
   const get = useCallback((i: number) => pages.current.get(Math.floor(i / PAGE))?.[i % PAGE], []);
-  return { first, error, total: first?.total ?? 0, facets: first?.facets ?? null, get, ensure };
+  const first = cur && cur.q === query ? cur.d : null;
+  return { first, error, total: first?.total ?? 0, facets: cur?.d.facets ?? null, get, ensure };
 }

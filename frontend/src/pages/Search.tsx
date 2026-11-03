@@ -1,6 +1,6 @@
 import { Search as SearchIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useNavigationType, useSearchParams } from "react-router-dom";
 import { api, mediaUrl } from "../api";
 import { TitleArt } from "../components/TitleArt";
 import { MediaCard } from "../discover/MediaCard";
@@ -35,15 +35,25 @@ function Section({ title, total, shown, children, testId }: { title: string; tot
 export default function Search() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const navType = useNavigationType();
   const [q, setQ] = useState(params.get("q") ?? "");
   const [res, setRes] = useState<SearchResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [inputMode, setInputMode] = useState<"none" | "search">("none");
   const [restore] = useState<{ key: string; index: number; scroll: number } | null>(() => {
+    if (navType !== "POP") return null; // only Back restores; a fresh visit starts on the keyboard
     try { const s = JSON.parse(sessionStorage.getItem(FOCUS_KEY) ?? "null"); return s && s.q === (params.get("q") ?? "") ? s : null; } catch { return null; }
   });
   const seq = useRef(0);
   const restored = useRef(false);
+  const lastResult = useRef<string | null>(restore?.key ?? null);
+  const exitRight = () => {
+    const all = Array.from(document.querySelectorAll<HTMLElement>(".search-results [data-key]"));
+    const el = all.find((x) => x.dataset.key === lastResult.current) ?? all[0];
+    el?.focus({ preventScroll: true });
+    el?.scrollIntoView({ block: "nearest" });
+    return !!el;
+  };
 
   useEffect(() => {
     const n = ++seq.current;
@@ -90,9 +100,10 @@ export default function Search() {
             inputMode={inputMode} onPointerDown={() => setInputMode("search")} onBlur={() => setInputMode("none")}
             enterKeyHint="search" autoComplete="off" spellCheck={false} data-testid="search-input" />
         </label>
-        <Osk onKey={(ch) => setQ((v) => v + ch)} onBackspace={() => setQ((v) => v.slice(0, -1))} onClear={() => setQ("")} autofocus={!restore} />
-      </div>
-      <div className="search-results" aria-live="polite" aria-busy={busy} data-testid="search-results">
+        <Osk onKey={(ch) => setQ((v) => v + ch)} onBackspace={() => setQ((v) => v.slice(0, -1))} onClear={() => setQ("")} onExitRight={exitRight} autofocus={!restore} />
+        </div>
+        <div className="search-results" aria-live="polite" aria-busy={busy} data-testid="search-results"
+          onFocus={(e) => { const k = (e.target as HTMLElement).dataset.key; if (k) lastResult.current = k; }}>
         {!q.trim() ? (
           <div className="search-empty" data-testid="search-idle"><h2>Find anything in your library</h2><p>Type a title, a series or an episode name. Search runs on this PC, offline.</p></div>
         ) : res && total === 0 && !busy ? (

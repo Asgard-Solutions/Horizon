@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useMemo } from "react";
+import { useLocation, useNavigate, useNavigationType, useSearchParams } from "react-router-dom";
 import { ErrorState, Loading } from "../components/States";
 import { FilterBar } from "../discover/FilterBar";
 import { PosterGrid } from "../discover/PosterGrid";
@@ -8,22 +8,33 @@ import { detailPath, parseQuery, toParams, VIEWS, type DiscoverQuery, type View 
 import { usePagedItems } from "../discover/usePagedItems";
 import type { BrowseItem } from "../types";
 
-const FOCUS_KEY = "horizon.discover.focus";
-const recall = (qs: string): { index: number; scroll: number | null } | null => {
-  try {
-    const s = JSON.parse(sessionStorage.getItem(FOCUS_KEY) ?? "null");
-    return s && s.qs === qs ? { index: s.index, scroll: s.scroll ?? null } : null;
-  } catch { return null; }
+// One remembered position per result set (view + sort + filters + collection), so nested Back steps each restore their own tile.
+const FOCUS_KEY = "horizon.discover.focus.v2";
+type Spot = { index: number; scroll: number };
+const readAll = (): Record<string, Spot> => { try { return JSON.parse(sessionStorage.getItem(FOCUS_KEY) ?? "{}") ?? {}; } catch { return {}; } };
+const recall = (qs: string): Spot | null => readAll()[qs] ?? null;
+const store = (qs: string, spot: Spot) => {
+  const all = readAll();
+  delete all[qs];
+  const keys = Object.keys(all);
+  for (const k of keys.slice(0, Math.max(0, keys.length - 24))) delete all[k];
+  sessionStorage.setItem(FOCUS_KEY, JSON.stringify({ ...all, [qs]: spot }));
 };
 
 export default function Discover() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navType = useNavigationType();
   const [params, setParams] = useSearchParams();
   const query = useMemo(() => parseQuery(params), [params]);
   const qs = toParams(query).toString();
   const { first, error, total, facets, get, ensure } = usePagedItems(qs);
-  const [initial] = useState(() => recall(qs));
-  const remember = useCallback((i: number) => sessionStorage.setItem(FOCUS_KEY, JSON.stringify({ qs, index: i, scroll: window.scrollY })), [qs]);
+  // Back (POP) restores the remembered tile; opening a collection starts on its first tile;
+  // changing tabs, sort or filters (REPLACE) leaves focus on the control that was used.
+  const initial = useMemo<Spot | null>(() => (navType === "POP" ? recall(qs) : navType === "PUSH" && query.collection ? { index: 0, scroll: 0 } : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [location.key]);
+  const remember = useCallback((i: number) => store(qs, { index: i, scroll: window.scrollY }), [qs]);
 
   const change = (q: DiscoverQuery) => setParams(toParams(q), { replace: true });
   const setView = (v: View) => change({ ...query, view: v, collection: null, filters: { ...query.filters, type: [] } });
@@ -32,6 +43,7 @@ export default function Discover() {
     navigate(item.type === "collection" ? `/discover?${new URLSearchParams({ collection: String(item.id) })}` : detailPath(item));
   };
   const collectionName = first?.collection?.title;
+  const upTarget = query.view === "collections" && !query.collection ? '[data-testid="discover-views"] [aria-selected="true"]' : '[data-testid="discover-sort-button"]';
 
   return (
     <div className="page discover" data-testid="discover-page">
@@ -46,7 +58,7 @@ export default function Discover() {
           <div className="journey-tabs discover-tabs" role="tablist" aria-label="Discover views" data-nav-row data-nav-prefer-selected data-testid="discover-views">
             {VIEWS.map((v) => (
               <button key={v.id} role="tab" aria-selected={query.view === v.id} className={query.view === v.id ? "gtab gtab--active" : "gtab"}
-                onClick={() => setView(v.id)} data-testid={`discover-view-${v.id}`}>{v.label}</button>
+                data-autofocus={query.view === v.id || undefined} onClick={() => setView(v.id)} data-testid={`discover-view-${v.id}`}>{v.label}</button>
             ))}
           </div>
         )}
@@ -65,8 +77,8 @@ export default function Discover() {
               : facets && Object.values(query.filters).some((f) => f.length) ? "Try removing a filter." : "Add a media folder in Library to fill Discover."}</p>
           </div>
         ) : (
-          <PosterGrid key={qs} total={total} get={get} ensure={ensure} onOpen={open} initialIndex={initial?.index ?? null} initialScroll={initial?.scroll ?? null} onFocusIndex={remember}
-            label={VIEWS.find((v) => v.id === query.view)?.label ?? "Titles"} />
+          <PosterGrid key={qs} total={total} get={get} ensure={ensure} onOpen={open} initialIndex={initial?.index ?? null} initialScroll={initial?.scroll ?? null}
+            onFocusIndex={remember} navUp={upTarget} label={VIEWS.find((v) => v.id === query.view)?.label ?? "Titles"} />
         )}
     </div>
   );

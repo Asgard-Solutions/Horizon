@@ -10,6 +10,7 @@ interface Props {
   initialIndex: number | null;
   initialScroll: number | null;
   onFocusIndex: (i: number) => void;
+  navUp: string;
   label: string;
 }
 
@@ -17,7 +18,7 @@ const OVERSCAN = 3;
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** Virtualised poster wall: only rows near the screen exist in the DOM; arrows move by item/row deterministically. */
-export function PosterGrid({ total, get, ensure, onOpen, initialIndex, initialScroll, onFocusIndex, label }: Props) {
+export function PosterGrid({ total, get, ensure, onOpen, initialIndex, initialScroll, onFocusIndex, navUp, label }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(6);
   const [rowH, setRowH] = useState(420);
@@ -143,7 +144,7 @@ export function PosterGrid({ total, get, ensure, onOpen, initialIndex, initialSc
     }
   }
   return (
-    <div ref={ref} className="dgrid" role="list" aria-label={label} style={{ height: rows * rowH }} onKeyDown={onKeyDown}
+    <div ref={ref} className="dgrid" role="list" aria-label={label} style={{ height: rows * rowH }} onKeyDown={onKeyDown} data-nav-up={navUp}
       data-testid="discover-grid" data-cols={cols} data-total={total}>
       {cells}
     </div>

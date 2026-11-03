@@ -1,19 +1,24 @@
 import { Delete, Eraser, Space } from "lucide-react";
 
-const ROWS = ["abcdef", "ghijkl", "mnopqr", "stuvwx", "yz1234", "567890"];
+const ROWS = ["abcdef", "ghijkl", "mnopqr", "stuvwx", "yz1234", "567890", "'-.:&!"];
+const NAMES: Record<string, string> = { "'": "Apostrophe", "-": "Hyphen", ".": "Period", ":": "Colon", "&": "Ampersand", "!": "Exclamation mark" };
+const ID: Record<string, string> = { "'": "apostrophe", "-": "hyphen", ".": "period", ":": "colon", "&": "ampersand", "!": "exclamation" };
 
 interface Props {
   onKey: (ch: string) => void;
   onBackspace: () => void;
   onClear: () => void;
+  onExitRight: () => boolean;
   autofocus: boolean;
 }
 
 /** D-pad friendly on-screen keyboard. X = backspace, Y = space on a controller; physical typing always works too. */
-export function Osk({ onKey, onBackspace, onClear, autofocus }: Props) {
+export function Osk({ onKey, onBackspace, onClear, onExitRight, autofocus }: Props) {
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return; // leave browser/OS shortcuts alone
-    if (e.key === "PadX" || e.key === "Backspace") { e.preventDefault(); onBackspace(); }
+    const t = e.target as HTMLElement;
+    if (e.key === "ArrowRight" && t.matches(".osk-key") && !t.nextElementSibling) { if (onExitRight()) e.preventDefault(); }
+    else if (e.key === "PadX" || e.key === "Backspace") { e.preventDefault(); onBackspace(); }
     else if (e.key === "PadY") { e.preventDefault(); onKey(" "); }
     else if (e.key.length === 1 && /[\p{L}\p{N} '\-.:&!?,]/u.test(e.key)) { e.preventDefault(); onKey(e.key); }
   };
@@ -23,7 +28,7 @@ export function Osk({ onKey, onBackspace, onClear, autofocus }: Props) {
         <div className="osk-row" key={row} data-nav-row>
           {[...row].map((ch, c) => (
             <button key={ch} className="osk-key" onClick={() => onKey(ch)} data-autofocus={autofocus && r === 0 && c === 0 ? true : undefined}
-              data-testid={`osk-key-${ch}`} aria-label={ch.toUpperCase()}>{ch.toUpperCase()}</button>
+              data-testid={`osk-key-${ID[ch] ?? ch}`} aria-label={NAMES[ch] ?? ch.toUpperCase()}>{ch.toUpperCase()}</button>
           ))}
         </div>
       ))}
