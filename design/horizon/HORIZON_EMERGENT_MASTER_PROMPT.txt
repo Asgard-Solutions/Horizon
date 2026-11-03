@@ -1,0 +1,51 @@
+PROJECT: HORIZON - THE LIVING CINEMA
+TASK: Redesign the UI/UX of my existing local-first media center, preserving its working Phase 0 functionality.
+
+You are acting as a senior product designer, creative director, interaction designer, and pragmatic frontend engineer. Create an original, premium, cinematic media center interface built for a Windows PC and designed from day one for mouse/keyboard AND 10-foot Xbox-controller navigation. The visual identity is called "Horizon" (working name), and the experience is called "The Living Cinema." It should be recognizable, beautiful, and fast without imitating Netflix, Plex, Kodi, Apple TV, or a generic streaming template.
+
+FIRST, READ THE ATTACHED HORIZON_DESIGN_SYSTEM_v1.md AND horizon.tokens.json. Treat the style guide as the visual and interaction source of truth. Where a detail is unspecified, make a reasoned decision consistent with the guide and document it.
+
+IMPORTANT EXISTING APP CONTEXT:
+- Phase 0 already works in a Linux development environment: add a real local/NAS folder, scan files, build a movie/TV library from filenames and optional local metadata/art, persist in local SQLite, browse, play/seek, resume/start over, and Continue Watching.
+- Rescans do not duplicate titles. Unreachable library folders do not cause content to be deleted. Media files are read-only; integrity tests fingerprint files before and after operations.
+- Windows and Xbox have NOT been verified. Do not claim they work, and do not substitute a browser demo for native/runtime verification.
+- Use real library records and playable media from the existing app. Do not invent movie lists, mock APIs, fake streaming integrations, fabricated ratings, or dead-end features.
+
+BEFORE EDITING CODE:
+1. Inspect the actual repository and identify framework, routes, database/API shape, existing media playback, and tested run commands. Do not assume React, Next.js, Electron, or any other stack. Retain the stack unless a change is essential and approved.
+2. Create a checkpoint/branch and record the current passing tests. Preserve working code paths and data migrations.
+3. Map the existing functionality to the new screens. If you cannot access the repository or local media backend, say so; create only a clearly identified UI design preview without claiming real integration.
+4. Do not move local filesystem scanning to a hosted cloud server. The UI must connect to the existing local host/backend. Hosted previews must not claim access to D:\\ or \\\\NAS paths.
+
+DESIGN NORTH STAR:
+- Near-black obsidian environment, deep midnight surfaces, luminous aurora mint focus, restrained warm amber highlights, bright legible text.
+- Distinctive "Living Filmstrip": a subtle curved ribbon of real movie posters, with the focused title brought forward and metadata revealed. Ensure predictable directional focus and an ordinary grid/list fallback.
+- "The Stage": one contextual selected title in an atmospheric hero area, with large clear Resume/Play and Details actions. Dynamic colors may be derived from the selected local backdrop, but must remain subtle and maintain text contrast.
+- "The Atlas": optional exploratory map/grouping view, generated only from actual metadata; accessible indexed Movies/TV views must remain primary fallbacks.
+- "Episode Journey": seasons and episodes shown as a navigable, readable timeline, with actual watch progress and direct playback.
+- Player controls disappear when appropriate, return on user input, retain familiar seek/resume behavior, and never obscure critical subtitles unnecessarily.
+- This must feel like an entertainment console, not an admin dashboard. No giant row stacks, excessive glass effects, random particle backgrounds, or autoplaying trailers.
+
+IMPLEMENT IN STAGES (DO NOT BUILD EVERYTHING IN ONE PASS):
+STAGE 1 - FOUNDATION AND HOME: Create design tokens, typography, application shell, focus/navigation system, responsive safe-area logic, reusable buttons/cards, and the Home/Stage UI. Bind real library data. Include Continue Watching and Recently Added only when real data exists. Deliver a working preview and testable navigation.
+STAGE 2 - BROWSING AND DETAILS: Add Movies, TV, title details, accessible Filmstrip, grid/list alternative, search/filter using existing metadata, and clear empty/offline states. Do not infer missing genres, cast, or ratings.
+STAGE 3 - EPISODES AND PLAYBACK: Add Episode Journey and style the existing player controls while preserving play/pause, seek, volume, fullscreen, Resume/Start Over, and persisted position.
+STAGE 4 - LIBRARY AND POLISH: Add source management/status, unreachable-folder messaging, keyboard/controller input mapping, reduced-motion behavior, responsive passes, and regression tests. Prototype Atlas only after normal browsing is excellent; do not block delivery on Atlas.
+
+INTERACTION NON-NEGOTIABLES:
+- TV navigation with directional controller focus (D-pad/stick), A select, B back, X details where relevant, Y search in browsing, LB/RB jump groups. Reconcile actual platform mappings with the host runtime; don't guess and declare Xbox verified.
+- Desktop keyboard parity: arrows, Enter, Escape, / for search, Space for play/pause while in player, and focus-visible states. Mouse hover is optional enhancement, not the only way to reveal an action.
+- Always show where focus is. Preserve and restore focus when navigating back. Do not trap focus in the Filmstrip or Atlas.
+- Minimum 44x44 desktop interactive targets and approximately 64x64 TV targets. Text remains readable at 10 feet. Support keyboard, pointer, gamepad, screen-reader semantics where feasible, and prefers-reduced-motion.
+- No fake progress, unsupported metadata labels, or nonfunctional controls. Hide unsupported actions.
+
+ACCEPTANCE REQUIREMENTS:
+- The original Phase 0 data and media-safety regression tests still pass.
+- Existing files play and seek; Resume/Start Over retains actual behavior.
+- Empty library, missing artwork, long titles, a 200+ item collection, inaccessible NAS source, and scan-in-progress all have honest UI states.
+- At 1920x1080, 1366x768, and 3840x2160, nothing important is clipped; visible focus is easy to follow and interface content has safe margins.
+- Basic flows work without internet; no telemetry, cloud dependency, account requirement, or remote artwork calls are added without approval.
+- Document what was implemented, what was not, which tests ran, and which environments remain unverified. Windows and Xbox remain unverified until actual tests occur.
+
+FIRST RESPONSE TO ME:
+Summarize your understanding of the existing stack and design direction, show a short implementation plan and any genuine blocker, and begin STAGE 1. Prioritize a believable, polished, real-data Home screen over broad feature coverage.
