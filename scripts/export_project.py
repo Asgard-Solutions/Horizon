@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EXCLUDE_DIRS = {".git", "node_modules", ".venv", "__pycache__", ".pytest_cache", "data", "export",
-                "sample_media", "test_reports", ".emergent", "memory", ".ruff_cache", ".mypy_cache", ".vite"}
+                "sample_media", "test_media", "test_reports", ".emergent", "memory", ".ruff_cache", ".mypy_cache", ".vite"}
 EXCLUDE_FILES = {".env", "*.pyc", "*.sqlite3", "*.sqlite3-*", "test_result.md", ".DS_Store", "test-results-*.xml",
                  "yarn-error.log"}
 EXCLUDE_TOP = {"tests"}  # empty template folder of the development environment

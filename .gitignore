@@ -88,4 +88,5 @@ android-sdk/
 data/
 export/
 sample_media/
+test_media/
 .pytest_cache/

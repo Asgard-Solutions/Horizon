@@ -97,6 +97,7 @@ def add_library(body: LibraryIn, request: Request):
     conn.commit()
     row = conn.execute("SELECT * FROM libraries WHERE id = ?", (cur.lastrowid,)).fetchone()
     summary = _run_scan(conn, row) if body.scan else None
+    request.app.state.durations.wake()
     row = conn.execute("SELECT * FROM libraries WHERE id = ?", (cur.lastrowid,)).fetchone()
     return {**_library(row), "counts": _counts(conn, row["id"]), "scan": summary}
 
@@ -120,6 +121,7 @@ def rescan_library(library_id: int, request: Request):
     if not row:
         raise HTTPException(status_code=404, detail="Library not found")
     summary = _run_scan(conn, row)
+    request.app.state.durations.wake()  # lengths of new/changed files are read in the background
     return {**_library(conn.execute("SELECT * FROM libraries WHERE id = ?", (library_id,)).fetchone()),
             "counts": _counts(conn, library_id), "scan": summary}
 

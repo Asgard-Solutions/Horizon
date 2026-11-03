@@ -91,7 +91,8 @@ Settings → **Library folders**:
 ### FFprobe (optional, recommended)
 
 FFprobe is used as an **external program** (never linked or bundled by this repo). Put `ffprobe.exe` on PATH, in `tools\ffprobe.exe`,
-or set `MC_FFPROBE`. Use an **LGPL** build of FFmpeg if you plan to redistribute it (see `docs/THIRD_PARTY_LICENSES.md`).
+or set `MC_FFPROBE`. Video lengths are read in the background after each scan (read-only, cached in SQLite, resumes after a restart);
+`MC_PROBE_WORKERS` (default 2, `0` = off) limits how many files are read at once to keep NAS load low. Use an **LGPL** build of FFmpeg if you plan to redistribute it (see `docs/THIRD_PARTY_LICENSES.md`).
 Without FFprobe everything still works; codec compatibility is just reported as "not checked".
 
 ## Keyboard / controller
@@ -128,7 +129,8 @@ RunTests.bat
 ```
 or `cd backend && .venv\Scripts\python -m pytest -v -n 0`. Covers filename parsing, scan structure, duplicate handling, rescans,
 read-only guarantee, media-path authorization (traversal, symlink escape, artwork), LAN/PIN/device auth, and HTTP range streaming.
-`python scripts/make_sample_media.py D:\TestMedia` generates a synthetic test library (needs ffmpeg).
+`python scripts/make_sample_media.py D:\TestMedia [--demo-series D:\TestDemo]` generates a synthetic test library (needs ffmpeg);
+`--demo-series` writes the Horizon demo series into its own folder, to add as a separate test-only library. The app never creates or adds demo content by itself.
 Latest results: [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md).
 
 ## Exporting the project

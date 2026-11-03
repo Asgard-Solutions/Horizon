@@ -23,7 +23,9 @@ def _movie(s, title):
 # --- catalog ---
 def test_home_counts(s):
     d = s.get(f"{BASE}/api/home").json()
-    assert d["counts"]["movies"] == 3 and d["counts"]["shows"] == 2 and d["counts"]["episodes"] == 3
+    # The Horizon demo series lives in its own test-only library (1 show, 5 episodes) when it is added.
+    demo = any(lib["path"].endswith("horizon_demo") for lib in s.get(f"{BASE}/api/libraries").json())
+    assert d["counts"]["movies"] == 3 and d["counts"]["shows"] == 2 + demo and d["counts"]["episodes"] == 3 + 5 * demo
 
 
 def test_movies_list(s):

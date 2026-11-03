@@ -50,6 +50,16 @@ def is_within(root_key: str, path_key: str, pathmod=os.path) -> bool:
         return False
 
 
+def library_real_path(conn, path: str) -> str | None:
+    """Resolved path if it lies inside a configured library folder, else None."""
+    real = os.path.realpath(path)
+    key = os.path.normcase(real)
+    for lib in conn.execute("SELECT path FROM libraries"):
+        if is_within(os.path.normcase(os.path.realpath(lib["path"])), key):
+            return real
+    return None
+
+
 def _with_root(p: str, pathmod) -> str:
     """'\\\\NAS\\Share' -> '\\\\NAS\\Share\\' so share roots compare like drive roots."""
     drive, rest = pathmod.splitdrive(p)

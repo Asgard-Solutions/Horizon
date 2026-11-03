@@ -34,6 +34,7 @@ class Config:
     allowed_hosts: list[str] = field(default_factory=list)
     bind_host: str | None = None
     port: int | None = None
+    probe_workers: int = 2
 
     @property
     def db_path(self) -> Path:
@@ -54,4 +55,6 @@ def load_config() -> Config:
         allowed_hosts=[h.lower() for h in _split(os.environ.get("MC_ALLOWED_HOSTS", ""))],
         bind_host=os.environ.get("MC_BIND_HOST") or None,
         port=int(port) if port else None,
+        # Concurrent background FFprobe reads (keeps NAS load low). 0 turns background reading off.
+        probe_workers=int(os.environ.get("MC_PROBE_WORKERS") or 2),
     )

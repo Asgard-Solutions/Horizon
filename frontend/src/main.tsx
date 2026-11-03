@@ -8,6 +8,9 @@ import "./home/home.css";
 import "./detail/detail.css";
 import "./player/player.css";
 import App from "./App";
+import { startUiScale } from "./theme/uiScale";
+
+startUiScale();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

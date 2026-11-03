@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 import mimetypes
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -9,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from . import routes_admin, routes_auth, routes_library
 from .config import APP_VERSION, Config, load_config
 from .db import connect, init_db
+from .durations import DurationWorker
 
 # Windows reads MIME types from the registry, which is often wrong (e.g. .js as text/plain) and breaks the UI
 # because responses carry X-Content-Type-Options: nosniff. Pin the types we serve.
@@ -24,9 +26,18 @@ CSRF_HEADER = "x-mc-client"
 def create_app(config: Config | None = None) -> FastAPI:
     cfg = config or load_config()
     init_db(cfg.db_path)
+    durations = DurationWorker(cfg.db_path, cfg.ffprobe_path, cfg.probe_workers)
+
+    @asynccontextmanager
+    async def lifespan(_app):
+        durations.start()  # resumes any files left unread by a previous run
+        yield
+        durations.stop()
+
     app = FastAPI(title="Open Media Center (Phase 0)", version=APP_VERSION, docs_url="/api/docs",
-                  openapi_url="/api/openapi.json", redoc_url=None)
+                  openapi_url="/api/openapi.json", redoc_url=None, lifespan=lifespan)
     app.state.config = cfg
+    app.state.durations = durations
 
     @app.middleware("http")
     async def db_and_csrf(request: Request, call_next):

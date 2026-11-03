@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from .db import now_iso
 from .parser import IMAGE_EXTENSIONS
-from .paths import is_within
+from .paths import library_real_path
 from .probe import MIME, assess_playback, find_ffprobe, probe_file
 from .scanner import path_key
 from .security import require_viewer
@@ -38,51 +38,57 @@ def _progress(row) -> dict | None:
 
 
 def _runtime(row) -> float | None:
-    # Real duration only: FFprobe result cached at playback time, else the duration the player reported.
+    # Real duration only: cached FFprobe result (background reader or playback), else the duration the player reported.
     return row["probe_duration"] or row["duration"]
+
+
+def _runtime_status(row, reading: bool) -> str:
+    """known | pending (background reader will fill it in) | unknown (unreadable or reader unavailable)."""
+    if _runtime(row):
+        return "known"
+    return "pending" if reading and not row["probed"] else "unknown"
 
 
 def authorize_media_path(conn, path: str) -> str:
     """Only files located inside a configured library folder may be served."""
-    real = os.path.realpath(path)
-    key = os.path.normcase(real)
-    for lib in conn.execute("SELECT path FROM libraries"):
-        if is_within(os.path.normcase(os.path.realpath(lib["path"])), key):
-            return real
-    raise HTTPException(status_code=403, detail="File is outside the configured library folders.")
+    real = library_real_path(conn, path)
+    if not real:
+        raise HTTPException(status_code=403, detail="File is outside the configured library folders.")
+    return real
 
 
 MOVIE_SQL = """
 SELECT m.*, f.filename, f.container, f.size, f.added_at, p.position, p.duration, p.watched,
-       json_extract(f.probe_json, '$.duration') AS probe_duration
+       json_extract(f.probe_json, '$.duration') AS probe_duration, f.probe_json IS NOT NULL AS probed
 FROM movies m JOIN media_files f ON f.id = m.file_id LEFT JOIN progress p ON p.path_key = f.path_key
 """
 EPISODE_SQL = """
 SELECT e.*, s.season_number, s.show_id, sh.title AS show_title, f.filename, f.container, f.size, f.added_at,
-       p.position, p.duration, p.watched, json_extract(f.probe_json, '$.duration') AS probe_duration
+       p.position, p.duration, p.watched, json_extract(f.probe_json, '$.duration') AS probe_duration,
+       f.probe_json IS NOT NULL AS probed
 FROM episodes e JOIN seasons s ON s.id = e.season_id JOIN shows sh ON sh.id = s.show_id
 JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.path_key = f.path_key
 """
 
 
-def _movie(row) -> dict:
+def _movie(row, reading: bool = False) -> dict:
     return {
         "id": row["id"], "file_id": row["file_id"], "title": row["title"], "year": row["year"], "plot": row["plot"],
         "filename": row["filename"], "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "poster_url": _art("movie-poster", row["id"], row["poster_path"]),
         "fanart_url": _art("movie-fanart", row["id"], row["fanart_path"]),
-        "progress": _progress(row), "runtime": _runtime(row),
+        "progress": _progress(row), "runtime": _runtime(row), "runtime_status": _runtime_status(row, reading),
     }
 
 
-def _episode(row) -> dict:
+def _episode(row, reading: bool = False) -> dict:
     return {
         "id": row["id"], "file_id": row["file_id"], "show_id": row["show_id"], "show_title": row["show_title"],
         "season_number": row["season_number"], "episode_number": row["episode_number"],
         "episode_end": row["episode_end"], "title": row["title"], "plot": row["plot"], "filename": row["filename"],
         "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "thumb_url": _art("episode-thumb", row["id"], row["thumb_path"]), "progress": _progress(row),
-        "runtime": _runtime(row),
+        "runtime": _runtime(row), "runtime_status": _runtime_status(row, reading),
     }
 
 
@@ -99,9 +105,24 @@ def _show_summary(conn, row) -> dict:
     }
 
 
+def _reader(request: Request):
+    return request.app.state.durations
+
+
+def _read_first(request: Request, items: list[dict]) -> None:
+    """Items on screen get their lengths read before the rest of the library."""
+    _reader(request).prioritize(i["file_id"] for i in items if i.get("runtime_status") == "pending")
+
+
+@router.get("/metadata/status")
+def metadata_status(request: Request):
+    return _reader(request).status(request.state.db)
+
+
 @router.get("/home")
 def home(request: Request):
     conn = request.state.db
+    rd = _reader(request).enabled
     cont = []
     for p in conn.execute(
         "SELECT f.id AS file_id, f.kind FROM progress p JOIN media_files f ON f.path_key = p.path_key"
@@ -110,16 +131,17 @@ def home(request: Request):
         if p["kind"] == "movie":
             row = conn.execute(MOVIE_SQL + " WHERE m.file_id = ?", (p["file_id"],)).fetchone()
             if row:
-                cont.append({"type": "movie", **_movie(row)})
+                cont.append({"type": "movie", **_movie(row, rd)})
         else:
             row = conn.execute(EPISODE_SQL + " WHERE e.file_id = ?", (p["file_id"],)).fetchone()
             if row:
                 show = conn.execute("SELECT id, poster_path, fanart_path FROM shows WHERE id = ?", (row["show_id"],)).fetchone()
-                cont.append({"type": "episode", **_episode(row),
+                cont.append({"type": "episode", **_episode(row, rd),
                              "show_poster_url": _art("show-poster", show["id"], show["poster_path"]),
                              "show_fanart_url": _art("show-fanart", show["id"], show["fanart_path"])})
-    movies = [_movie(r) for r in conn.execute(MOVIE_SQL + f" ORDER BY f.added_at DESC, m.sort_title LIMIT {HOME_LIMIT}")]
-    episodes = [_episode(r) for r in conn.execute(EPISODE_SQL + f" ORDER BY f.added_at DESC LIMIT {HOME_LIMIT}")]
+    movies = [_movie(r, rd) for r in conn.execute(MOVIE_SQL + f" ORDER BY f.added_at DESC, m.sort_title LIMIT {HOME_LIMIT}")]
+    episodes = [_episode(r, rd) for r in conn.execute(EPISODE_SQL + f" ORDER BY f.added_at DESC LIMIT {HOME_LIMIT}")]
+    _read_first(request, cont + movies + episodes)
     shows = [_show_summary(conn, r) for r in conn.execute(f"SELECT * FROM shows ORDER BY sort_title LIMIT {HOME_LIMIT}")]
     libs = conn.execute("SELECT path, last_scan_at FROM libraries").fetchall()
     # Viewer-safe source status: counts only, never paths (devices must not learn host paths).
@@ -140,7 +162,9 @@ HOME_LIMIT = 24
 
 @router.get("/movies")
 def list_movies(request: Request):
-    return [_movie(r) for r in request.state.db.execute(MOVIE_SQL + " ORDER BY m.sort_title, m.year")]
+    items = [_movie(r, _reader(request).enabled) for r in request.state.db.execute(MOVIE_SQL + " ORDER BY m.sort_title, m.year")]
+    _read_first(request, items)
+    return items
 
 
 @router.get("/movies/{movie_id}")
@@ -148,7 +172,9 @@ def get_movie(movie_id: int, request: Request):
     row = request.state.db.execute(MOVIE_SQL + " WHERE m.id = ?", (movie_id,)).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Movie not found")
-    return _movie(row)
+    item = _movie(row, _reader(request).enabled)
+    _read_first(request, [item])
+    return item
 
 
 @router.get("/shows")
@@ -163,12 +189,13 @@ def get_show(show_id: int, request: Request):
     row = conn.execute("SELECT * FROM shows WHERE id = ?", (show_id,)).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="Show not found")
-    seasons = []
+    seasons, rd = [], _reader(request).enabled
     for s in conn.execute("SELECT * FROM seasons WHERE show_id = ? ORDER BY season_number", (show_id,)):
-        eps = [_episode(e) for e in conn.execute(
+        eps = [_episode(e, rd) for e in conn.execute(
             EPISODE_SQL + " WHERE e.season_id = ? ORDER BY e.episode_number", (s["id"],))]
         seasons.append({"id": s["id"], "season_number": s["season_number"],
                         "poster_url": _art("season-poster", s["id"], s["poster_path"]), "episodes": eps})
+    _read_first(request, [e for s in seasons for e in s["episodes"]])
     return {**_show_summary(conn, row), "seasons": seasons}
 
 

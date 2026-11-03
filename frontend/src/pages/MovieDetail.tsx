@@ -52,7 +52,8 @@ export default function MovieDetail() {
         <h1 className="dt-title" data-testid="movie-title">{movie.title}</h1>
         <ul className="dt-chips" aria-label="Details" data-testid="movie-chips">
           {movie.year && <li data-testid="movie-year">{movie.year}</li>}
-          {runtime && <li data-testid="movie-runtime">{runtime}</li>}
+          {runtime ? <li data-testid="movie-runtime">{runtime}</li>
+            : movie.runtime_status === "pending" && <li className="dt-chip-pending" data-testid="movie-runtime-pending">Reading length…</li>}
           {video?.height && <li>{video.height >= 2000 ? "4K" : `${video.height}p`}</li>}
           <li>{movie.container.toUpperCase()}</li>
           {audio && <li>{audio.codec?.toUpperCase()}{audio.channels ? ` ${audio.channels} ch` : ""}</li>}

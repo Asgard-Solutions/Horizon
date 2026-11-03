@@ -18,6 +18,7 @@ export interface Movie {
   fanart_url: string | null;
   progress: Progress | null;
   runtime: number | null;
+  runtime_status: "known" | "pending" | "unknown";
 }
 
 export interface Episode {
@@ -36,6 +37,7 @@ export interface Episode {
   thumb_url: string | null;
   progress: Progress | null;
   runtime: number | null;
+  runtime_status: "known" | "pending" | "unknown";
 }
 
 export interface ShowSummary {

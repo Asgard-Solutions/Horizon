@@ -8,7 +8,7 @@ import { EpisodeJourney } from "../detail/EpisodeJourney";
 import { WatchProgress } from "../detail/WatchProgress";
 import { defaultEpisode, forgetShowFocus, nextUp, recallShowFocus, rememberShowFocus, type NextUp } from "../detail/nextUp";
 import { episodeCode, formatTime, isPartial } from "../format";
-import { useAsync } from "../hooks";
+import { useAsync, useQuietRefresh } from "../hooks";
 import type { Episode, ShowDetail as Show } from "../types";
 
 const LABEL: Record<NextUp["mode"], string> = { resume: "Resume", next: "Next episode", start: "Play", rewatch: "Watch again" };
@@ -79,7 +79,10 @@ function ShowView({ show }: { show: Show }) {
 
 export default function ShowDetail() {
   const { id } = useParams();
-  const { data, error, reload } = useAsync(() => api<Show>(`/api/shows/${id}`), [id]);
+  const { data, error, reload, setData } = useAsync(() => api<Show>(`/api/shows/${id}`), [id]);
+  // Episode lengths are read in the background after a scan; pick them up without disturbing focus.
+  const pending = !!data?.seasons.some((s) => s.episodes.some((e) => e.runtime_status === "pending"));
+  useQuietRefresh(pending, data, () => api<Show>(`/api/shows/${id}`), setData);
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (!data || String(data.id) !== id) return <Loading />;
   return <ShowView key={data.id} show={data} />;

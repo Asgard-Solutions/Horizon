@@ -8,6 +8,7 @@ from pathlib import Path
 from .config import PROJECT_DIR
 
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # no console window flashes on Windows
+LOW_PRIORITY = getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0)  # background reads yield CPU on Windows
 BROWSER_SAFE_CONTAINERS = {"mp4", "m4v", "mov", "webm"}
 BROWSER_UNSUPPORTED_CONTAINERS = {"avi", "wmv", "flv", "mpg", "mpeg", "ts", "m2ts", "mts", "vob", "divx", "3gp"}
 SAFE_VIDEO = {"h264", "vp8", "vp9", "av1"}
@@ -40,10 +41,12 @@ def ffprobe_version(ffprobe: str | None) -> str | None:
         return None
 
 
-def probe_file(ffprobe: str, path: str) -> dict:
+def probe_file(ffprobe: str, path: str, background: bool = False) -> dict:
+    """Read-only inspection: FFprobe only opens the file for reading."""
     cmd = [ffprobe, "-v", "error", "-print_format", "json", "-show_format", "-show_streams", path]
+    flags = NO_WINDOW | (LOW_PRIORITY if background else 0)
     out = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30,
-                         stdin=subprocess.DEVNULL, creationflags=NO_WINDOW)
+                         stdin=subprocess.DEVNULL, creationflags=flags)
     if out.returncode != 0:
         return {"error": (out.stderr or "ffprobe failed").strip()[:500]}
     data = json.loads(out.stdout or "{}")

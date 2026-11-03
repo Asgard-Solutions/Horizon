@@ -36,7 +36,8 @@ export function EpisodeCard({ ep, dist, selected, autofocus, onSelect, onPlay }:
           <span className="ep-play" aria-hidden="true"><Play size={26} fill="currentColor" /></span>
         </span>
         <span className="ep-text">
-          <span className="ep-meta"><b>{code}</b>{runtime && <span data-testid={`episode-runtime-${ep.id}`}>{runtime}</span>}</span>
+          <span className="ep-meta"><b>{code}</b>{runtime ? <span data-testid={`episode-runtime-${ep.id}`}>{runtime}</span>
+            : ep.runtime_status === "pending" && <span className="ep-pending" data-testid={`episode-runtime-pending-${ep.id}`}>Reading length…</span>}</span>
           <span className="ep-title">{title}</span>
           {ep.plot && <span className="ep-plot">{ep.plot}</span>}
         </span>

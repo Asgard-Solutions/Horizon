@@ -1,8 +1,8 @@
 /* Horizon Home: The Stage, the Horizon Line, the Living Filmstrip, first run and status. Tokens only. */
-.home { position: relative; display: flex; flex-direction: column; min-height: calc(100vh - 88px); margin-top: calc(-1 * clamp(64px, 8vh, 88px)); }
+.home { position: relative; display: flex; flex-direction: column; min-height: calc(calc(100 * var(--vh)) - 88px); margin-top: calc(-1 * clamp(64px, calc(8 * var(--vh)), 88px)); }
 
 /* ---------- The Stage ---------- */
-.stage { position: relative; min-height: clamp(380px, 47vh, 560px); display: flex; align-items: flex-end; overflow: hidden; isolation: isolate; }
+.stage { position: relative; min-height: clamp(380px, calc(47 * var(--vh)), 560px); display: flex; align-items: flex-end; overflow: hidden; isolation: isolate; }
 .stage-art { position: absolute; inset: 0; z-index: -2; animation: h-fade var(--h-duration-stage) var(--h-cubicBezier-settle) both; }
 .stage-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
 .stage-backdrop--poster { filter: blur(48px) saturate(1.15); opacity: 0.42; transform: scale(1.25); }
@@ -38,7 +38,7 @@
 .horizon-line path { transition: d var(--h-duration-filmstrip) var(--h-cubicBezier-focus); }
 
 /* ---------- Living Filmstrip ---------- */
-.filmstrip { --poster-w: clamp(140px, 10vw, 200px); position: relative; z-index: 1; }
+.filmstrip { --poster-w: clamp(140px, calc(10 * var(--vw)), 200px); position: relative; z-index: 1; }
 .filmstrip-head { display: flex; align-items: center; gap: 16px; padding: 0 var(--safe-x); flex-wrap: wrap; }
 .filmstrip-groups { display: flex; gap: 8px; flex-wrap: wrap; }
 .gtab { position: relative; min-height: 48px; padding: 0 18px; border: 0; border-radius: var(--h-radius-button); background: transparent;
@@ -49,7 +49,7 @@
 .gtab-count { color: var(--faint); font-weight: 500; margin-left: 4px; }
 .filmstrip-head .hbtn--quiet { margin-left: auto; }
 
-.filmstrip-track { display: flex; gap: clamp(16px, 1.4vw, 28px); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+.filmstrip-track { display: flex; gap: clamp(16px, calc(1.4 * var(--vw)), 28px); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
   padding: 52px var(--safe-x) 24px; perspective: 1600px; }
 .filmstrip-track::-webkit-scrollbar { display: none; }
 .film-slot { flex: 0 0 var(--poster-w); min-width: 0; }
@@ -79,7 +79,7 @@ body[data-input="keys"] .film:focus .film-art, body[data-input="pad"] .film:focu
   background: rgba(10, 14, 21, 0.85); color: var(--ok); }
 
 .filmstrip--grid .filmstrip-track { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--poster-w), 1fr)); overflow: visible;
-  gap: 32px clamp(16px, 1.4vw, 28px); perspective: none; }
+  gap: 32px clamp(16px, calc(1.4 * var(--vw)), 28px); perspective: none; }
 .filmstrip--grid .film--selected .film-art { border-color: var(--h-color-border-strong); }
 
 /* ---------- Status & hints ---------- */
@@ -93,9 +93,9 @@ kbd { font-family: var(--font); font-size: 0.85em; padding: 1px 8px; border-radi
   background: var(--h-color-bg-surface); color: var(--muted); }
 
 /* ---------- First run ---------- */
-.firstrun { position: relative; min-height: calc(100vh - 88px); display: flex; align-items: center; overflow: hidden; }
+.firstrun { position: relative; min-height: calc(calc(100 * var(--vh)) - 88px); display: flex; align-items: center; overflow: hidden; }
 .firstrun-art { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 70%; pointer-events: none; }
-.firstrun-copy { position: relative; max-width: 760px; padding: 0 var(--safe-x) 18vh; display: flex; flex-direction: column; gap: 20px;
+.firstrun-copy { position: relative; max-width: 760px; padding: 0 var(--safe-x) calc(18 * var(--vh)); display: flex; flex-direction: column; gap: 20px;
   animation: h-rise var(--h-duration-details) var(--h-cubicBezier-settle) both; }
 .firstrun-copy h1 { margin: 0; font-family: var(--display); font-weight: 600; font-size: var(--fs-hero); line-height: var(--h-lineHeight-tight); letter-spacing: -0.02em; }
 .firstrun-copy p { margin: 0; color: var(--muted); font-size: var(--fs-body); max-width: 56ch; }
@@ -115,13 +115,13 @@ kbd { font-family: var(--font); font-size: 0.85em; padding: 1px 8px; border-radi
   .stage-scrim { background: linear-gradient(0deg, var(--h-color-bg-canvas) 5%, rgba(10, 14, 21, 0.72) 60%, rgba(10, 14, 21, 0.55) 100%); }
 }
 @media (max-height: 799px) {
-  .stage { min-height: clamp(300px, 46vh, 380px); }
+  .stage { min-height: clamp(300px, calc(46 * var(--vh)), 380px); }
   .stage-copy, .stage-text { gap: 8px; }
   .stage-copy { padding-top: 84px; padding-bottom: 16px; }
   .stage-actions { margin-top: 4px; }
   .stage-actions .hbtn { min-height: 56px; }
   .stage-plot { -webkit-line-clamp: 2; }
-  .filmstrip { --poster-w: clamp(110px, 8.5vw, 136px); }
+  .filmstrip { --poster-w: clamp(110px, calc(8.5 * var(--vw)), 136px); }
   .filmstrip-track { padding-top: 40px; padding-bottom: 12px; }
   .libstatus { padding-top: 8px; }
 }
