@@ -157,6 +157,7 @@
   font-size: var(--fs-fine); font-weight: 600; color: var(--muted); text-shadow: 0 1px 8px #0A0E15; pointer-events: none; }
 .star--selected { z-index: 3; }
 .star--selected .star-body { transform: scale(1.3); }
+.sky--overview .star--selected .star-body { transform: scale(1.16); } /* dense overview: keep neighbouring labels readable */
 .star--selected .star-label { color: var(--text); font-size: var(--fs-meta); max-width: 260px; z-index: 4; background: rgb(10 14 21 / 0.8); padding: 2px 8px; border-radius: 8px; }
 .star:focus-visible .star-body, body[data-input="keys"] .star:focus .star-body, body[data-input="pad"] .star:focus .star-body { box-shadow: var(--focus); }
 .sky--cluster .star--selected .star-label { top: calc(100% + 14px); max-width: 260px; }

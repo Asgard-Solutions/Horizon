@@ -49,7 +49,7 @@ export default function Search() {
   const lastResult = useRef<string | null>(restore?.key ?? null);
   const exitRight = () => {
     const all = Array.from(document.querySelectorAll<HTMLElement>(".search-results [data-key]"));
-    const el = all.find((x) => x.dataset.key === lastResult.current) ?? all[0];
+    const el = all.find((x) => x.dataset.key === lastResult.current) ?? all[0] ?? document.querySelector<HTMLElement>(".search-results button");
     el?.focus({ preventScroll: true });
     el?.scrollIntoView({ block: "nearest" });
     return !!el;
@@ -74,7 +74,7 @@ export default function Search() {
     const all = Array.from(document.querySelectorAll<HTMLElement>(".search-results [data-key]"));
     const el = all.find((x) => x.dataset.key === restore.key) ?? all[Math.min(restore.index, all.length - 1)];
     if (el) { el.focus({ preventScroll: true }); window.scrollTo({ top: restore.scroll, behavior: "auto" }); }
-    else document.querySelector<HTMLElement>(".osk-key")?.focus();
+    else (document.querySelector<HTMLElement>(`[data-testid="${sessionStorage.getItem("horizon.search.oskKey") ?? "osk-key-a"}"]`) ?? document.querySelector<HTMLElement>(".osk-key"))?.focus();
   }, [res, restore]);
 
   const open = (key: string, to: string) => {

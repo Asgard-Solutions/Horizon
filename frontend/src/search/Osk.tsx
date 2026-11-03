@@ -37,7 +37,7 @@ export function Osk({ onKey, onBackspace, onClear, onExitRight, autofocus }: Pro
   return (
     <div className="osk" ref={box} role="group" aria-label="On-screen keyboard" onKeyDown={onKeyDown} onFocus={onFocus} data-testid="osk">
       {ROWS.map((row) => (
-        <div className="osk-row" key={row} data-nav-row>
+        <div className="osk-row" key={row} data-nav-row data-nav-up={row === ROWS[0] ? '[data-testid="search-input"]' : undefined}>
           {[...row].map((ch) => (
             <button key={ch} className="osk-key" onClick={() => onKey(ch)}
               data-testid={`osk-key-${ID[ch] ?? ch}`} aria-label={NAMES[ch] ?? ch.toUpperCase()}>{ch.toUpperCase()}</button>

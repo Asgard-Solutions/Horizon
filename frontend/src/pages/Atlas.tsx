@@ -11,10 +11,12 @@ import { detailPath } from "../discover/query";
 import { useAsync, useBack } from "../hooks";
 import type { AtlasData, AtlasNode, DiscoverPage, MediaItem } from "../types";
 
-type Level = { node: AtlasNode | null; page: number; focus: [number, number] };
+type Level = { node: AtlasNode | null; page: number; focus: [number, number]; key?: string };
 const STACK_KEY = "horizon.atlas.stack";
 const MODE_KEY = "horizon.atlas.mode";
 const loadStack = (): Level[] => { try { const s = JSON.parse(sessionStorage.getItem(STACK_KEY) ?? "null"); return Array.isArray(s) && s.length ? s : [{ node: null, page: 0, focus: [0, 0] }]; } catch { return [{ node: null, page: 0, focus: [0, 0] }]; } };
+// Only ids and positions are remembered; group contents always come from the fresh /api/atlas response.
+const saveStack = (s: Level[]) => sessionStorage.setItem(STACK_KEY, JSON.stringify(s.map((l) => ({ ...l, node: l.node && { ...l.node, children: undefined } }))));
 
 function nodeQuery(n: AtlasNode): string {
   if (n.kind === "type") return `view=${n.value === "movie" ? "movies" : "shows"}`;
@@ -33,8 +35,14 @@ export default function Atlas() {
   const [page, setPage] = useState<{ key: string; items: MediaItem[]; total: number } | null>(null);
   const toolbar = useRef<HTMLDivElement>(null);
   const level = stack[stack.length - 1];
-  const node = level.node;
-  useEffect(() => sessionStorage.setItem(STACK_KEY, JSON.stringify(stack)), [stack]);
+  const overview = useMemo(() => (data ? overviewRings(data) : []), [data]);
+  const live = useMemo(() => {
+    const m = new Map<string, AtlasNode>();
+    for (const n of overview.flat()) { m.set(n.id, n); for (const c of n.children ?? []) m.set(c.id, c); }
+    return m;
+  }, [overview]);
+  const node = level.node ? live.get(level.node.id) ?? null : null;
+  useEffect(() => saveStack(stack), [stack]);
 
   const pageKey = node && node.kind !== "more" ? `${nodeQuery(node)}&p=${level.page}` : null;
   useEffect(() => {
@@ -44,7 +52,6 @@ export default function Atlas() {
       .then((d) => setPage({ key, items: d.items as MediaItem[], total: d.total }));
   }, [node, level.page]);
 
-  const overview = useMemo(() => (data ? overviewRings(data) : []), [data]);
   const groupItems = node?.kind === "more" ? (node.children ?? []).slice(level.page * PAGE_SIZE, (level.page + 1) * PAGE_SIZE) : null;
   const titles = page && page.key === pageKey ? page.items : null;
   const total = node ? (node.kind === "more" ? node.children?.length ?? 0 : page?.total ?? node.count) : data?.total ?? 0;
@@ -56,18 +63,29 @@ export default function Atlas() {
   const focused = rings[level.focus[0]]?.[level.focus[1]] ? flat[focusIdx] : undefined;
 
   const patch = useCallback((p: Partial<Level>) => setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], ...p }]), []);
-  // Restored levels may point at titles or groups that were removed since: fall back to the nearest valid spot.
+  const focusAt = (r: number, i: number) => patch({ focus: [r, i], key: rings[r]?.[i]?.key });
+  // Restored levels may point at titles or groups that were removed or re-sorted since: prefer the same node by id,
+  // else the nearest valid spot; a vanished cluster zooms out one level.
   const ready = !node || !!groupItems || !!titles;
   useEffect(() => {
-    if (!data || !ready) return;
+    if (!data) return;
+    if (level.node && !node) { setStack((s) => (s.length > 1 ? s.slice(0, -1) : [{ node: null, page: 0, focus: [0, 0] }])); return; }
+    if (!ready) return;
     if (node && !rings.length) {
-      if (level.page > 0) patch({ page: pages - 1, focus: [0, 0] });
+      if (level.page > 0) patch({ page: pages - 1, focus: [0, 0], key: undefined });
       else setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
       return;
     }
-    if (!rings.length || rings[level.focus[0]]?.[level.focus[1]]) return;
+    if (!rings.length) return;
+    if (level.key && rings[level.focus[0]]?.[level.focus[1]]?.key !== level.key) {
+      for (let r = 0; r < rings.length; r++) {
+        const i = rings[r].findIndex((n) => n.key === level.key);
+        if (i >= 0) { patch({ focus: [r, i] }); return; }
+      }
+    }
+    if (rings[level.focus[0]]?.[level.focus[1]]) return;
     const r = Math.min(level.focus[0], rings.length - 1);
-    patch({ focus: [r, Math.min(level.focus[1], rings[r].length - 1)] });
+    focusAt(r, Math.min(level.focus[1], rings[r].length - 1));
   });
   const focusSelected = () => {
     let tries = 0;
@@ -84,13 +102,13 @@ export default function Atlas() {
     const idx = rings.slice(0, r).reduce((a, x) => a + x.length, 0) + i;
     const target = flat[idx];
     if (!target) return;
-    patch({ focus: [r, i] });
+    focusAt(r, i);
     if ("type" in target && (target.type === "movie" || target.type === "show")) { navigate(detailPath(target)); return; }
     setZoom("in");
-    setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], focus: [r, i] }, { node: target as AtlasNode, page: 0, focus: [0, 0] }]);
+    setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], focus: [r, i], key: rings[r]?.[i]?.key }, { node: target as AtlasNode, page: 0, focus: [0, 0] }]);
     focusSelected();
   };
-  const setPageTo = (p: number) => { if (p >= 0 && p < pages) { patch({ page: p, focus: [0, 0] }); focusSelected(); } };
+  const setPageTo = (p: number) => { if (p >= 0 && p < pages) { patch({ page: p, focus: [0, 0], key: undefined }); focusSelected(); } };
   useBack(() => {
     if (stack.length < 2) return false;
     setZoom("out");
@@ -137,7 +155,7 @@ export default function Atlas() {
         <InfoPanel node={focused} level={node ? "cluster" : "overview"} />
         {node && !groupItems && !titles ? <Loading /> : mode === "orbit" ? (
           <Sky key={`${node?.id ?? "root"}-${level.page}`} rings={rings} focus={level.focus} level={node ? "cluster" : "overview"} zoom={zoom}
-            onFocus={(r, i) => patch({ focus: [r, i] })} onOpen={openAt}
+            onFocus={focusAt} onOpen={openAt}
             onExitUp={() => toolbar.current?.querySelector<HTMLElement>("button:not([disabled]):not([hidden])")?.focus()}
             center={<><b>{crumb}</b><span>{total}</span></>} />
         ) : (
@@ -148,11 +166,11 @@ export default function Atlas() {
               const on = level.focus[0] === r && level.focus[1] === i;
               return item && "type" in item ? (
                 <div role="listitem" key={n.key} aria-current={on ? "true" : undefined}>
-                  <MediaCard item={item} index={idx} onOpen={() => openAt(r, i)} onFocus={() => patch({ focus: [r, i] })} />
+                  <MediaCard item={item} index={idx} onOpen={() => openAt(r, i)} onFocus={() => focusAt(r, i)} />
                 </div>
               ) : (
                 <button key={n.key} role="listitem" className={`atlas-gcard star--${n.kind}${n.source ? ` star--${n.source}` : ""}`} aria-current={on ? "true" : undefined}
-                  data-autofocus={on || undefined} onFocus={() => patch({ focus: [r, i] })} onClick={() => openAt(r, i)} data-testid={`atlas-gnode-${n.key}`}>
+                  data-autofocus={on || undefined} onFocus={() => focusAt(r, i)} onClick={() => openAt(r, i)} data-testid={`atlas-gnode-${n.key}`}>
                   <b>{n.label}</b><span>{n.count} {n.kind === "more" ? "groups" : "titles"}</span>
                 </button>
               );
