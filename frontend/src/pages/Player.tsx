@@ -1,17 +1,19 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, Pause, Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, mediaUrl, saveProgress } from "../api";
 import { ErrorState, Loading } from "../components/States";
 import { useAsync, useBack } from "../hooks";
-import { PlayerControls, type ControlsState } from "../player/Controls";
+import { PlayerControls, type ControlsMode, type ControlsState } from "../player/Controls";
 import { mediaErrorMessage, ProblemPanel, ResumePrompt } from "../player/Panels";
 import type { PlaybackInfo } from "../types";
 
 type Phase = "blocked" | "resume" | "starting" | "ready" | "error";
+type Flash = { n: number; kind: "play" | "pause" | "back" | "fwd" };
 const NATIVE_CONTAINERS = ["mp4", "m4v", "mov", "webm"];
 const HIDE_AFTER_MS = 4000;
 const START_TIMEOUT_MS = 30000;
+const BACK_KEYS = ["Escape", "Backspace", "GoBack", "BrowserBack"];
 
 function clientCheck(info: PlaybackInfo): string[] {
   const c = info.compatibility;
@@ -22,6 +24,15 @@ function clientCheck(info: PlaybackInfo): string[] {
   return answer ? [] : [`This browser reports it cannot play "${type}".`, ...c.reasons];
 }
 
+function FlashMark({ flash }: { flash: Flash }) {
+  return (
+    <div className="pc-flash" data-kind={flash.kind} data-testid="player-flash" aria-hidden="true">
+      {flash.kind === "play" ? <Play size={44} fill="currentColor" /> : flash.kind === "pause" ? <Pause size={44} fill="currentColor" />
+        : <span>{flash.kind === "back" ? "−10" : "+10"}</span>}
+    </div>
+  );
+}
+
 export default function Player() {
   const { fileId } = useParams();
   const [search] = useSearchParams();
@@ -30,13 +41,17 @@ export default function Player() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const seekRef = useRef<HTMLButtonElement>(null);
+  const playRef = useRef<HTMLButtonElement>(null);
   const hideTimer = useRef<number>(0);
+  const flashN = useRef(0);
   const [phase, setPhase] = useState<Phase>("starting");
   const [reasons, setReasons] = useState<string[]>([]);
   const [startAt, setStartAt] = useState<number | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
-  const [visible, setVisible] = useState(true);
+  const [mode, setMode] = useState<ControlsMode>("osd");
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const [flash, setFlash] = useState<Flash | null>(null);
   const [s, setS] = useState<ControlsState>({
     playing: false, time: 0, duration: 0, buffered: 0,
     volume: Number(localStorage.getItem("mc-volume") ?? 1), muted: false, fullscreen: false,
@@ -73,44 +88,62 @@ export default function Player() {
   }, [persist, navigate, info]);
   useBack(() => exit());
 
-  const poke = useCallback(() => {
-    setVisible(true);
+  const surface = () => stageRef.current?.focus({ preventScroll: true });
+  // Controls fade ~4 s after the last interaction, but only while playing; paused keeps them on screen.
+  const arm = useCallback(() => {
     window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(() => {
       if (videoRef.current && !videoRef.current.paused) {
-        setVisible(false);
-        seekRef.current?.focus({ preventScroll: true });
+        setMode("hidden");
+        stageRef.current?.focus({ preventScroll: true });
       }
     }, HIDE_AFTER_MS);
   }, []);
+  const reveal = useCallback(() => { setMode((m) => (m === "hidden" ? "osd" : m)); arm(); }, [arm]);
+  const expand = useCallback(() => {
+    setMode("expanded");
+    arm();
+    window.setTimeout(() => playRef.current?.focus({ preventScroll: true }), 0);
+  }, [arm]);
+  const collapse = useCallback(() => {
+    setMode(videoRef.current?.paused ? "osd" : "hidden");
+    surface();
+    arm();
+  }, [arm]);
+  // B / Esc closes the expanded controls first; the next Back leaves the player.
+  useBack(() => collapse(), mode === "expanded");
+  const flashIt = (kind: Flash["kind"]) => setFlash({ n: ++flashN.current, kind });
 
   const toggle = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) v.play().catch(() => undefined);
-    else v.pause();
-    poke();
-  }, [poke]);
+    if (v.paused) { v.play().catch(() => undefined); flashIt("play"); }
+    else { v.pause(); flashIt("pause"); }
+    reveal();
+  }, [reveal]);
   const seekTo = useCallback((t: number) => {
     const v = videoRef.current;
     if (!v || !isFinite(v.duration)) return;
     v.currentTime = Math.max(0, Math.min(v.duration - 0.5, t));
-    poke();
-  }, [poke]);
-  const seekBy = useCallback((d: number) => seekTo((videoRef.current?.currentTime ?? 0) + d), [seekTo]);
+    reveal();
+  }, [reveal]);
+  const seekBy = useCallback((d: number) => {
+    flashIt(d < 0 ? "back" : "fwd");
+    seekTo((videoRef.current?.currentTime ?? 0) + d);
+  }, [seekTo]);
   const volumeBy = useCallback((d: number) => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = false;
     v.volume = Math.max(0, Math.min(1, Math.round((v.volume + d) * 10) / 10));
-    poke();
-  }, [poke]);
-  const mute = useCallback(() => { if (videoRef.current) videoRef.current.muted = !videoRef.current.muted; poke(); }, [poke]);
+    reveal();
+  }, [reveal]);
+  const mute = useCallback(() => { if (videoRef.current) videoRef.current.muted = !videoRef.current.muted; reveal(); }, [reveal]);
   const fullscreen = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => undefined);
     else stageRef.current?.requestFullscreen().catch(() => undefined);
-    poke();
-  }, [poke]);
+    reveal();
+  }, [reveal]);
 
   // Start the stream once a start position is known.
   useEffect(() => {
@@ -143,41 +176,39 @@ export default function Player() {
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
 
-  // Player key handling runs in the capture phase, before global spatial navigation.
+  // Player keys run in the capture phase, before spatial navigation. On the playback surface (controls not expanded)
+  // A/Enter toggles, Left/Right seek 10 s, Up expands. Once expanded, arrows only move focus between controls.
   useEffect(() => {
     if (phase !== "ready" && phase !== "starting") return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "Backspace" || e.key === "GoBack") return;
-      const active = document.activeElement as HTMLElement | null;
+      if (BACK_KEYS.includes(e.key) || e.altKey || e.ctrlKey || e.metaKey) return;
       const stop = () => { e.preventDefault(); e.stopPropagation(); };
       const key = e.key.toLowerCase();
       if (key === " " || key === "k" || e.key === "MediaPlayPause") return void (stop(), toggle());
       if (key === "f") return void (stop(), fullscreen());
       if (key === "m") return void (stop(), mute());
-      if (!visible) {
-        stop();
-        if (e.key === "ArrowLeft") seekBy(-10);
-        else if (e.key === "ArrowRight") seekBy(10);
-        else if (e.key === "Enter") toggle();
-        else { poke(); seekRef.current?.focus(); }
+      if (modeRef.current !== "expanded") {
+        if (e.key === "ArrowLeft") return void (stop(), seekBy(-10));
+        if (e.key === "ArrowRight") return void (stop(), seekBy(10));
+        if (e.key === "Enter") return void (stop(), toggle());
+        if (e.key === "ArrowUp") return void (stop(), expand());
+        if (e.key === "ArrowDown") return void (stop(), reveal());
         return;
       }
-      poke();
-      if (active?.dataset.seekbar !== undefined && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
-        stop();
-        seekBy(e.key === "ArrowLeft" ? -10 : 10);
-      } else if (active?.dataset.volume !== undefined && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
-        stop();
-        volumeBy(e.key === "ArrowLeft" ? -0.1 : 0.1);
-      }
+      arm();
+      const active = document.activeElement as HTMLElement | null;
+      if (!active?.closest(".pc") && e.key.startsWith("Arrow")) return void (stop(), playRef.current?.focus({ preventScroll: true }));
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (active?.dataset.seekbar !== undefined) return void (stop(), seekBy(e.key === "ArrowLeft" ? -10 : 10));
+      if (active?.dataset.volume !== undefined) return void (stop(), volumeBy(e.key === "ArrowLeft" ? -0.1 : 0.1));
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [phase, visible, toggle, fullscreen, mute, seekBy, volumeBy, poke]);
+  }, [phase, toggle, fullscreen, mute, seekBy, volumeBy, expand, reveal, arm]);
 
   useEffect(() => () => window.clearTimeout(hideTimer.current), []);
   useEffect(() => {
-    if (phase === "ready") window.setTimeout(() => seekRef.current?.focus({ preventScroll: true }), 0);
+    if (phase === "ready") window.setTimeout(surface, 0);
   }, [phase]);
 
   if (error) return <ErrorState message={error} onRetry={reload} />;
@@ -191,7 +222,8 @@ export default function Player() {
   };
 
   return (
-    <div className="player" ref={stageRef} onMouseMove={poke} data-testid="player-page" data-phase={phase}>
+    <div className="player" ref={stageRef} tabIndex={-1} data-mode={mode} data-testid="player-page" data-phase={phase}
+      onMouseMove={() => { if (modeRef.current !== "expanded") setMode("expanded"); arm(); }}>
       <video
         ref={videoRef}
         className="player-video"
@@ -208,12 +240,12 @@ export default function Player() {
           v.play().catch(() => setPhase("ready"));
           update();
         }}
-        onPlaying={() => { setPhase("ready"); poke(); update(); }}
-        onPause={() => { update(); persist(); setVisible(true); }}
+        onPlaying={() => { setPhase("ready"); arm(); update(); }}
+        onPause={() => { update(); persist(); setMode((m) => (m === "hidden" ? "osd" : m)); }}
         onTimeUpdate={update}
         onProgress={update}
         onVolumeChange={(e) => { localStorage.setItem("mc-volume", String(e.currentTarget.volume)); update(); }}
-        onEnded={() => { update(); persist(); setVisible(true); }}
+        onEnded={() => { update(); persist(); expand(); }}
         onError={(e) => { setReasons([mediaErrorMessage(e.currentTarget.error), ...info.compatibility.reasons]); setPhase("error"); }}
       />
       {phase === "starting" && startAt !== null && (
@@ -232,9 +264,11 @@ export default function Player() {
         <ProblemPanel info={info} title="Playback failed" reasons={reasons} onBack={exit} testId="playback-error-panel" />
       )}
       {warning && phase === "ready" && <div className="player-warning" role="status" data-testid="player-warning">{warning}</div>}
+      {phase === "ready" && flash && <FlashMark key={flash.n} flash={flash} />}
       {phase === "ready" && (
-        <PlayerControls s={s} visible={visible} title={ctx.title ?? info.filename} subtitle={ctx.subtitle}
-          hasNext={!!ctx.next_file_id} seekRef={seekRef} onToggle={toggle} onSeekBy={seekBy} onSeekTo={seekTo}
+        <PlayerControls s={s} mode={mode} eyebrow={ctx.kind === "movie" ? "Now playing · Movie" : "Now playing · Episode"}
+          title={ctx.title ?? info.filename} subtitle={ctx.subtitle}
+          hasNext={!!ctx.next_file_id} playRef={playRef} onToggle={toggle} onSeekBy={seekBy} onSeekTo={seekTo}
           onVolumeBy={volumeBy} onMute={mute} onFullscreen={fullscreen} onExit={exit}
           onNext={() => { persist(); navigate(`/play/${ctx.next_file_id}?start=0`, { replace: true }); }} />
       )}

@@ -62,7 +62,8 @@
 .filmstrip--strip .film-art {
   transform: translateY(calc(var(--dist) * var(--dist) * 2.2px)) rotateY(calc(var(--side) * -1 * min(var(--dist) * 2.4deg, 8deg)));
   opacity: calc(1 - var(--dist) * 0.07); }
-.filmstrip--strip .film--selected .film-art { transform: translateY(-8px) scale(1.12); opacity: 1; border-color: var(--h-color-border-strong); }
+/* Scale from the bottom edge only, so the selected label stays on the same curve as its neighbours. */
+.filmstrip--strip .film--selected .film-art { transform: scale(1.12); opacity: 1; border-color: var(--h-color-border-strong); }
 body[data-input="keys"] .film:focus .film-art, body[data-input="pad"] .film:focus .film-art, .film:focus-visible .film-art { box-shadow: var(--focus); }
 .film:hover .film-art { border-color: var(--h-color-border-strong); }
 .film-label { display: flex; flex-direction: column; gap: 2px; padding: 0 4px; min-width: 0; transition: transform var(--h-duration-poster) var(--h-cubicBezier-focus); }

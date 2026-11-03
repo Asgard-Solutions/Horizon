@@ -21,5 +21,21 @@ export function formatBytes(bytes: number): string {
 export const episodeCode = (s: number, e: number, end?: number | null) =>
   `S${String(s).padStart(2, "0")}E${String(e).padStart(2, "0")}${end ? `-E${String(end).padStart(2, "0")}` : ""}`;
 
+export function formatRuntime(seconds: number | null | undefined): string | null {
+  if (!seconds) return null;
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  if (seconds < 600 && Math.round(seconds % 60)) return `${Math.floor(seconds / 60)} min ${Math.round(seconds % 60)} s`;
+  const m = Math.round(seconds / 60);
+  return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`;
+}
+
+export function remainingLabel(p: { position: number; duration: number | null }): string | null {
+  if (!p.duration) return null;
+  const left = Math.max(0, p.duration - p.position);
+  return left < 60 ? `${Math.ceil(left)} s left` : `${Math.round(left / 60)} min left`;
+}
+
+export const isPartial = (p: { position: number; watched: boolean } | null | undefined) => !!p && !p.watched && p.position > 10;
+
 export const progressRatio = (p: { position: number; duration: number | null } | null) =>
   p && p.duration ? Math.min(1, p.position / p.duration) : 0;

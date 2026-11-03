@@ -37,6 +37,11 @@ def _progress(row) -> dict | None:
     return {"position": row["position"], "duration": row["duration"], "watched": bool(row["watched"])}
 
 
+def _runtime(row) -> float | None:
+    # Real duration only: FFprobe result cached at playback time, else the duration the player reported.
+    return row["probe_duration"] or row["duration"]
+
+
 def authorize_media_path(conn, path: str) -> str:
     """Only files located inside a configured library folder may be served."""
     real = os.path.realpath(path)
@@ -48,12 +53,13 @@ def authorize_media_path(conn, path: str) -> str:
 
 
 MOVIE_SQL = """
-SELECT m.*, f.filename, f.container, f.size, f.added_at, p.position, p.duration, p.watched
+SELECT m.*, f.filename, f.container, f.size, f.added_at, p.position, p.duration, p.watched,
+       json_extract(f.probe_json, '$.duration') AS probe_duration
 FROM movies m JOIN media_files f ON f.id = m.file_id LEFT JOIN progress p ON p.path_key = f.path_key
 """
 EPISODE_SQL = """
 SELECT e.*, s.season_number, s.show_id, sh.title AS show_title, f.filename, f.container, f.size, f.added_at,
-       p.position, p.duration, p.watched
+       p.position, p.duration, p.watched, json_extract(f.probe_json, '$.duration') AS probe_duration
 FROM episodes e JOIN seasons s ON s.id = e.season_id JOIN shows sh ON sh.id = s.show_id
 JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.path_key = f.path_key
 """
@@ -65,7 +71,7 @@ def _movie(row) -> dict:
         "filename": row["filename"], "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "poster_url": _art("movie-poster", row["id"], row["poster_path"]),
         "fanart_url": _art("movie-fanart", row["id"], row["fanart_path"]),
-        "progress": _progress(row),
+        "progress": _progress(row), "runtime": _runtime(row),
     }
 
 
@@ -76,6 +82,7 @@ def _episode(row) -> dict:
         "episode_end": row["episode_end"], "title": row["title"], "plot": row["plot"], "filename": row["filename"],
         "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "thumb_url": _art("episode-thumb", row["id"], row["thumb_path"]), "progress": _progress(row),
+        "runtime": _runtime(row),
     }
 
 

@@ -17,6 +17,7 @@ export interface Movie {
   poster_url: string | null;
   fanart_url: string | null;
   progress: Progress | null;
+  runtime: number | null;
 }
 
 export interface Episode {
@@ -34,6 +35,7 @@ export interface Episode {
   size: number;
   thumb_url: string | null;
   progress: Progress | null;
+  runtime: number | null;
 }
 
 export interface ShowSummary {

@@ -1,0 +1,75 @@
+/* Horizon player OSD: hidden during playback, minimal timeline on interaction, full controls when expanded. */
+.player:focus, .player:focus-visible { box-shadow: none !important; outline: none; }
+.player[data-mode="hidden"] { cursor: none; }
+.pc { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none;
+  opacity: 1; transition: opacity var(--h-duration-osd) var(--h-cubicBezier-settle); }
+.pc[data-mode="hidden"] { opacity: 0; }
+.pc[data-mode="hidden"] * { pointer-events: none !important; }
+.pc-top, .pc-bottom { pointer-events: auto; transition: transform var(--h-duration-details) var(--h-cubicBezier-settle); }
+.pc[data-mode="hidden"] .pc-top { transform: translateY(-14px); }
+.pc[data-mode="hidden"] .pc-bottom { transform: translateY(14px); }
+.pc-top { display: flex; align-items: center; gap: 22px; padding: var(--safe-y) var(--safe-x) 120px;
+  background: linear-gradient(180deg, rgb(10 14 21 / 0.88) 0%, rgb(10 14 21 / 0.4) 55%, rgb(10 14 21 / 0) 100%); }
+.pc-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pc-eyebrow { color: var(--amber); font-size: var(--fs-fine); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.pc-title { font-family: var(--display); font-weight: 600; font-size: var(--fs-section); line-height: var(--h-lineHeight-heading); letter-spacing: -0.01em; }
+.pc-sub { color: var(--muted); font-size: var(--fs-meta); }
+.pc-bottom { display: flex; flex-direction: column; gap: 20px; padding: 140px var(--safe-x) var(--safe-y);
+  background: linear-gradient(0deg, rgb(10 14 21 / 0.94) 0%, rgb(10 14 21 / 0.55) 55%, rgb(10 14 21 / 0) 100%); }
+
+.pc-timeline { display: flex; flex-direction: column; gap: 10px; }
+.seekbar { position: relative; width: 100%; height: 30px; border: 0; padding: 0; background: transparent; border-radius: var(--h-radius-pill); }
+.seekbar::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; transform: translateY(-50%);
+  background: rgb(191 205 216 / 0.22); border-radius: 4px; transition: height var(--h-duration-focus); }
+.seek-buffer, .seek-fill { position: absolute; left: 0; top: 50%; height: 4px; transform: translateY(-50%); border-radius: 4px; transition: height var(--h-duration-focus); }
+.seek-buffer { background: rgb(191 205 216 / 0.32); }
+.seek-fill { background: var(--accent); box-shadow: 0 0 12px rgba(135, 232, 208, 0.45); }
+.seek-knob { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: var(--text); transform: translate(-50%, -50%) scale(0);
+  transition: transform var(--h-duration-focus) var(--h-cubicBezier-focus); }
+.pc[data-mode="expanded"] .seek-knob { transform: translate(-50%, -50%) scale(1); }
+.seekbar:focus::before, .seekbar:focus .seek-buffer, .seekbar:focus .seek-fill { height: 8px; }
+.seekbar:focus .seek-knob { transform: translate(-50%, -50%) scale(1.6); background: var(--accent); }
+.seekbar:focus { box-shadow: none !important; }
+body[data-input="keys"] .seekbar:focus .seek-knob, body[data-input="pad"] .seekbar:focus .seek-knob { box-shadow: 0 0 0 4px var(--h-color-bg-canvas), 0 0 0 7px var(--accent); }
+.pc-times { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: var(--fs-meta); font-variant-numeric: tabular-nums; }
+.pc-times > span:first-child { color: var(--text); font-weight: 600; }
+.pc-times > span:last-child { color: var(--muted); }
+.pc-times-mid { color: var(--faint); font-size: var(--fs-fine); }
+
+.pc-buttons { display: flex; align-items: center; gap: 14px; animation: pc-in var(--h-duration-details) var(--h-cubicBezier-settle) both; }
+.pc-spacer { flex: 1; }
+.pc-btn { position: relative; display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; border: 1px solid transparent;
+  background: rgb(16 25 37 / 0.6); color: var(--text);
+  transition: background-color var(--h-duration-focus), transform var(--h-duration-focus) var(--h-cubicBezier-focus); }
+.pc-btn:hover { background: var(--h-color-bg-raised); }
+.pc-btn:focus { transform: scale(1.06); }
+.pc-btn small { position: absolute; font-size: 11px; font-weight: 700; top: 50%; left: 50%; transform: translate(-50%, -40%); }
+.pc-btn--main { width: 84px; height: 84px; background: var(--accent); color: var(--accent-ink); }
+.pc-btn--main:hover { background: #A4EEDC; }
+.pc-btn--back { width: 56px; height: 56px; }
+.pc-volume { display: inline-flex; align-items: center; gap: 12px; height: 64px; padding: 0 22px; border-radius: var(--h-radius-pill);
+  border: 1px solid transparent; background: rgb(16 25 37 / 0.6); }
+.pc-volume-track { width: 110px; height: 4px; border-radius: 4px; background: rgb(191 205 216 / 0.25); overflow: hidden; }
+.pc-volume-track span { display: block; height: 100%; background: var(--text); }
+.pc-volume-num { font-variant-numeric: tabular-nums; min-width: 30px; font-size: var(--fs-fine); }
+.pc-hint { display: flex; flex-wrap: wrap; gap: 8px 26px; color: var(--faint); font-size: var(--fs-fine); }
+.pc-hint span { display: inline-flex; gap: 6px; align-items: center; }
+
+.pc-flash { position: absolute; left: 50%; top: 50%; z-index: 3; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
+  display: grid; place-items: center; background: rgb(10 14 21 / 0.62); color: var(--text); font-family: var(--display); font-weight: 600;
+  font-size: 30px; pointer-events: none; backdrop-filter: blur(12px); animation: pc-flash 650ms var(--h-cubicBezier-settle) both; }
+.pc-flash[data-kind="back"] { left: 30%; }
+.pc-flash[data-kind="fwd"] { left: 70%; }
+.pc-flash[data-kind="back"] span, .pc-flash[data-kind="fwd"] span { color: var(--accent); }
+
+@keyframes pc-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pc-flash { 0% { opacity: 0; transform: scale(0.86); } 25% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(1.04); } }
+
+@media (max-width: 900px) {
+  .pc-volume-track { display: none; }
+  .pc-btn { width: 52px; height: 52px; }
+  .pc-btn--main { width: 68px; height: 68px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-flash { animation: none; opacity: 0; }
+}

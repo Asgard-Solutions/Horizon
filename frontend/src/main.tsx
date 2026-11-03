@@ -5,6 +5,8 @@ import "@fontsource-variable/inter";
 import "./theme/horizon.theme.css";
 import "./styles.css";
 import "./home/home.css";
+import "./detail/detail.css";
+import "./player/player.css";
 import App from "./App";
 
 createRoot(document.getElementById("root")!).render(

@@ -1,77 +1,86 @@
-import { CheckCircle2, Play } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Play, RotateCcw } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { api, mediaUrl } from "../api";
-import { TitleArt } from "../components/TitleArt";
+import { api } from "../api";
 import { ErrorState, Loading } from "../components/States";
-import { episodeCode, formatTime, progressRatio } from "../format";
+import { DetailShell } from "../detail/DetailShell";
+import { EpisodeJourney } from "../detail/EpisodeJourney";
+import { WatchProgress } from "../detail/WatchProgress";
+import { defaultEpisode, forgetShowFocus, nextUp, recallShowFocus, rememberShowFocus, type NextUp } from "../detail/nextUp";
+import { episodeCode, formatTime, isPartial } from "../format";
 import { useAsync } from "../hooks";
 import type { Episode, ShowDetail as Show } from "../types";
 
-function EpisodeRow({ ep }: { ep: Episode }) {
-  const navigate = useNavigate();
-  const p = ep.progress;
-  const resume = p && !p.watched && p.position > 10;
+const LABEL: Record<NextUp["mode"], string> = { resume: "Resume", next: "Next episode", start: "Play", rewatch: "Watch again" };
+
+function NextUpActions({ up, autofocus, onPlay }: { up: NextUp; autofocus: boolean; onPlay: (ep: Episode, start: number, onCard: boolean) => void }) {
+  const { ep, mode } = up;
+  const code = episodeCode(ep.season_number, ep.episode_number, ep.episode_end);
   return (
-    <button className="episode" data-testid={`episode-row-${ep.id}`}
-      onClick={() => navigate(`/play/${ep.file_id}${resume ? "" : "?start=0"}`)}>
-      <div className="episode-thumb">
-        {ep.thumb_url ? <img src={mediaUrl(ep.thumb_url)} alt="" loading="lazy" /> : <Play size={28} />}
+    <div className="dt-nextup" data-testid="show-next-up" data-mode={mode}>
+      <span className="dt-nextup-label">{mode === "resume" ? "Continue watching" : mode === "next" ? "Up next" : mode === "rewatch" ? "Seen it all" : "Start the series"}</span>
+      <span className="dt-nextup-ep" data-testid="show-next-up-episode">{code}{ep.title ? ` · ${ep.title}` : ""}</span>
+      {mode === "resume" && <WatchProgress progress={ep.progress} testId="show-next-up-progress" />}
+      <div className="dt-actions">
+        <button className="hbtn hbtn--primary dt-primary" data-autofocus={autofocus || undefined} data-testid="show-primary-action"
+          onClick={() => onPlay(ep, mode === "resume" ? ep.progress!.position : 0, false)}>
+          <Play size={26} fill="currentColor" /> <span>{LABEL[mode]}</span>
+          <small>{mode === "resume" ? `from ${formatTime(ep.progress!.position)}` : code}</small>
+        </button>
+        {mode === "resume" && (
+          <button className="hbtn" data-testid="show-start-over-button" onClick={() => onPlay(ep, 0, false)}>
+            <RotateCcw size={22} /> Start episode over
+          </button>
+        )}
       </div>
-      <div className="episode-text">
-        <span className="episode-code">{episodeCode(ep.season_number, ep.episode_number, ep.episode_end)}</span>
-        <span className="episode-title">{ep.title || `Episode ${ep.episode_number}`}</span>
-        <span className="episode-file">{ep.filename}</span>
-        {resume && <span className="episode-resume">Resume from {formatTime(p!.position)}</span>}
+    </div>
+  );
+}
+
+function ShowView({ show }: { show: Show }) {
+  const navigate = useNavigate();
+  const { seasons } = show;
+  const up = useMemo(() => nextUp(seasons), [seasons]);
+  const [restored] = useState(() => recallShowFocus(show.id, seasons));
+  const [seasonIdx, setSeasonIdx] = useState(restored?.season ?? up?.seasonIdx ?? 0);
+  const [picked, setPicked] = useState<Record<number, number>>(() =>
+    restored ? { [restored.season]: restored.episodeId } : up ? { [up.seasonIdx]: up.ep.id } : {});
+  const season = seasons[seasonIdx];
+  const selectedId = picked[seasonIdx] ?? defaultEpisode(season)?.id;
+
+  const play = useCallback((ep: Episode, start: number, onCard: boolean) => {
+    const idx = seasons.findIndex((s) => s.episodes.some((e) => e.id === ep.id));
+    rememberShowFocus({ showId: show.id, season: idx, episodeId: ep.id, onCard });
+    navigate(`/play/${ep.file_id}?start=${Math.floor(start)}`);
+  }, [navigate, seasons, show.id]);
+  const onSelect = useCallback((ep: Episode) => setPicked((p) => ({ ...p, [seasonIdx]: ep.id })), [seasonIdx]);
+  const onCard = useCallback((ep: Episode) => play(ep, isPartial(ep.progress) ? ep.progress!.position : 0, true), [play]);
+
+  return (
+    <DetailShell backdrop={show.fanart_url} poster={season?.poster_url || show.poster_url} testId="show-detail-page" onLeave={forgetShowFocus}>
+      <div className="dt-copy dt-copy--show">
+        <span className="dt-eyebrow">Series</span>
+        <h1 className="dt-title" data-testid="show-title">{show.title}</h1>
+        <ul className="dt-chips" aria-label="Details">
+          {show.year && <li>{show.year}</li>}
+          <li>{show.season_count} season{show.season_count === 1 ? "" : "s"}</li>
+          <li>{show.episode_count} episode{show.episode_count === 1 ? "" : "s"}</li>
+        </ul>
+        {show.plot && <p className="dt-plot" data-testid="show-plot">{show.plot}</p>}
+        {up && <NextUpActions up={up} autofocus={!restored?.onCard} onPlay={play} />}
       </div>
-      {p?.watched && <CheckCircle2 className="episode-watched" size={26} aria-label="Watched" />}
-      {resume && <div className="card-progress"><div style={{ width: `${progressRatio(p) * 100}%` }} /></div>}
-    </button>
+      {season && (
+        <EpisodeJourney seasons={seasons} seasonIdx={seasonIdx} onSeason={setSeasonIdx} selectedId={selectedId}
+          onSelect={onSelect} onPlay={onCard} restoreId={restored?.onCard ? restored.episodeId : null} />
+      )}
+    </DetailShell>
   );
 }
 
 export default function ShowDetail() {
   const { id } = useParams();
   const { data, error, reload } = useAsync(() => api<Show>(`/api/shows/${id}`), [id]);
-  const [seasonIdx, setSeasonIdx] = useState(0);
-  useEffect(() => setSeasonIdx(0), [id]);
   if (error) return <ErrorState message={error} onRetry={reload} />;
-  if (!data) return <Loading />;
-  const season = data.seasons[Math.min(seasonIdx, data.seasons.length - 1)];
-
-  return (
-    <div className="detail" data-testid="show-detail-page">
-      {data.fanart_url && <div className="detail-backdrop" style={{ backgroundImage: `url(${mediaUrl(data.fanart_url)})` }} />}
-      <div className="detail-body detail-body--show">
-        <div className="detail-poster">
-          {season?.poster_url || data.poster_url
-            ? <img src={mediaUrl(season?.poster_url || data.poster_url)} alt="" />
-            : <TitleArt image={null} title={data.title} kind="show" />}
-        </div>
-        <div className="detail-info">
-          <h1 data-testid="show-title">{data.title}</h1>
-          <div className="detail-meta">
-            {data.year && <span>{data.year}</span>}
-            <span>{data.season_count} season{data.season_count === 1 ? "" : "s"}</span>
-            <span>{data.episode_count} episode{data.episode_count === 1 ? "" : "s"}</span>
-          </div>
-          {data.plot && <p className="detail-plot">{data.plot}</p>}
-          <div className="season-tabs" role="tablist" data-testid="season-tabs">
-            {data.seasons.map((s, i) => (
-              <button key={s.id} role="tab" aria-selected={i === seasonIdx} data-autofocus={i === 0 ? true : undefined}
-                className={i === seasonIdx ? "tab tab--active" : "tab"} onClick={() => setSeasonIdx(i)}
-                onFocus={() => setSeasonIdx(i)} data-testid={`season-tab-${s.season_number}`}>
-                {s.season_number === 0 ? "Specials" : `Season ${s.season_number}`}
-              </button>
-            ))}
-          </div>
-          {season && (
-            <div className="episodes" data-testid={`season-${season.season_number}-episodes`}>
-              {season.episodes.map((ep) => <EpisodeRow key={ep.id} ep={ep} />)}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  if (!data || String(data.id) !== id) return <Loading />;
+  return <ShowView key={data.id} show={data} />;
 }
