@@ -63,3 +63,11 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - Fixes: dt-primary focus ring, data-nav-down (actions->season tab), season tabs edge stop, ep fallback arcs (no dup text), unified remaining label, player next -> osd
 - Tests: 174 unit, 30 live (-n 0), QA iteration 7+8 100%. Report docs/HORIZON_STAGE2_REPORT.md, screenshots docs/screenshots/stage2/
 - Awaiting user approval before Stage 3. No hardware (Xbox/Windows/4K TV) validation done.
+
+## Horizon Stage 3 (2026-06) — Discover, Search, Library Atlas
+- Discover: virtualised poster wall, views, sort sheet, combinable filters/chips, collections (NFO/folder); per-result-set focus memory (index+scroll) applied on Back only
+- Search: offline search, D-pad OSK (+punctuation row), physical typing without focus steal/duplicates, OSK Right-edge -> results, restore on Back
+- Atlas: orbit rings (type/genre/collection, More folding), zoom into clusters, LB/RB paging, grid mode; restores level/cluster/page/title; fits 100vh
+- QA iteration 9 (7 bugs) -> all fixed; iteration 10 96% + last item fixed; pytest 185 unit, 30 live pass
+- Report docs/HORIZON_STAGE3_REPORT.md, screenshots docs/screenshots/stage3/
+- NOT done: physical Xbox/Windows/4K TV testing. Awaiting user approval before Stage 4

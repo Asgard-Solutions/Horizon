@@ -1,0 +1,30 @@
+{
+  "summary": "Frontend-only retest of Stage 3 at 1920x1080 and 3840x1920 (the tool caps 4K height at 1920), driven by D-pad key simulation. Of the 7 previous bugs, 6 are fixed and 1 is partly fixed. PASS: (1) Discover focus memory. Collections idx 10 -> Enter lands on collection card idx 0. Collection -> movie idx 1 -> Back -> same card. Escape and discover-collection-back -> Collections list with collection-11 idx 10 focused. Sort change after returning from a detail at idx 51 / scrollY 2301 -> focus on the Sort button. Tab switching keeps focus on the tab. (2) Genre sheet stays mounted: 3 toggles plus 1 untoggle, focus stays on the toggled option each time. Escape -> Genre button. Removing a chip -> next chip; removing the last chip -> Sort button; Reset filters -> Sort button. Focus never lands on <body>. (3) OSK ArrowRight from F/L/R/X/4/0/!/Clear -> first result (show-3); returns to the result focused before (episode-5); with no query it edge-stops. (4) Atlas grid: Crime -> page 2 -> movie-305 -> Enter -> Escape -> movie-305 focused (aria-current) on page 2/4. (5) Up from row 0 in every one of the 8 columns -> Sort button; in the Collections list -> selected tab. (7) /discover?view=shows fresh load -> TV shows tab. OSK punctuation row: all 6 testids work and type ' - . : & !. Physical 'NoR' and Shift+A keep their case. Fresh /search?q=nor -> osk-key-a. Restore on Back -> exact episode. Atlas orbit fits the viewport at 1080 (scrollHeight == innerHeight, hints at y=1066) and at 3840x1920. Movies and TV shows sit at the same y, at 9 and 3 o'clock. Grid InfoPanel is sticky (top 110px), the hint reads 'move', and the top nav is rgba(10,14,21,0.94) when scrolled. Regression OK: deep restore idx 154 with exact scrollY 7437; Search: no duplicate keystrokes, Backspace on a result deletes, PadX/PadY, Ctrl+A not hijacked; Atlas orbit nav, zoom in/out, PageDown, return from detail on page 2; Home, movie detail, player. FAIL: (6) is only partly fixed. A filter sheet with no selected option opens with focus on the Done button, not on the first option. Screenshots in /app/docs/screenshots/stage3/ refreshed (same names).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "FilterBar OptionSheet initial focus", "issue": "If no option has aria-pressed=true (e.g. Genre, Year or Watched with no filter set), focus opens on filter-sheet-close (Done), not on the first option. Cause: querySelector('.dopt, button') returns the first match in document order, and the Done button in .dsheet-head comes before the options. Sort sheet and sheets that have a selection are correct. Fix: `box.current?.querySelector('.dopt[aria-pressed=\"true\"]') ?? box.current?.querySelector('.dopt') ?? box.current?.querySelector('button')`.", "selector": "[data-testid=filter-sheet] .dopt", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Search via top nav", "issues": ["Pressing Enter on nav-search keeps focus on the nav link, by app-wide design: App.tsx only autofocuses when focus is on <body>. ArrowDown then lands on osk-key-f, not osk-key-a. A fresh URL visit does focus osk-key-a. Decide whether the requirement 'fresh visit via the nav starts focus on the OSK first key' should move focus into the OSK."]},
+      {"screen": "Player", "issues": ["The first Escape moves focus from the play/pause button to player-page; the second Escape exits. Likely the existing hide-controls-first behaviour, not a Stage 3 regression."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "FilterBar.tsx OptionSheet: when nothing is selected, focus the first .dopt, not the Done button",
+    "Optional: when the Search page is opened from the top nav, move focus to osk-key-a (or confirm that keeping focus on the nav is intended)"
+  ],
+  "critical_code_review_comments": [
+    "FilterBar.tsx line 14: the selector-list precedence bug described above.",
+    "usePagedItems: facets come from the previous result while the next one loads (good), but `first` is null in that window, so the grid unmounts and shows Loading. If a grid card had focus during a query change it would drop to body; current flows avoid this because focus is always on a filter control.",
+    "Atlas focusSelected polls with setInterval up to 2 s. It works, but a ref/effect tied to the rendered aria-current node would be cleaner."
+  ],
+  "updated_files": ["/app/docs/screenshots/stage3/*.jpeg (12 screenshots refreshed)"],
+  "success_rate": {"backend": "N/A", "frontend": "96%"},
+  "seed_data_creation": "None. Read-only browsing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Filter testids: discover-filter-genre/decade/state/type; options filter-option-<facet>-<value>; sort-option-<id>. Collection cards are discover-card-collection-<id>; collection-11 is at idx 10 at 8 cols. The 'nor' search returns show-3 plus episodes 5-9. The browser tool caps the viewport at 3840x1920. Sample movie files are 1 s long. The only open item is the sheet initial focus when nothing is selected."
+}

@@ -11,7 +11,7 @@ function OptionSheet({ title, children, onClose }: { title: string; children: Re
   useBack(() => { onClose(); return true; });
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
-    (box.current?.querySelector<HTMLElement>(".dopt[aria-pressed='true']") ?? box.current?.querySelector<HTMLElement>(".dopt, button"))?.focus();
+    (box.current?.querySelector<HTMLElement>(".dopt[aria-pressed='true']") ?? box.current?.querySelector<HTMLElement>(".dopt") ?? box.current?.querySelector<HTMLElement>("button"))?.focus();
     return () => prev?.focus({ preventScroll: true });
   }, []);
   return (
