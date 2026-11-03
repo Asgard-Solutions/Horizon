@@ -31,10 +31,11 @@
 .seekbar:focus .seek-knob { transform: translate(-50%, -50%) scale(1.6); background: var(--accent); }
 .seekbar:focus { box-shadow: none !important; }
 body[data-input="keys"] .seekbar:focus .seek-knob, body[data-input="pad"] .seekbar:focus .seek-knob { box-shadow: 0 0 0 4px var(--h-color-bg-canvas), 0 0 0 7px var(--accent); }
-.pc-times { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: var(--fs-meta); font-variant-numeric: tabular-nums; }
+.pc-times { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: var(--fs-meta); font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 10px rgb(10 14 21 / 0.9), 0 0 2px rgb(10 14 21 / 0.8); }
 .pc-times > span:first-child { color: var(--text); font-weight: 600; }
-.pc-times > span:last-child { color: var(--muted); }
-.pc-times-mid { color: var(--faint); font-size: var(--fs-fine); }
+.pc-times > span:last-child { color: var(--text); }
+.pc-times-mid { color: var(--muted); font-size: var(--fs-fine); }
 
 .pc-buttons { display: flex; align-items: center; gap: 14px; animation: pc-in var(--h-duration-details) var(--h-cubicBezier-settle) both; }
 .pc-spacer { flex: 1; }
@@ -71,5 +72,6 @@ body[data-input="keys"] .seekbar:focus .seek-knob, body[data-input="pad"] .seekb
   .pc-btn--main { width: 68px; height: 68px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pc-flash { animation: none; opacity: 0; }
+  /* No motion: a static mark, removed by the player after a moment. */
+  .pc-flash { animation: none; opacity: 1; }
 }

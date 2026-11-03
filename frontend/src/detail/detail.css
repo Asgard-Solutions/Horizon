@@ -18,8 +18,8 @@
       rgb(10 14 21 / calc(0.14 + var(--tone) * 0.36)) 70%, rgb(10 14 21 / calc(0.06 + var(--tone) * 0.2)) 100%),
     linear-gradient(0deg, var(--h-color-bg-canvas) 0%, rgb(10 14 21 / 0.72) 34%, rgb(10 14 21 / 0) 62%),
     linear-gradient(180deg, rgb(10 14 21 / 0.85) 0%, rgb(10 14 21 / 0) 20%); }
-.dt-content { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: clamp(20px, 3vh, 40px);
-  padding: clamp(110px, 16vh, 200px) 0 var(--safe-y); }
+.dt-content { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: clamp(16px, 2.4vh, 32px);
+  padding: clamp(96px, 11vh, 160px) 0 clamp(16px, 3vh, 40px); }
 
 .dt-copy { width: min(54%, 900px); min-width: min(600px, 100%); padding: 0 var(--safe-x); display: flex; flex-direction: column; gap: 16px;
   animation: h-rise var(--h-duration-details) var(--h-cubicBezier-settle) 80ms both; text-shadow: 0 1px 18px rgba(10, 14, 21, 0.6); }
@@ -44,17 +44,19 @@
 .dt-tech { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; max-width: 760px; opacity: 0.85; text-shadow: none; }
 .dt-tech .compat { background: rgb(16 25 37 / 0.7); font-size: var(--fs-fine); padding: 10px 14px; }
 .dt-tech .file-facts { font-size: var(--fs-fine); color: var(--faint); }
-.dt-nextup { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.dt-nextup { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+.dt-copy--show { gap: 12px; }
+.dt-copy--show .dt-plot { -webkit-line-clamp: 3; }
 .dt-nextup-label { color: var(--accent); font-weight: 600; font-size: var(--fs-meta); }
 .dt-nextup-ep { font-size: var(--fs-card); font-weight: 600; }
 
 /* ---------- Episode Journey ---------- */
-.journey { --ep-w: clamp(300px, 21vw, 420px); position: relative; animation: h-rise var(--h-duration-details) var(--h-cubicBezier-settle) 160ms both; }
+.journey { --ep-w: clamp(280px, 18vw, 380px); position: relative; animation: h-rise var(--h-duration-details) var(--h-cubicBezier-settle) 160ms both; }
 .journey-tabs { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 var(--safe-x); }
 .journey-track { display: flex; gap: clamp(16px, 1.4vw, 28px); overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
-  padding: 26px var(--safe-x) 18px; animation: h-fade var(--h-duration-filmstrip) var(--h-cubicBezier-settle) both; }
+  padding: 22px var(--safe-x) 14px; animation: h-fade var(--h-duration-filmstrip) var(--h-cubicBezier-settle) both; }
 .journey-track::-webkit-scrollbar { display: none; }
-.ep-slot { flex: 0 0 var(--ep-w); }
+.ep-slot { flex: 0 0 var(--ep-w); min-width: 0; }
 .ep { width: 100%; display: flex; flex-direction: column; gap: 14px; padding: 0; border: 0; background: none; text-align: left; color: inherit; }
 .ep:focus, .ep:focus-visible { box-shadow: none !important; transform: none; }
 .ep-art { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: var(--h-radius-card); overflow: hidden;
@@ -76,7 +78,7 @@ body[data-input="keys"] .ep:focus .ep-art, body[data-input="pad"] .ep:focus .ep-
 .ep-badge--partial { color: var(--amber); }
 .ep-dot { position: absolute; top: 14px; right: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
   box-shadow: 0 0 10px rgba(135, 232, 208, 0.7); }
-.ep-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgb(10 14 21 / 0.7); }
+.ep-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: rgb(10 14 21 / 0.9); box-shadow: 0 -1px 0 rgb(10 14 21 / 0.6); }
 .ep-progress span { display: block; height: 100%; background: var(--amber); }
 .ep-play { position: absolute; right: 14px; bottom: 16px; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
   background: var(--accent); color: var(--accent-ink); opacity: 0; transform: scale(0.85);

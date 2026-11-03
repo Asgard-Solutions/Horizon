@@ -113,6 +113,11 @@ export default function Player() {
   // B / Esc closes the expanded controls first; the next Back leaves the player.
   useBack(() => collapse(), mode === "expanded");
   const flashIt = (kind: Flash["kind"]) => setFlash({ n: ++flashN.current, kind });
+  useEffect(() => {
+    if (!flash) return;
+    const t = window.setTimeout(() => setFlash(null), 700);
+    return () => window.clearTimeout(t);
+  }, [flash]);
 
   const toggle = useCallback(() => {
     const v = videoRef.current;

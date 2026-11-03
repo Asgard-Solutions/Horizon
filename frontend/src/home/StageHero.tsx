@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { mediaUrl } from "../api";
 import { TitleArt } from "../components/TitleArt";
 import { progressRatio } from "../format";
-import type { StageItem } from "./adapter";
+import { rememberStageAction, type StageAction, type StageItem } from "./adapter";
 
 /** The Stage: one selected real title. Selection never starts playback; actions do. */
-export function StageHero({ item, autofocus }: { item: StageItem; autofocus: boolean }) {
+export function StageHero({ item, autofocus }: { item: StageItem; autofocus: StageAction | null }) {
   const navigate = useNavigate();
   const backdrop = item.backdrop ?? item.poster;
   const ratio = progressRatio(item.progress);
@@ -36,14 +36,16 @@ export function StageHero({ item, autofocus }: { item: StageItem; autofocus: boo
         )}
         </div>
         <div className="stage-actions">
-          <button className="hbtn hbtn--primary" data-autofocus={autofocus || undefined} onClick={() => navigate(item.primary.to)}
+          <button className="hbtn hbtn--primary" data-autofocus={autofocus === "primary" || undefined}
+            onClick={() => { rememberStageAction("primary"); navigate(item.primary.to); }}
             data-testid="stage-primary-action">
             <PrimaryIcon size={24} strokeWidth={2.2} />
             <span>{item.primary.label}</span>
             {item.primary.hint && <small>{item.primary.hint}</small>}
           </button>
           {item.details && (
-            <button className="hbtn" onClick={() => navigate(item.details!)} data-testid="stage-details-action">
+            <button className="hbtn" data-autofocus={autofocus === "details" || undefined}
+              onClick={() => { rememberStageAction("details"); navigate(item.details!); }} data-testid="stage-details-action">
               <Info size={22} /> Details
             </button>
           )}

@@ -89,4 +89,12 @@ export function recallFocus(): { group: string; key: string } | null {
   }
 }
 export const loadView = (): "strip" | "grid" => (localStorage.getItem(VIEW_KEY) === "grid" ? "grid" : "strip");
+const STAGE_KEY = "horizon.home.stageAction";
+export type StageAction = "primary" | "details";
+export const rememberStageAction = (a: StageAction) => sessionStorage.setItem(STAGE_KEY, a);
+export const peekStageAction = (): StageAction | null => {
+  const v = sessionStorage.getItem(STAGE_KEY);
+  return v === "primary" || v === "details" ? v : null;
+};
+export const clearStageAction = () => sessionStorage.removeItem(STAGE_KEY);
 export const saveView = (v: "strip" | "grid") => localStorage.setItem(VIEW_KEY, v);

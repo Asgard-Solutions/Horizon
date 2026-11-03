@@ -38,7 +38,8 @@ export function EpisodeJourney({ seasons, seasonIdx, onSeason, selectedId, onSel
       e.preventDefault();
       const inside = !!track.current?.contains(document.activeElement);
       onSeason(i);
-      if (inside) window.setTimeout(() => track.current?.querySelector<HTMLElement>('[aria-current="true"], .ep')?.focus({ preventScroll: true }), 0);
+      if (inside) window.setTimeout(() => (track.current?.querySelector<HTMLElement>('[aria-current="true"]')
+        ?? track.current?.querySelector<HTMLElement>(".ep"))?.focus({ preventScroll: true }), 0);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

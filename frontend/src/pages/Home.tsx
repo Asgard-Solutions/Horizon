@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api";
 import { ErrorState, Loading } from "../components/States";
-import { buildGroups, loadView, recallFocus, rememberFocus, saveView, type FilmGroup, type StageItem } from "../home/adapter";
+import { buildGroups, clearStageAction, loadView, peekStageAction, recallFocus, rememberFocus, saveView, type FilmGroup, type StageItem } from "../home/adapter";
 import { FirstRun } from "../home/FirstRun";
 import { HorizonLine } from "../home/HorizonLine";
 import { LibraryStatus } from "../home/LibraryStatus";
@@ -36,6 +36,9 @@ function HomeStage({ data }: { data: HomeData }) {
   const [restoreKey, setRestoreKey] = useState(restored?.key ?? null);
   const [anchor, setAnchor] = useState<number | null>(null);
   const [width, setWidth] = useState(0);
+  // Returning from a Stage action (Resume / Details) puts focus back on that same action.
+  const [stageAction] = useState(peekStageAction);
+  useEffect(() => clearStageAction(), []);
   const timer = useRef<number>(0);
   const root = useRef<HTMLDivElement>(null);
 
@@ -69,7 +72,7 @@ function HomeStage({ data }: { data: HomeData }) {
 
   return (
     <div className="home" ref={root} data-testid="home-page">
-      <StageHero item={stageItem} autofocus={!restored} />
+      <StageHero item={stageItem} autofocus={stageAction ?? (restored ? null : "primary")} />
       <HorizonLine anchor={view === "strip" ? anchor : null} width={width} />
       <LivingFilmstrip groups={groups} group={group} onGroup={changeGroup} selectedKey={selectedKey} onSelect={select}
         view={view} onView={changeView} restoreKey={restoreKey} onAnchor={setAnchor} />

@@ -45,3 +45,13 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - QA iteration 5: frontend 100%
 - Open cosmetic: selected-card label offset, duplicate title on fallback art, 4K UI scale
 - Next: Stage 2 (Movie/Show detail, Player, Settings in Horizon style)
+
+## Horizon Stage 2 (2026-06) — Details, Episode Journey, Player
+- Full-screen detail pages (adaptive scrim, art fallbacks, Resume/Start over/progress, enter/leave motion)
+- Show page: season tabs + horizontal Episode Journey, watched/partial/unwatched states, next-up from real progress, focus restore
+- Player: hidden/osd/expanded modes, A toggles, L/R 10 s, Up expands, B collapses then exits, 4 s fade while playing
+- Card polish: slot min-width fix (label alignment), monogram fallback art, Stage action focus restore
+- Backend: runtime field (cached ffprobe or progress duration). Sample media: Northern Survey show
+- QA iteration 6 pass (1 bug fixed by QA); pytest 167 pass. Report: /app/docs/HORIZON_STAGE2_REPORT.md
+- NOT done: physical Xbox/Windows test; 4K scale; scan-time runtime probing
+- Next: Stage 3 (await user go-ahead)

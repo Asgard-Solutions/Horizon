@@ -1,0 +1,53 @@
+{
+  "summary": "Horizon Stage 2 tested at 1920x1080 through the preview URL: movie and show detail pages, the Episode Journey, the player OSD, gamepad simulation, a Home regression check and reduced motion. Backend: the existing 161 pytest tests pass, plus 6/6 in the new tests/test_detail_stage2.py. Frontend: almost every requested behaviour passes. I found and fixed one real bug: PageUp/PageDown in the episode strip always focused the season's FIRST episode instead of the previously selected one. That fix has been re-verified. A few minor polish issues remain.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "PUT/DELETE /api/progress/{id}", "issue": "Returns 403 without the X-MC-Client header. This is by design (CSRF guard); noted only so that test writers include the header."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "EpisodeJourney PageUp/PageDown", "issue": "FIXED BY T1. querySelector('[aria-current=\"true\"], .ep') returns the first match in DOM order, so the first .ep card always won. Focusing it also overwrote the remembered selection for that season. It now queries aria-current first and falls back to .ep. Re-verified: S1E3 -> PgDn -> S2E2 -> PgUp returns to S1E3, and PgDn returns to S2E2.", "selector": "[data-testid=season-N-episodes]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Home filmstrip", "issues": ["Label alignment is good in the 'Recently added' group (label tops 918/920/926 px). In 'Continue watching' (cw-8 with a two-line label, next to cw-2), the selected card's label top is 918 px while its neighbour's is 933 px, a 15 px offset. Art bottoms also vary with distance from the selected card (904-919 px), so the selected art does not sit exactly on the neighbours' baseline."]},
+      {"screen": "Home after returning from a detail page", "issues": ["Opening Movie detail with the stage 'Details' button (stage-details-action) and pressing Escape returns focus to stage-primary-action instead of Details. Minor."]},
+      {"screen": "Show detail /shows/3", "issues": ["The page is 1205 px tall at a 1080 px viewport. The episode plot lines sit below the fold on first load, and the page scrolls about 71 px when the strip gets focus. Consider tightening the vertical rhythm so the hero and strip fit in 1080 px.", "The partial progress bar on an episode with light artwork (S02E01, amber thumb) has low contrast."]},
+      {"screen": "Player (reduced motion)", "issues": ["Under prefers-reduced-motion, player-flash renders with opacity 0 and no animation, so there is no play/pause/seek feedback at all. Nothing gets stuck on screen, which is correct, but a short static fade-free flash may be preferable.", "Mid timeline text (duration · Ends at) is fairly low contrast over bright video frames; the scrim helps only partly."]}
+    ]
+  },
+  "passed_tests": [
+    "/movies/2: detail-backdrop (fanart loads, naturalWidth 1920), title, chips (year, runtime '1 min 30 s', 720p, MP4, AAC), movie-progress '0:54 of 1:30 · 36 s left', Resume autofocused plus Start over. Resume -> /play/2?start=54 with currentTime about 55. Start over -> ?start=0 with currentTime about 1.4. Escape returns to /movies/2 with focus back on Resume.",
+    "/movies/3: no backdrop; blurred poster background (.dt-backdrop--poster) and detail-fallback-poster shown; Play autofocused. /movies/1: detail-procedural-art shown, readable layout, 'Not playable in browser' notice.",
+    "Back from detail page: dt--leaving class is applied (leave transition), then navigates back to Home with focus restored. With reduced motion the navigation is immediate.",
+    "/shows/3: show-next-up data-mode is correct for all 4 states, set up with PUT /api/progress: resume (S1E2 partial), next (S1E2 watched -> S1E3; all of S1 watched -> S2E1 with tab 2 auto-selected), rewatch (all watched -> S1E1 'Watch again'), start (none -> 'Play S01E01'). episode-watched-<id> badges and data-state watched/partial/unwatched are correct.",
+    "Show keyboard navigation: Down from the primary action -> season-tab-1 (aria-selected). Down from the tab -> the aria-current episode (5), not the nearest one. Right/Left stop at both edges. Up from any episode -> the selected tab. Right on the tab -> Season 2 and the strip updates. Left back to tab 1 -> the previously selected S1 episode is kept. PageUp at the first season is a no-op.",
+    "Enter on episode-card-7 -> /play/10?start=0. Escape returns to /shows/3 with focus on episode-card-7 and season-tab-2 still selected.",
+    "Watch progress from real playback: about 13 s of S2E1 -> card shows partial with '20 s left' and runtime '35 s'. Playing under 10 s stays unwatched (isPartial threshold > 10 s, by design).",
+    "Player on /play/2: data-mode is osd at start and hidden about 4 s later while playing. Enter pauses (player-flash data-kind=pause) and controls stay in osd while paused (5.5 s). Left/Right seek ±10 s on the surface. Down reveals the OSD and focus stays on the surface. Up -> expanded with focus on player-play-pause-button. Right -> player-forward-button with no seek. Up -> player-seekbar, where Right/Left seek ±10 s. Escape #1 collapses (URL unchanged); Escape #2 leaves to /movies/2. player-current-time, player-remaining-time and player-ends-at are all shown.",
+    "player-next-episode-button appears on S2E1 and navigates to /play/11 (S02E02 · Return). It is absent on the last episode.",
+    "Gamepad simulation (navigator.getGamepads stub, real polling loop): D-pad, A, B, LB and RB on the show page and in the player all behave like the keyboard: A toggles, Up expands to play/pause, B collapses then leaves, A on a focused button clicks it.",
+    "Home regression: filmstrip Down/Right/edge stop and PageDown groups work. Fallback art shows a monogram (SM / LC / OS) plus the kind; the title appears once, in the label. /movies and /shows grids load with focus on the first card.",
+    "Reduced motion: show navigation, PgUp/PgDn and the player all work; player-flash has opacity 0 and is never stuck visible; no page errors."
+  ],
+  "test_report_links": ["/app/backend/tests/test_detail_stage2.py", "/app/test_reports/pytest/pytest_stage2.xml"],
+  "action_items": [
+    "Review T1's fix in EpisodeJourney.tsx (PageUp/PageDown focus target) and keep it.",
+    "Optional polish: filmstrip label baseline in mixed one-line and two-line groups (15 px offset); restore focus to stage-details-action when returning from Details; fit the show page in 1080 px; give a static flash under reduced motion."
+  ],
+  "critical_code_review_comments": [
+    "EpisodeJourney.tsx: a selector list passed to querySelector does not set priority; the first DOM match wins. That caused the PgUp/PgDn bug (now fixed). The same pattern is worth checking elsewhere; LivingFilmstrip intentionally uses '.film' only.",
+    "Player.tsx: progress is persisted in exit(), in the effect cleanup and in onPause, so leaving the player triggers 2-3 PUTs. Harmless but redundant.",
+    "Player.tsx: onMouseMove switches to expanded without focusing a control, so keyboard arrows are then caught by the 'not inside .pc -> focus play' branch. Acceptable.",
+    "The reduced() helper is duplicated in DetailShell.tsx and EpisodeJourney.tsx (spatial.ts inlines the same matchMedia); could be shared.",
+    "MovieDetail shows a Play button for an unsupported AVI, which leads to the blocked panel. Consider labelling it, e.g. 'Try to play'."
+  ],
+  "updated_files": ["/app/frontend/src/detail/EpisodeJourney.tsx", "/app/backend/tests/test_detail_stage2.py"],
+  "success_rate": {"backend": "100%", "frontend": "97% (1 bug found and fixed; remaining items are minor design notes)"},
+  "seed_data_creation": "None. Progress was changed temporarily for testing and then restored: Sample Movie (file 2) set back to 54.397367/90; S1E2 (file 8) set back to 17.837954/40; files 7, 9, 10, 11 cleared, since they had no progress originally.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Mutating APIs need the 'X-MC-Client: web' header. A gamepad can be simulated with add_init_script stubbing navigator.getGamepads; release the button within the page via setTimeout, because remote evaluate latency causes auto-repeat (repeat delay is 380 ms) and gives false failures. isPartial needs position > 10 s. Show 3 files: S1 = 7, 8, 9; S2 = 10, 11 (episode ids 4-8). Sample Movie is file 2 with progress 54.4/90."
+}
