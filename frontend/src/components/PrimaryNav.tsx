@@ -10,7 +10,7 @@ export function PrimaryNav() {
     { to: "/discover", label: "Discover", id: "discover" },
     { to: "/atlas", label: "Atlas", id: "atlas" },
     { to: "/search", label: "Search", id: "search" },
-    { to: "/settings", label: auth.role === "host" ? "Library" : "This device", id: "settings" },
+    { to: "/settings", label: "Settings", id: "settings" },
   ];
   return (
     <header className="topnav" data-testid="primary-nav">

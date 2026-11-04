@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS devices (
 ADDED_COLUMNS = {
     "movies": {"genres": "TEXT", "nfo_set": "TEXT", "group_path": "TEXT", "collection_id": "INTEGER"},
     "shows": {"genres": "TEXT"},
+    "libraries": {"last_success_at": "TEXT"},
 }
 
 
@@ -133,6 +134,9 @@ def init_db(db_path: Path) -> None:
             for name, decl in columns.items():
                 if name not in have:
                     conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+                    if (table, name) == ("libraries", "last_success_at"):  # older scans: success unless the folder was unreachable
+                        conn.execute("UPDATE libraries SET last_success_at = last_scan_at WHERE last_scan_at IS NOT NULL"
+                                     " AND COALESCE(last_scan_summary, '') NOT LIKE '%not reachable%'")
         conn.commit()
     finally:
         conn.close()

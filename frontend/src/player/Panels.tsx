@@ -1,4 +1,5 @@
 import { AlertOctagon, ArrowLeft, Play, RotateCcw } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { formatTime } from "../format";
 import type { PlaybackInfo } from "../types";
 
@@ -69,4 +70,33 @@ export function mediaErrorMessage(err: MediaError | null): string {
     case 4: return "This browser cannot play this file's container or codecs. Transcoding is not available in Phase 0.";
     default: return "Playback failed for an unknown reason.";
   }
+}
+
+/** Shown for a few seconds after an automatic resume. Down focuses it; A starts over. */
+export function ResumedChip({ position, onStartOver }: { position: number; onStartOver: () => void }) {
+  return (
+    <div className="pc-resumed" role="status" data-testid="player-resumed">
+      <span>Resumed from {formatTime(position)}</span>
+      <button className="hbtn" data-start-over onClick={onStartOver} data-testid="player-start-over">
+        <RotateCcw size={20} /> Start over
+      </button>
+    </div>
+  );
+}
+
+/** Auto-play countdown at the end of an episode. B or Cancel stops it. */
+export function NextCountdown({ title, seconds, onPlayNow, onCancel }: { title?: string | null; seconds: number; onPlayNow: () => void; onCancel: () => void }) {
+  const play = useRef<HTMLButtonElement>(null);
+  useEffect(() => { play.current?.focus({ preventScroll: true }); }, []);
+  return (
+    <div className="pc-next" role="alertdialog" aria-label="Next episode" data-nav-scope="modal" data-testid="player-next-countdown">
+      <span className="pc-next-eyebrow">Up next</span>
+      <strong>{title ?? "Next episode"}</strong>
+      <span className="pc-next-count" data-testid="player-next-seconds">Starts in {seconds} s</span>
+      <div className="detail-actions" data-nav-row>
+        <button className="btn btn--primary" ref={play} onClick={onPlayNow} data-testid="player-next-play-now"><Play size={22} /> Play now</button>
+        <button className="btn" onClick={onCancel} data-testid="player-next-cancel">Cancel</button>
+      </div>
+    </div>
+  );
 }

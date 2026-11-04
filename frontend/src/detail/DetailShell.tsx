@@ -1,3 +1,4 @@
+import { reducedMotion } from "../theme/displayPrefs";
 import { useState, type CSSProperties, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { mediaUrl } from "../api";
@@ -12,7 +13,7 @@ interface Props {
   children: ReactNode;
 }
 
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = reducedMotion;
 
 function ProceduralArt() {
   return (

@@ -1,3 +1,4 @@
+import { reducedMotion } from "../theme/displayPrefs";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { BrowseItem } from "../types";
 import { MediaCard } from "./MediaCard";
@@ -15,7 +16,7 @@ interface Props {
 }
 
 const OVERSCAN = 3;
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = reducedMotion;
 
 /** Virtualised poster wall: only rows near the screen exist in the DOM; arrows move by item/row deterministically. */
 export function PosterGrid({ total, get, ensure, onOpen, initialIndex, initialScroll, onFocusIndex, navUp, label }: Props) {

@@ -1,3 +1,4 @@
+import { reducedMotion } from "../theme/displayPrefs";
 import { LayoutGrid, Rows3 } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +18,7 @@ interface Props {
   onAnchor: (x: number | null) => void;
 }
 
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = reducedMotion;
 
 /** The Living Filmstrip: one real-data rail with a gentle curve, or an ordinary grid (remembered locally). */
 export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect, view, onView, restoreKey, onAnchor }: Props) {

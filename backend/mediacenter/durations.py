@@ -33,6 +33,7 @@ class DurationWorker:
         self._skipped: set[int] = set()  # unreadable right now (offline NAS, timeout); retried after a rescan/restart
         self._threads: list[threading.Thread] = []
         self._stop = False
+        self.paused = False  # set by the host in Settings; pending work simply waits
 
     @property
     def enabled(self) -> bool:
@@ -61,6 +62,11 @@ class DurationWorker:
             self._skipped.clear()
             self._cond.notify_all()
 
+    def set_paused(self, paused: bool) -> None:
+        with self._cond:
+            self.paused = paused
+            self._cond.notify_all()
+
     def prioritize(self, file_ids) -> None:
         if not self.enabled:
             return
@@ -82,7 +88,8 @@ class DurationWorker:
         with self._cond:
             active, skipped = len(self._claimed), len(self._skipped)
         return {"available": self.enabled, "workers": self.workers, "pending": max(0, (row["pending"] or 0) - skipped),
-                "known": row["known"] or 0, "unknown": row["unknown"] or 0, "active": active, "unreachable": skipped}
+                "known": row["known"] or 0, "unknown": row["unknown"] or 0, "active": active, "unreachable": skipped,
+                "paused": self.paused}
 
     def _next(self, conn):
         excluded = self._claimed | self._skipped
@@ -103,7 +110,11 @@ class DurationWorker:
     def _claim(self, conn, block: bool):
         with self._cond:
             while not self._stop:
-                if not SCAN_LOCK.locked():  # never compete with a running scan for the disk or the database
+                if self.paused:
+                    if not block:
+                        return None
+                    self._cond.wait(IDLE_POLL_S)
+                elif not SCAN_LOCK.locked():  # never compete with a running scan for the disk or the database
                     row = self._next(conn)
                     if row:
                         self._claimed.add(row["id"])

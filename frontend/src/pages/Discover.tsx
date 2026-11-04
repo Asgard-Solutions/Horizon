@@ -6,6 +6,7 @@ import { FilterBar } from "../discover/FilterBar";
 import { PosterGrid } from "../discover/PosterGrid";
 import { detailPath, parseQuery, toParams, VIEWS, type DiscoverQuery, type View } from "../discover/query";
 import { usePagedItems } from "../discover/usePagedItems";
+import { useAuth } from "../App";
 import type { BrowseItem } from "../types";
 
 // One remembered position per result set (view + sort + filters + collection), so nested Back steps each restore their own tile.
@@ -23,6 +24,7 @@ const store = (qs: string, spot: Spot) => {
 
 export default function Discover() {
   const navigate = useNavigate();
+  const isHost = useAuth().auth.role === "host";
   const location = useLocation();
   const navType = useNavigationType();
   const [params, setParams] = useSearchParams();
@@ -81,8 +83,14 @@ export default function Discover() {
           <div className="discover-empty" data-testid="discover-empty">
             <h2>{query.view === "collections" ? "No collections yet" : "Nothing matches"}</h2>
             <p>{query.view === "collections"
-              ? "Collections appear when NFO files name a set, or when a folder holds several movies (if folder grouping is on in Library)."
+              ? "Collections appear when NFO files name a set, or when a folder holds several movies (if folder groups are on in Settings)."
               : filtered ? "Try removing a filter." : "Nothing of this kind in your library yet."}</p>
+            {query.view === "collections" && isHost && (
+              <div className="detail-actions" data-nav-row>
+                <button className="hbtn hbtn--primary" onClick={() => navigate("/settings?section=libraries")} data-testid="collections-add-folder">Add media folder</button>
+                <button className="hbtn" onClick={() => navigate("/settings?section=collections")} data-testid="collections-settings">Collection settings</button>
+              </div>
+            )}
           </div>
         ) : (
           <PosterGrid key={qs} total={total} get={get} ensure={ensure} onOpen={open} initialIndex={initial?.index ?? null} initialScroll={initial?.scroll ?? null}

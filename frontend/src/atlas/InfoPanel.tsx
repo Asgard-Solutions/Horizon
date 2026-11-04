@@ -21,13 +21,19 @@ export function InfoPanel({ node, level }: { node: AtlasNode | MediaItem | undef
     );
   }
   const kind = node.kind === "collection" ? (node.source === "folder" ? "Folder group" : "Collection") : KIND[node.kind];
+  // Folder groups and collections without artwork get a titled monogram card instead of an empty placeholder.
+  const art = node.posters.length > 0 ? (
+    <div className="atlas-info-fan" aria-hidden="true">
+      {node.posters.map((p) => <img key={p} src={mediaUrl(p)} alt="" loading="lazy" />)}
+    </div>
+  ) : node.kind === "collection" ? (
+    <div className="atlas-info-poster atlas-info-poster--group" aria-hidden="true" data-testid="atlas-info-monogram">
+      <TitleArt image={null} title={node.label} kind={node.source === "folder" ? "Folder group" : "Collection"} />
+    </div>
+  ) : null;
   return (
     <aside className="atlas-info" data-testid="atlas-info" aria-live="polite">
-      {node.posters.length > 0 && (
-        <div className="atlas-info-fan" aria-hidden="true">
-          {node.posters.map((p) => <img key={p} src={mediaUrl(p)} alt="" loading="lazy" />)}
-        </div>
-      )}
+      {art}
       <span className="atlas-info-kind">{kind}</span>
       <h2 data-testid="atlas-info-title">{node.label}</h2>
       <p className="atlas-info-meta" data-testid="atlas-info-count">{node.count} {node.kind === "more" ? "groups" : node.count === 1 ? "title" : "titles"}</p>

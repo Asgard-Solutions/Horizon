@@ -1,12 +1,14 @@
 """Catalog, playback and streaming API (used by the web UI and reusable by a future native client)."""
 import json
 import os
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from .db import now_iso
+from . import paths
+from .db import get_setting, now_iso, set_setting
 from .parser import IMAGE_EXTENSIONS
 from .paths import library_real_path
 from .probe import MIME, assess_playback, find_ffprobe, probe_file
@@ -24,7 +26,26 @@ ART_SOURCES = {
     "season-poster": ("seasons", "poster_path"),
     "episode-thumb": ("episodes", "thumb_path"),
 }
-WATCHED_RATIO = 0.92
+PREF_DEFAULTS = {"resume": "ask", "autoplay_next": False, "skip_seconds": 10, "watched_threshold": "95"}
+END_SLACK_S = 2.0  # "End": within the last couple of seconds (players rarely report the exact final frame)
+
+
+def preferences(conn) -> dict:
+    raw = get_setting(conn, "playback_prefs")
+    try:
+        saved = json.loads(raw) if raw else {}
+    except ValueError:
+        saved = {}
+    return {**PREF_DEFAULTS, **{k: v for k, v in saved.items() if k in PREF_DEFAULTS}}
+
+
+def is_watched(conn, position: float, duration: float | None) -> bool:
+    if not duration:
+        return False
+    threshold = preferences(conn)["watched_threshold"]
+    if threshold == "end":
+        return position >= duration - END_SLACK_S
+    return position / duration >= int(threshold) / 100
 
 
 def _art(kind: str, row_id: int, path: str | None) -> str | None:
@@ -146,7 +167,7 @@ def home(request: Request):
     shows = [_show_summary(conn, r) for r in conn.execute(f"SELECT * FROM shows ORDER BY sort_title LIMIT {HOME_LIMIT}")]
     libs = conn.execute("SELECT path, last_scan_at FROM libraries").fetchall()
     # Viewer-safe source status: counts only, never paths (devices must not learn host paths).
-    sources = {"total": len(libs), "unreachable": sum(1 for lib in libs if not os.path.isdir(lib["path"])),
+    sources = {"total": len(libs), "unreachable": sum(1 for lib in libs if not paths.dir_reachable(lib["path"])),
                "last_scan_at": max((lib["last_scan_at"] for lib in libs if lib["last_scan_at"]), default=None)}
     counts = {
         "movies": conn.execute("SELECT COUNT(*) FROM movies").fetchone()[0],
@@ -239,7 +260,8 @@ def playback_info(file_id: int, request: Request):
         e = conn.execute(EPISODE_SQL + " WHERE e.file_id = ?", (file_id,)).fetchone()
         if e:
             nxt = conn.execute(
-                "SELECT e.file_id FROM episodes e JOIN seasons s ON s.id = e.season_id WHERE s.show_id = ?"
+                "SELECT e.file_id, e.title, e.episode_number, s.season_number FROM episodes e"
+                " JOIN seasons s ON s.id = e.season_id WHERE s.show_id = ?"
                 " AND (s.season_number > ? OR (s.season_number = ? AND e.episode_number > ?))"
                 " ORDER BY s.season_number, e.episode_number LIMIT 1",
                 (e["show_id"], e["season_number"], e["season_number"], e["episode_number"]),
@@ -248,6 +270,8 @@ def playback_info(file_id: int, request: Request):
                 title=e["show_title"],
                 subtitle=f"S{e['season_number']:02d}E{e['episode_number']:02d}" + (f" · {e['title']}" if e["title"] else ""),
                 back=f"/shows/{e['show_id']}", next_file_id=nxt["file_id"] if nxt else None,
+                next_title=(f"S{nxt['season_number']:02d}E{nxt['episode_number']:02d}" + (f" · {nxt['title']}" if nxt["title"] else ""))
+                if nxt else None,
             )
     prog = conn.execute("SELECT position, duration, watched FROM progress WHERE path_key = ?", (row["path_key"],)).fetchone()
     return {
@@ -267,7 +291,8 @@ class ProgressIn(BaseModel):
 def save_progress(file_id: int, body: ProgressIn, request: Request):
     conn = request.state.db
     row = _file_row(conn, file_id)
-    watched = int(bool(body.duration) and body.position / body.duration >= WATCHED_RATIO)
+    # The threshold applies to new saves only; changing it never rewrites existing watch history.
+    watched = int(is_watched(conn, body.position, body.duration))
     conn.execute(
         "INSERT INTO progress (path_key, position, duration, watched, updated_at) VALUES (?,?,?,?,?)"
         " ON CONFLICT(path_key) DO UPDATE SET position=excluded.position, duration=excluded.duration,"
@@ -276,6 +301,28 @@ def save_progress(file_id: int, body: ProgressIn, request: Request):
     )
     conn.commit()
     return {"file_id": file_id, "position": body.position, "duration": body.duration, "watched": bool(watched)}
+
+
+class PreferencesIn(BaseModel):
+    resume: Literal["ask", "auto"] | None = None
+    autoplay_next: bool | None = None
+    skip_seconds: Literal[10, 30, 60] | None = None
+    watched_threshold: Literal["90", "95", "end"] | None = None
+
+
+@router.get("/preferences")
+def get_preferences(request: Request):
+    """Playback preferences, shared by every screen that plays from this library (PC and paired devices)."""
+    return preferences(request.state.db)
+
+
+@router.put("/preferences")
+def put_preferences(body: PreferencesIn, request: Request):
+    conn = request.state.db
+    prefs = {**preferences(conn), **body.model_dump(exclude_none=True)}
+    set_setting(conn, "playback_prefs", json.dumps(prefs))
+    conn.commit()
+    return prefs
 
 
 @router.delete("/progress/{file_id}")

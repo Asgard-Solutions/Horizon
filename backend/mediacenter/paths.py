@@ -2,6 +2,9 @@
 import os
 import re
 import stat
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
 _DRIVE_ONLY = re.compile(r"^[A-Za-z]:$")
 
@@ -82,3 +85,28 @@ def is_link_or_junction(path: str) -> bool:
 
 
 LINK_TAGS = (getattr(stat, "IO_REPARSE_TAG_SYMLINK", 0xA000000C), getattr(stat, "IO_REPARSE_TAG_MOUNT_POINT", 0xA0000003))
+
+
+# An offline NAS can make os.path.isdir block for tens of seconds on Windows. Status checks therefore wait at most
+# REACH_TIMEOUT_S; a path that did not answer is reported unreachable and not re-tried for REACH_RETRY_S.
+REACH_TIMEOUT_S = 2.5
+REACH_RETRY_S = 15
+_reach_pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="reach-check")
+_reach_slow: dict[str, float] = {}
+_reach_lock = threading.Lock()
+
+
+def dir_reachable(path: str) -> bool:
+    with _reach_lock:
+        since = _reach_slow.get(path)
+        if since is not None and time.monotonic() - since < REACH_RETRY_S:
+            return False
+    try:
+        ok = _reach_pool.submit(os.path.isdir, path).result(timeout=REACH_TIMEOUT_S)
+    except FutureTimeout:
+        with _reach_lock:
+            _reach_slow[path] = time.monotonic()
+        return False
+    with _reach_lock:
+        _reach_slow.pop(path, None)
+    return ok

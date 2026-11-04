@@ -1,3 +1,4 @@
+import { reducedMotion } from "../theme/displayPrefs";
 /**
  * Spatial (directional) navigation for keyboard, TV remotes and game controllers.
  * Arrow keys / D-pad move focus to the nearest focusable element in that direction.
@@ -105,11 +106,13 @@ export function move(dir: Dir): boolean {
   // Regions can name an explicit Up target (e.g. the Filmstrip header -> the Stage action) to avoid jumping to the top nav.
   // ...and an explicit Down target (detail actions -> the selected season tab).
   const upSel = dir === "up" ? active.closest<HTMLElement>("[data-nav-up]")?.dataset.navUp
-    : dir === "down" ? active.closest<HTMLElement>("[data-nav-down]")?.dataset.navDown : undefined;
+    : dir === "down" ? active.closest<HTMLElement>("[data-nav-down]")?.dataset.navDown
+    : dir === "right" ? active.closest<HTMLElement>("[data-nav-right]")?.dataset.navRight
+    : active.closest<HTMLElement>("[data-nav-left]")?.dataset.navLeft;
   const upTarget = upSel ? document.querySelector<HTMLElement>(upSel) : null;
   if (upTarget && visible(upTarget)) {
     upTarget.focus({ preventScroll: true });
-    upTarget.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    upTarget.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
     return true;
   }
   const next = pickNext(active, dir);
@@ -122,7 +125,7 @@ export function move(dir: Dir): boolean {
   if (next) {
     next.focus({ preventScroll: true });
     // Containers marked data-nav-noscroll (the Filmstrip) position their own content.
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = reducedMotion();
     if (next.closest("[data-nav-noscroll]")) next.closest("section, main")?.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
     else next.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduce ? "auto" : "smooth" });
     return true;

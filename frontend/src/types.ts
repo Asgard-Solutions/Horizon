@@ -100,7 +100,7 @@ export interface PlaybackInfo {
   probe: Probe | null;
   compatibility: Compatibility;
   progress: Progress | null;
-  context: { kind: string; title?: string; subtitle?: string; back?: string; next_file_id?: number | null; backdrop_url?: string | null };
+  context: { kind: string; title?: string; subtitle?: string; back?: string; next_file_id?: number | null; next_title?: string | null; backdrop_url?: string | null };
 }
 
 export interface ScanSummary {
@@ -112,6 +112,34 @@ export interface ScanSummary {
   movies: number;
   episodes: number;
   errors: string[];
+  status?: "complete" | "partial" | "cancelled" | "unreachable" | "failed" | "removed";
+  finished_at?: string;
+}
+
+export interface ScanJob {
+  id: string;
+  library_id: number;
+  library_name: string;
+  path: string;
+  state: "queued" | "running" | "done" | "cancelled" | "unreachable" | "failed" | "removed";
+  files_found: number;
+  current: string;
+  started_at: string | null;
+  finished_at: string | null;
+  summary: ScanSummary | null;
+}
+
+export interface ScanStatus { running: ScanJob | null; queued: ScanJob[]; recent: ScanJob[] }
+
+export interface MetadataStatus {
+  available: boolean; workers: number; pending: number; known: number; unknown: number; active: number; unreachable: number; paused: boolean;
+}
+
+export interface Preferences {
+  resume: "ask" | "auto";
+  autoplay_next: boolean;
+  skip_seconds: 10 | 30 | 60;
+  watched_threshold: "90" | "95" | "end";
 }
 
 export interface Library {
@@ -119,9 +147,12 @@ export interface Library {
   path: string;
   name: string;
   last_scan_at: string | null;
+  last_success_at: string | null;
   last_scan_summary: ScanSummary | null;
   reachable: boolean;
+  network: boolean;
   counts: { movies: number; episodes: number };
+  details: { files: number; shows: number; metadata_pending: number; size_bytes: number };
   scan?: ScanSummary | null;
 }
 

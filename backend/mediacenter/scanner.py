@@ -234,12 +234,18 @@ def assign_collections(conn: Connection, folder_groups: bool) -> None:
     conn.execute("DELETE FROM collections WHERE id NOT IN (SELECT collection_id FROM movies WHERE collection_id IS NOT NULL)")
 
 
-def scan_library(conn: Connection, library: dict) -> dict:
+COMMIT_EVERY = 200  # long NAS scans commit in batches so playback progress and browsing never wait on the scan
+
+
+def scan_library(conn: Connection, library: dict, progress=None, cancel: threading.Event | None = None) -> dict:
+    """status: complete | partial (some folders unreadable) | cancelled | unreachable.
+    Titles are only removed after a complete walk; cancelled, interrupted or unreachable scans never remove anything."""
     root = library["path"]
     summary = {"files_found": 0, "added": 0, "updated": 0, "unchanged": 0, "removed": 0,
-               "movies": 0, "episodes": 0, "errors": [], "started_at": now_iso()}
+               "movies": 0, "episodes": 0, "errors": [], "started_at": now_iso(), "status": "complete"}
     if not os.path.isdir(root):
         summary["errors"].append(f"Folder is not reachable: {root}. Nothing was removed from the catalog.")
+        summary["status"] = "unreachable"
         summary["finished_at"] = now_iso()
         return summary
 
@@ -254,8 +260,14 @@ def scan_library(conn: Connection, library: dict) -> dict:
             # Never descend into symlinks/NTFS junctions: they could point outside the library folder.
             dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d.lower() not in SKIP_DIRS
                                  and not is_link_or_junction(os.path.join(directory, d)))
+            if cancel is not None and cancel.is_set():
+                break
             rel_dirs = _rel_dirs(root, directory)
+            if progress:
+                progress(summary["files_found"], "/".join(rel_dirs))
             for name in sorted(filenames):
+                if cancel is not None and cancel.is_set():
+                    break
                 if not is_video(name) or name.startswith("._"):
                     continue
                 full = os.path.join(directory, name)
@@ -278,8 +290,16 @@ def scan_library(conn: Connection, library: dict) -> dict:
                 else:
                     _save_movie(conn, file_id, directory, name, rel_dirs, idx)
                     summary["movies"] += 1
+                if summary["files_found"] % COMMIT_EVERY == 0:
+                    conn.commit()
+                    if progress:
+                        progress(summary["files_found"], "/".join(rel_dirs))
 
-        if walk_errors:
+        if cancel is not None and cancel.is_set():
+            summary["status"] = "cancelled"
+            summary["errors"].append("Scan cancelled. Titles found so far were kept and nothing was removed.")
+        elif walk_errors:
+            summary["status"] = "partial"
             summary["errors"].extend(walk_errors[:50])
             summary["errors"].append("Some folders could not be read, so missing files were NOT removed this scan.")
         else:

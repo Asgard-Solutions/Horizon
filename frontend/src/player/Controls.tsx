@@ -24,6 +24,7 @@ interface Props {
   playRef: RefObject<HTMLButtonElement | null>;
   onToggle: () => void;
   onSeekBy: (delta: number) => void;
+  skip: number;
   onSeekTo: (t: number) => void;
   onVolumeBy: (delta: number) => void;
   onMute: () => void;
@@ -69,11 +70,11 @@ function ButtonRow(p: Props) {
   return (
     <div className="pc-buttons" data-testid="player-button-row">
       <button className="pc-btn" onClick={() => p.onSeekTo(0)} aria-label="Start over" data-testid="player-restart-button"><SkipBack size={26} /></button>
-      <button className="pc-btn" onClick={() => p.onSeekBy(-10)} aria-label="Back 10 seconds" data-testid="player-rewind-button"><RotateCcw size={28} /><small>10</small></button>
+      <button className="pc-btn" onClick={() => p.onSeekBy(-p.skip)} aria-label={`Back ${p.skip} seconds`} data-testid="player-rewind-button"><RotateCcw size={28} /><small>{p.skip}</small></button>
       <button className="pc-btn pc-btn--main" ref={p.playRef} onClick={p.onToggle} aria-label={s.playing ? "Pause" : "Play"} data-testid="player-play-pause-button">
         {s.playing ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" />}
       </button>
-      <button className="pc-btn" onClick={() => p.onSeekBy(10)} aria-label="Forward 10 seconds" data-testid="player-forward-button"><RotateCw size={28} /><small>10</small></button>
+      <button className="pc-btn" onClick={() => p.onSeekBy(p.skip)} aria-label={`Forward ${p.skip} seconds`} data-testid="player-forward-button"><RotateCw size={28} /><small>{p.skip}</small></button>
       <span className="pc-spacer" />
       {p.hasNext && (
         <button className="hbtn" onClick={p.onNext} data-testid="player-next-episode-button"><SkipForward size={22} /> Next episode</button>

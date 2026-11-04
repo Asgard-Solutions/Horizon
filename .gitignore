@@ -90,3 +90,9 @@ export/
 sample_media/
 test_media/
 .pytest_cache/
+.env
+.env.*
+*.env
+credentials.json
+*.key
+.credentials

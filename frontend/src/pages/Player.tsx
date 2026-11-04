@@ -5,11 +5,12 @@ import { api, mediaUrl, saveProgress } from "../api";
 import { ErrorState, Loading } from "../components/States";
 import { useAsync, useBack } from "../hooks";
 import { PlayerControls, type ControlsMode, type ControlsState } from "../player/Controls";
-import { mediaErrorMessage, ProblemPanel, ResumePrompt } from "../player/Panels";
+import { mediaErrorMessage, NextCountdown, ProblemPanel, ResumedChip, ResumePrompt } from "../player/Panels";
+import { loadPreferences } from "../settings/PlaybackSection";
 import type { PlaybackInfo } from "../types";
 
 type Phase = "blocked" | "resume" | "starting" | "ready" | "error";
-type Flash = { n: number; kind: "play" | "pause" | "back" | "fwd" };
+type Flash = { n: number; kind: "play" | "pause" | "back" | "fwd"; step?: number };
 const NATIVE_CONTAINERS = ["mp4", "m4v", "mov", "webm"];
 const HIDE_AFTER_MS = 4000;
 const START_TIMEOUT_MS = 30000;
@@ -28,7 +29,7 @@ function FlashMark({ flash }: { flash: Flash }) {
   return (
     <div className="pc-flash" data-kind={flash.kind} data-testid="player-flash" aria-hidden="true">
       {flash.kind === "play" ? <Play size={44} fill="currentColor" /> : flash.kind === "pause" ? <Pause size={44} fill="currentColor" />
-        : <span>{flash.kind === "back" ? "−10" : "+10"}</span>}
+        : <span>{flash.kind === "back" ? "−" : "+"}{flash.step}</span>}
     </div>
   );
 }
@@ -38,6 +39,10 @@ export default function Player() {
   const [search] = useSearchParams();
   const navigate = useNavigate();
   const { data: info, error, reload } = useAsync(() => api<PlaybackInfo>(`/api/files/${fileId}/playback`), [fileId]);
+  const { data: prefs } = useAsync(loadPreferences, []);
+  const skip = prefs?.skip_seconds ?? 10;
+  const [resumed, setResumed] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -58,7 +63,7 @@ export default function Player() {
   });
 
   useEffect(() => {
-    if (!info) return;
+    if (!info || !prefs) return;
     setWarning(null);
     const problems = clientCheck(info);
     if (problems.length) {
@@ -69,15 +74,41 @@ export default function Player() {
     const qs = search.get("start");
     if (qs !== null) return void (setStartAt(Number(qs) || 0), setPhase("starting"));
     const p = info.progress;
-    if (p && !p.watched && p.position > 10) setPhase("resume");
-    else (setStartAt(0), setPhase("starting"));
-  }, [info, search]);
+    if (p && !p.watched && p.position > 10) {
+      if (prefs.resume === "auto") { setStartAt(p.position); setResumed(p.position); setPhase("starting"); }
+      else setPhase("resume");
+    } else (setStartAt(0), setPhase("starting"));
+  }, [info, search, prefs]);
+  // The "Resumed · Start over" offer stays for 8 seconds.
+  useEffect(() => {
+    if (resumed === null || phase !== "ready") return;
+    const t = window.setTimeout(() => setResumed(null), 8000);
+    return () => window.clearTimeout(t);
+  }, [resumed, phase]);
 
   const persist = useCallback(() => {
     const v = videoRef.current;
     if (v && info && v.currentTime > 0) saveProgress(info.file_id, v.currentTime, isFinite(v.duration) ? v.duration : null);
   }, [info]);
 
+  const skipRef = useRef(skip);
+  skipRef.current = skip;
+  const countdownRef = useRef(countdown);
+  countdownRef.current = countdown;
+  const playNext = useCallback(() => {
+    if (!info?.context.next_file_id) return;
+    persist();
+    setCountdown(null);
+    setMode("osd");
+    navigate(`/play/${info.context.next_file_id}?start=0`, { replace: true });
+  }, [info, persist, navigate]);
+  // Auto-play next: a visible 10-second countdown that B / Cancel stops.
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown <= 0) return void playNext();
+    const t = window.setTimeout(() => setCountdown((c) => (c === null ? null : c - 1)), 1000);
+    return () => window.clearTimeout(t);
+  }, [countdown, playNext]);
   const exit = useCallback(() => {
     persist();
     if (document.fullscreenElement) document.exitFullscreen().catch(() => undefined);
@@ -112,6 +143,7 @@ export default function Player() {
   }, [arm]);
   // B / Esc closes the expanded controls first; the next Back leaves the player.
   useBack(() => collapse(), mode === "expanded");
+  useBack(() => { setCountdown(null); expand(); }, countdown !== null);
   const flashIt = (kind: Flash["kind"]) => setFlash({ n: ++flashN.current, kind });
   useEffect(() => {
     if (!flash) return;
@@ -133,7 +165,7 @@ export default function Player() {
     reveal();
   }, [reveal]);
   const seekBy = useCallback((d: number) => {
-    flashIt(d < 0 ? "back" : "fwd");
+    setFlash({ n: ++flashN.current, kind: d < 0 ? "back" : "fwd", step: Math.abs(d) });
     seekTo((videoRef.current?.currentTime ?? 0) + d);
   }, [seekTo]);
   const volumeBy = useCallback((d: number) => {
@@ -186,25 +218,34 @@ export default function Player() {
   useEffect(() => {
     if (phase !== "ready" && phase !== "starting") return;
     const onKey = (e: KeyboardEvent) => {
-      if (BACK_KEYS.includes(e.key) || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (BACK_KEYS.includes(e.key) || e.altKey || e.ctrlKey || e.metaKey || countdownRef.current !== null) return;
       const stop = () => { e.preventDefault(); e.stopPropagation(); };
+      const onChip = (document.activeElement as HTMLElement | null)?.dataset.startOver !== undefined;
+      if (onChip) {
+        if (e.key === "Enter") return;
+        if (e.key.startsWith("Arrow")) return void (stop(), surface());
+      }
       const key = e.key.toLowerCase();
       if (key === " " || key === "k" || e.key === "MediaPlayPause") return void (stop(), toggle());
       if (key === "f") return void (stop(), fullscreen());
       if (key === "m") return void (stop(), mute());
       if (modeRef.current !== "expanded") {
-        if (e.key === "ArrowLeft") return void (stop(), seekBy(-10));
-        if (e.key === "ArrowRight") return void (stop(), seekBy(10));
+        if (e.key === "ArrowLeft") return void (stop(), seekBy(-skipRef.current));
+        if (e.key === "ArrowRight") return void (stop(), seekBy(skipRef.current));
         if (e.key === "Enter") return void (stop(), toggle());
         if (e.key === "ArrowUp") return void (stop(), expand());
-        if (e.key === "ArrowDown") return void (stop(), reveal());
+        if (e.key === "ArrowDown") {
+          stop();
+          const chip = document.querySelector<HTMLElement>("[data-start-over]");
+          return void (chip ? chip.focus({ preventScroll: true }) : reveal());
+        }
         return;
       }
       arm();
       const active = document.activeElement as HTMLElement | null;
       if (!active?.closest(".pc") && e.key.startsWith("Arrow")) return void (stop(), playRef.current?.focus({ preventScroll: true }));
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-      if (active?.dataset.seekbar !== undefined) return void (stop(), seekBy(e.key === "ArrowLeft" ? -10 : 10));
+      if (active?.dataset.seekbar !== undefined) return void (stop(), seekBy(e.key === "ArrowLeft" ? -skipRef.current : skipRef.current));
       if (active?.dataset.volume !== undefined) return void (stop(), volumeBy(e.key === "ArrowLeft" ? -0.1 : 0.1));
     };
     window.addEventListener("keydown", onKey, true);
@@ -250,7 +291,11 @@ export default function Player() {
         onTimeUpdate={update}
         onProgress={update}
         onVolumeChange={(e) => { localStorage.setItem("mc-volume", String(e.currentTarget.volume)); update(); }}
-        onEnded={() => { update(); persist(); expand(); }}
+        onEnded={() => {
+          update(); persist();
+          if (prefs?.autoplay_next && ctx.next_file_id) setCountdown(10);
+          else expand();
+        }}
         onError={(e) => { setReasons([mediaErrorMessage(e.currentTarget.error), ...info.compatibility.reasons]); setPhase("error"); }}
       />
       {phase === "starting" && startAt !== null && (
@@ -270,12 +315,19 @@ export default function Player() {
       )}
       {warning && phase === "ready" && <div className="player-warning" role="status" data-testid="player-warning">{warning}</div>}
       {phase === "ready" && flash && <FlashMark key={flash.n} flash={flash} />}
+      {phase === "ready" && resumed !== null && countdown === null && (
+        <ResumedChip position={resumed} onStartOver={() => { setResumed(null); seekTo(0); surface(); }} />
+      )}
+      {countdown !== null && (
+        <NextCountdown title={ctx.next_title} seconds={countdown} onPlayNow={playNext}
+          onCancel={() => { setCountdown(null); expand(); }} />
+      )}
       {phase === "ready" && (
         <PlayerControls s={s} mode={mode} eyebrow={ctx.kind === "movie" ? "Now playing · Movie" : "Now playing · Episode"}
           title={ctx.title ?? info.filename} subtitle={ctx.subtitle}
-          hasNext={!!ctx.next_file_id} playRef={playRef} onToggle={toggle} onSeekBy={seekBy} onSeekTo={seekTo}
+          hasNext={!!ctx.next_file_id} playRef={playRef} onToggle={toggle} onSeekBy={seekBy} onSeekTo={seekTo} skip={skip}
           onVolumeBy={volumeBy} onMute={mute} onFullscreen={fullscreen} onExit={exit}
-          onNext={() => { persist(); setMode("osd"); navigate(`/play/${ctx.next_file_id}?start=0`, { replace: true }); }} />
+          onNext={playNext} />
       )}
     </div>
   );

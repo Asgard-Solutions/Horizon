@@ -1,10 +1,10 @@
 """Discover, search and Library Atlas API. Reads the catalog only; every value comes from scanned records."""
 import json
-import os
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
+from . import paths
 from .routes_library import _art
 from .security import require_viewer
 
@@ -234,4 +234,4 @@ def atlas(request: Request):
         {"id": "types", "label": "Media", "nodes": type_nodes},
         {"id": "genres", "label": "Genres", "nodes": genre_nodes},
         {"id": "collections", "label": "Collections", "nodes": col_nodes},
-    ], "sources": {"total": len(libs), "unreachable": sum(1 for lib in libs if not os.path.isdir(lib["path"]))}}
+    ], "sources": {"total": len(libs), "unreachable": sum(1 for lib in libs if not paths.dir_reachable(lib["path"]))}}

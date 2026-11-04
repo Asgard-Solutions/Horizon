@@ -14,7 +14,8 @@ from .config import APP_VERSION
 from .db import get_setting, now_iso, set_setting
 from .parser import is_video
 from .probe import ffprobe_version, find_ffprobe
-from .scanner import assign_collections, cleanup_orphans, folder_collections_enabled, path_key, scan_library
+from .scanjobs import record_scan
+from .scanner import SCAN_LOCK, assign_collections, cleanup_orphans, folder_collections_enabled, path_key, scan_library
 from .security import hash_pin, lan_enabled, require_host, validate_new_pin
 from .winfs import list_windows_drives
 
@@ -24,9 +25,13 @@ MAX_DIR_ENTRIES = 3000
 
 def _library(row) -> dict:
     return {"id": row["id"], "path": row["path"], "name": row["name"], "created_at": row["created_at"],
-            "last_scan_at": row["last_scan_at"],
+            "last_scan_at": row["last_scan_at"], "last_success_at": row["last_success_at"],
             "last_scan_summary": json.loads(row["last_scan_summary"]) if row["last_scan_summary"] else None,
-            "reachable": os.path.isdir(row["path"])}
+            "reachable": paths.dir_reachable(row["path"]), "network": _is_network(row["path"])}
+
+
+def _is_network(path: str) -> bool:
+    return path.startswith("\\\\") or path.startswith("//")
 
 
 def _counts(conn, library_id: int) -> dict:
@@ -35,10 +40,18 @@ def _counts(conn, library_id: int) -> dict:
     return {"movies": r["movies"] or 0, "episodes": r["episodes"] or 0}
 
 
+def _details(conn, library_id: int) -> dict:
+    r = conn.execute("SELECT COUNT(*) AS files, SUM(probe_json IS NULL) AS pending, COALESCE(SUM(size), 0) AS size"
+                     " FROM media_files WHERE library_id = ?", (library_id,)).fetchone()
+    shows = conn.execute("SELECT COUNT(DISTINCT s.show_id) FROM episodes e JOIN seasons s ON s.id = e.season_id"
+                         " JOIN media_files f ON f.id = e.file_id WHERE f.library_id = ?", (library_id,)).fetchone()[0]
+    return {"files": r["files"], "shows": shows, "metadata_pending": r["pending"] or 0, "size_bytes": r["size"]}
+
+
 @router.get("/libraries")
 def list_libraries(request: Request):
     conn = request.state.db
-    return [{**_library(r), "counts": _counts(conn, r["id"])}
+    return [{**_library(r), "counts": _counts(conn, r["id"]), "details": _details(conn, r["id"])}
             for r in conn.execute("SELECT * FROM libraries ORDER BY name")]
 
 
@@ -67,9 +80,7 @@ def _read_error(exc: OSError) -> str:
 
 def _run_scan(conn, row) -> dict:
     summary = scan_library(conn, dict(row))
-    conn.execute("UPDATE libraries SET last_scan_at = ?, last_scan_summary = ? WHERE id = ?",
-                 (now_iso(), json.dumps(summary), row["id"]))
-    conn.commit()
+    record_scan(conn, row["id"], summary)
     return summary
 
 
@@ -106,12 +117,18 @@ def add_library(body: LibraryIn, request: Request):
 def remove_library(library_id: int, request: Request):
     """Removes the folder from the catalog only. Files on disk are never touched."""
     conn = request.state.db
-    cur = conn.execute("DELETE FROM libraries WHERE id = ?", (library_id,))
-    if cur.rowcount == 0:
+    if not conn.execute("SELECT 1 FROM libraries WHERE id = ?", (library_id,)).fetchone():
         raise HTTPException(status_code=404, detail="Library not found")
-    cleanup_orphans(conn)
-    assign_collections(conn, folder_collections_enabled(conn))
-    conn.commit()
+    request.app.state.scans.cancel(library_id=library_id)
+    if not SCAN_LOCK.acquire(timeout=30):  # a cancelled scan stops at its next file
+        raise HTTPException(status_code=409, detail="A scan is still finishing. Try again in a moment.")
+    try:
+        conn.execute("DELETE FROM libraries WHERE id = ?", (library_id,))
+        cleanup_orphans(conn)
+        assign_collections(conn, folder_collections_enabled(conn))
+        conn.commit()
+    finally:
+        SCAN_LOCK.release()
     return {"ok": True}
 
 
@@ -145,6 +162,58 @@ def rescan_library(library_id: int, request: Request):
     request.app.state.durations.wake()  # lengths of new/changed files are read in the background
     return {**_library(conn.execute("SELECT * FROM libraries WHERE id = ?", (library_id,)).fetchone()),
             "counts": _counts(conn, library_id), "scan": summary}
+
+
+class ScanIn(BaseModel):
+    library_id: int | None = None  # None = every source
+
+
+@router.get("/scans")
+def scan_status(request: Request):
+    return request.app.state.scans.status()
+
+
+@router.post("/scans")
+def start_scans(body: ScanIn, request: Request):
+    """Queues background scans (one runs at a time). Media folders are only read."""
+    conn = request.state.db
+    rows = conn.execute("SELECT id, name, path FROM libraries" + (" WHERE id = ?" if body.library_id else " ORDER BY name"),
+                        (body.library_id,) if body.library_id else ()).fetchall()
+    if body.library_id and not rows:
+        raise HTTPException(status_code=404, detail="Library not found")
+    return request.app.state.scans.enqueue([dict(r) for r in rows])
+
+
+class CancelIn(BaseModel):
+    job_id: str | None = None
+
+
+@router.post("/scans/cancel")
+def cancel_scans(body: CancelIn, request: Request):
+    return request.app.state.scans.cancel(job_id=body.job_id)
+
+
+class MetadataIn(BaseModel):
+    paused: bool
+
+
+@router.post("/metadata/reader")
+def set_metadata_reader(body: MetadataIn, request: Request):
+    """Pause or resume background media-length reading. Pending files simply wait; nothing is lost."""
+    conn = request.state.db
+    set_setting(conn, "metadata_paused", "1" if body.paused else "0")
+    conn.commit()
+    worker = request.app.state.durations
+    worker.set_paused(body.paused)
+    return worker.status(conn)
+
+
+@router.post("/metadata/retry")
+def retry_metadata(request: Request):
+    """Files skipped because they were unreadable (offline NAS) get another try now."""
+    worker = request.app.state.durations
+    worker.wake()
+    return worker.status(request.state.db)
 
 
 def _is_hidden(entry: os.DirEntry) -> bool:

@@ -34,6 +34,24 @@ export function Sky({ rings, focus, level, center, onFocus, onOpen, onExitUp, zo
     const el = box.current?.querySelector<HTMLElement>(`[data-ring="${focus[0]}"][data-idx="${focus[1]}"]`);
     if (el && box.current?.contains(document.activeElement) && document.activeElement !== el) el.focus({ preventScroll: true });
   }, [focus]);
+  // Crowded group levels: neighbouring labels that the focused (enlarged) label would overlap step aside while it is focused.
+  useLayoutEffect(() => {
+    const root = box.current;
+    if (!root) return;
+    const check = () => {
+      const labels = Array.from(root.querySelectorAll<HTMLElement>(".star-label"));
+      const sel = root.querySelector<HTMLElement>(".star--selected .star-label");
+      const a = sel?.getBoundingClientRect();
+      for (const l of labels) {
+        const b = l.getBoundingClientRect();
+        const hit = !!a && l !== sel && b.left < a.right + 6 && b.right > a.left - 6 && b.top < a.bottom + 4 && b.bottom > a.top - 4;
+        l.classList.toggle("star-label--covered", hit);
+      }
+    };
+    check();
+    const t = window.setTimeout(check, 220); // again once the focus scale-up has settled
+    return () => window.clearTimeout(t);
+  }, [focus, rings]);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     const t = e.target as HTMLElement;

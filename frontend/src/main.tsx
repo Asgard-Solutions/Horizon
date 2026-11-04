@@ -8,10 +8,13 @@ import "./home/home.css";
 import "./detail/detail.css";
 import "./player/player.css";
 import "./discover/discover.css";
+import "./settings/settings.css";
 import App from "./App";
+import { startDisplayPrefs } from "./theme/displayPrefs";
 import { startUiScale } from "./theme/uiScale";
 
 startUiScale();
+startDisplayPrefs();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

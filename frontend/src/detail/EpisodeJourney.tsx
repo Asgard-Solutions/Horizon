@@ -1,3 +1,4 @@
+import { reducedMotion } from "../theme/displayPrefs";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { Episode, Season } from "../types";
 import { EpisodeCard } from "./EpisodeCard";
@@ -12,7 +13,7 @@ interface Props {
   restoreId: number | null;
 }
 
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = reducedMotion;
 const seasonLabel = (n: number) => (n === 0 ? "Specials" : `Season ${n}`);
 
 /** Season tabs above a horizontal Episode Journey; Up from an episode returns to the selected season tab. */
