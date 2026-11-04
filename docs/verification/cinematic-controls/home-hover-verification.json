@@ -1,0 +1,30 @@
+{
+  "mouseReturnCases": [
+    {
+      "background": "linear-gradient(90deg, rgba(4, 10, 20, 0.35), rgba(4, 10, 20, 0.08)), url(\"http://127.0.0.1:8765/assets/horizon-movies-card-background-v1-BcAQhlhM.png\")",
+      "focusVisible": false,
+      "focused": true,
+      "hover": true,
+      "id": "home-movies",
+      "input": "mouse",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 4px inset, rgba(111, 227, 211, 0.05) 0px 0px 48px 0px inset, rgba(0, 0, 0, 0.25) 0px 12px 32px 0px"
+    },
+    {
+      "background": "linear-gradient(90deg, rgba(4, 10, 20, 0.35), rgba(4, 10, 20, 0.08)), url(\"http://127.0.0.1:8765/assets/horizon-tv-card-background-v1-DYzFVkNn.png\")",
+      "focusVisible": false,
+      "focused": true,
+      "hover": true,
+      "id": "home-tv",
+      "input": "mouse",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 4px inset, rgba(111, 227, 211, 0.05) 0px 0px 48px 0px inset, rgba(0, 0, 0, 0.25) 0px 12px 32px 0px"
+    }
+  ],
+  "keyboard": {
+    "active": "home-movies",
+    "focusVisible": true,
+    "input": "keys",
+    "shadow": "rgb(111, 227, 211) 0px 0px 0px 4px inset, rgba(111, 227, 211, 0.05) 0px 0px 48px 0px inset, rgba(0, 0, 0, 0.25) 0px 12px 32px 0px"
+  },
+  "beforeScreenshot": "home-hover-before.jpg",
+  "scope": "Targeted actual-browser mouse/app-Back/hover and keyboard checks. Full browser harness not rerun."
+}

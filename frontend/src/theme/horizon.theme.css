@@ -79,3 +79,57 @@
     --h-duration-osd: 0ms;
   }
 }
+
+:root {
+  --h-component-home-color-canvas: #0B111B;
+  --h-component-home-color-surface: #141F2D;
+  --h-component-home-color-focusedSurface: #1B2A3C;
+  --h-component-home-color-border: #344359;
+  --h-component-home-color-text: #F3F7FC;
+  --h-component-home-color-secondaryText: #B7C4D5;
+  --h-component-home-color-focus: #6FE3D3;
+  --h-component-home-color-warning: #F2CE87;
+  --h-component-home-color-accent: #E7B778;
+  --h-component-home-color-panelTop: #1A3040;
+  --h-component-home-color-panelBottom: #101B2A;
+  --h-component-home-color-panelEdge: #466477;
+  --h-component-home-fontFamily: "Segoe UI", system-ui, sans-serif;
+  --h-component-home-fontSize-heading: 56px;
+  --h-component-home-fontSize-mediaHeading: 64px;
+  --h-component-home-fontSize-primaryCard: 52px;
+  --h-component-home-fontSize-navigationCard: 40px;
+  --h-component-home-fontSize-body: 28px;
+  --h-component-home-fontSize-navigationDescription: 26px;
+  --h-component-home-fontSize-section: 32px;
+  --h-component-home-fontSize-resumeTitle: 28px;
+  --h-component-home-fontSize-metadata: 24px;
+  --h-component-home-fontSize-brand: 32px;
+  --h-component-home-fontSize-utility: 28px;
+  --h-component-home-lineHeight-heading: 72px;
+  --h-component-home-lineHeight-mediaHeading: 76px;
+  --h-component-home-lineHeight-primaryCard: 64px;
+  --h-component-home-lineHeight-navigationCard: 52px;
+  --h-component-home-lineHeight-body: 40px;
+  --h-component-home-lineHeight-navigationDescription: 36px;
+  --h-component-home-lineHeight-section: 44px;
+  --h-component-home-lineHeight-resumeTitle: 36px;
+  --h-component-home-lineHeight-metadata: 32px;
+  --h-component-home-lineHeight-brand: 44px;
+  --h-component-home-lineHeight-utility: 40px;
+  --h-component-home-radius-card: 20px;
+  --h-component-home-radius-utility: 14px;
+  --h-component-home-radius-status: 16px;
+  --h-component-home-borderWidth-normal: 2px;
+  --h-component-home-borderWidth-focus: 4px;
+  --h-component-home-gap: 24px;
+  --h-component-home-focusedScale: 1;
+  --h-component-home-duration-focus: 100ms;
+  --h-component-home-duration-screen: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --h-component-home-duration-focus: 0ms;
+    --h-component-home-duration-screen: 0ms;
+  }
+}

@@ -8,6 +8,8 @@ import { detailPath, parseQuery, toParams, VIEWS, type DiscoverQuery, type View 
 import { usePagedItems } from "../discover/usePagedItems";
 import { useAuth } from "../App";
 import type { BrowseItem } from "../types";
+import { scopedPath } from "../home/context";
+import { useMediaType } from "../home/useMediaType";
 
 // One remembered position per result set (view + sort + filters + collection), so nested Back steps each restore their own tile.
 const FOCUS_KEY = "horizon.discover.focus.v2";
@@ -24,12 +26,16 @@ const store = (qs: string, spot: Spot) => {
 
 export default function Discover() {
   const navigate = useNavigate();
+  const mediaType = useMediaType();
   const isHost = useAuth().auth.role === "host";
   const location = useLocation();
   const navType = useNavigationType();
   const [params, setParams] = useSearchParams();
-  const query = useMemo(() => parseQuery(params), [params]);
-  const qs = toParams(query).toString();
+  const query = useMemo(() => {
+    const parsed = parseQuery(params);
+    return mediaType ? { ...parsed, view: mediaType === "movie" ? "movies" as const : "shows" as const, filters: { ...parsed.filters, type: [] } } : parsed;
+  }, [params, mediaType]);
+  const qs = toParams(query).toString() + (mediaType ? `&media_type=${mediaType}` : "");
   const { first, error, total, facets, get, ensure } = usePagedItems(qs);
   // Back (POP) restores the remembered tile; opening a collection starts on its first tile;
   // changing tabs, sort or filters (REPLACE) leaves focus on the control that was used.
@@ -38,11 +44,15 @@ export default function Discover() {
     [location.key]);
   const remember = useCallback((i: number) => store(qs, { index: i, scroll: window.scrollY }), [qs]);
 
-  const change = (q: DiscoverQuery) => setParams(toParams(q), { replace: true });
+  const change = (q: DiscoverQuery) => {
+    const next = toParams(q);
+    if (mediaType) next.set("media", mediaType);
+    setParams(next, { replace: true });
+  };
   const setView = (v: View) => change({ ...query, view: v, collection: null, filters: { ...query.filters, type: [] } });
   const open = (item: BrowseItem, i: number) => {
     remember(i);
-    navigate(item.type === "collection" ? `/discover?${new URLSearchParams({ collection: String(item.id) })}` : detailPath(item));
+    navigate(scopedPath(item.type === "collection" ? `/discover?${new URLSearchParams({ collection: String(item.id) })}` : detailPath(item), mediaType));
   };
   const collectionName = first?.collection?.title;
   const filtered = Object.values(query.filters).some((f) => f.length);
@@ -58,7 +68,7 @@ export default function Discover() {
             <h1 className="discover-title" data-testid="discover-collection-title">{collectionName ?? "Collection"}</h1>
             {first?.collection && <span className="discover-source">{first.collection.source === "nfo" ? "Collection from NFO files" : "Folder group"}</span>}
           </div>
-        ) : (
+        ) : mediaType ? <h1 className="discover-title">{mediaType === "movie" ? "Movies" : "TV Shows"}</h1> : (
           <div className="journey-tabs discover-tabs" role="tablist" aria-label="Discover views" data-nav-row data-nav-prefer-selected data-testid="discover-views">
             {VIEWS.map((v) => (
               <button key={v.id} role="tab" aria-selected={query.view === v.id} className={query.view === v.id ? "gtab gtab--active" : "gtab"}
@@ -77,7 +87,7 @@ export default function Discover() {
           <div className="discover-empty" data-testid="discover-empty-library">
             <h2>Your library is empty</h2>
             <p>Add a media folder on this PC or your network, and your movies and series will fill this wall.</p>
-            <button className="hbtn hbtn--primary" onClick={() => navigate("/settings")} data-testid="discover-add-folder">Add media folder</button>
+            <button className="hbtn hbtn--primary" onClick={() => navigate(scopedPath("/settings?section=libraries", mediaType))} data-testid="discover-add-folder">Library Settings</button>
           </div>
         ) : total === 0 ? (
           <div className="discover-empty" data-testid="discover-empty">

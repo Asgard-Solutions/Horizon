@@ -8,6 +8,8 @@ import { detailPath } from "../discover/query";
 import { episodeCode } from "../format";
 import { Osk } from "../search/Osk";
 import type { EpisodeHit, MediaItem, SearchResponse } from "../types";
+import { scopedPath } from "../home/context";
+import { useMediaType } from "../home/useMediaType";
 
 const FOCUS_KEY = "horizon.search.focus";
 
@@ -34,15 +36,19 @@ function Section({ title, total, shown, children, testId }: { title: string; tot
 
 export default function Search() {
   const navigate = useNavigate();
+  const mediaType = useMediaType();
+  const focusKey = `${FOCUS_KEY}.${mediaType ?? "all"}`;
   const [params, setParams] = useSearchParams();
   const navType = useNavigationType();
   const [q, setQ] = useState(params.get("q") ?? "");
   const [res, setRes] = useState<SearchResponse | null>(null);
   const [busy, setBusy] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
   const [inputMode, setInputMode] = useState<"none" | "search">("none");
   const [restore] = useState<{ key: string; index: number; scroll: number } | null>(() => {
     if (navType !== "POP") return null; // only Back restores; a fresh visit starts on the keyboard
-    try { const s = JSON.parse(sessionStorage.getItem(FOCUS_KEY) ?? "null"); return s && s.q === (params.get("q") ?? "") ? s : null; } catch { return null; }
+    try { const s = JSON.parse(sessionStorage.getItem(focusKey) ?? "null"); return s && s.q === (params.get("q") ?? "") ? s : null; } catch { return null; }
   });
   const seq = useRef(0);
   const restored = useRef(false);
@@ -57,15 +63,19 @@ export default function Search() {
 
   useEffect(() => {
     const n = ++seq.current;
+    setSearchError(null);
     const t = window.setTimeout(() => {
-      setParams(q ? { q } : {}, { replace: true });
+      const next = new URLSearchParams();
+      if (q) next.set("q", q);
+      if (mediaType) next.set("media", mediaType);
+      setParams(next, { replace: true });
       if (!q.trim()) { setRes(null); setBusy(false); return; }
       setBusy(true);
-      api<SearchResponse>(`/api/search?q=${encodeURIComponent(q)}`).then((d) => { if (n === seq.current) { setRes(d); setBusy(false); } })
-        .catch(() => n === seq.current && setBusy(false));
+      api<SearchResponse>(`/api/search?q=${encodeURIComponent(q)}${mediaType ? `&media_type=${mediaType}` : ""}`).then((d) => { if (n === seq.current) { setRes(d); setBusy(false); } })
+        .catch((failure: Error) => { if (n === seq.current) { setBusy(false); setSearchError(failure.message); } });
     }, 140);
-    return () => window.clearTimeout(t);
-  }, [q, setParams]);
+    return () => { window.clearTimeout(t); seq.current++; };
+  }, [q, setParams, mediaType, revision]);
 
   useEffect(() => {
     if (!res || !restore || restored.current) return;
@@ -79,8 +89,8 @@ export default function Search() {
 
   const open = (key: string, to: string) => {
     const index = Array.from(document.querySelectorAll<HTMLElement>(".search-results [data-key]")).findIndex((x) => x.dataset.key === key);
-    sessionStorage.setItem(FOCUS_KEY, JSON.stringify({ q, key, index: Math.max(0, index), scroll: window.scrollY }));
-    navigate(to);
+    sessionStorage.setItem(focusKey, JSON.stringify({ q, key, index: Math.max(0, index), scroll: window.scrollY }));
+    navigate(scopedPath(to, mediaType));
   };
   const total = res ? res.totals.movies + res.totals.shows + res.totals.episodes : 0;
   // Physical typing while a result or other control is focused edits the query without moving focus.
@@ -96,7 +106,7 @@ export default function Search() {
       <div className="search-input-col">
         <label className="search-field">
           <SearchIcon size={26} aria-hidden="true" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search titles, series, episodes" aria-label="Search the library"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={mediaType === "movie" ? "Search movies" : mediaType === "tv" ? "Search TV shows and episodes" : "Search titles, series, episodes"} aria-label={mediaType === "movie" ? "Search movies" : mediaType === "tv" ? "Search TV shows and episodes" : "Search the library"}
             inputMode={inputMode} onPointerDown={() => setInputMode("search")} onBlur={() => setInputMode("none")}
             enterKeyHint="search" autoComplete="off" spellCheck={false} data-testid="search-input" />
         </label>
@@ -104,7 +114,7 @@ export default function Search() {
         </div>
         <div className="search-results" aria-live="polite" aria-busy={busy} data-testid="search-results"
           onFocus={(e) => { const k = (e.target as HTMLElement).dataset.key; if (k) lastResult.current = k; }}>
-        {!q.trim() ? (
+        {searchError ? <div className="search-empty" role="alert"><h2>Search unavailable</h2><p>{searchError}</p><button className="hbtn" onClick={() => setRevision(value => value + 1)}>Retry search</button></div> : !q.trim() ? (
           <div className="search-empty" data-testid="search-idle"><h2>Find anything in your library</h2><p>Type a title, a series or an episode name. Search runs on this PC, offline.</p></div>
         ) : res && total === 0 && !busy ? (
           <div className="search-empty" data-testid="search-no-results"><h2>No matches for “{q.trim()}”</h2><p>Check the spelling or try fewer words.</p>

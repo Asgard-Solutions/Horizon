@@ -10,29 +10,34 @@ import { MediaCard } from "../discover/MediaCard";
 import { detailPath } from "../discover/query";
 import { useAsync, useBack } from "../hooks";
 import type { AtlasData, AtlasNode, DiscoverPage, MediaItem } from "../types";
+import { scopedPath, type MediaType } from "../home/context";
+import { useMediaType } from "../home/useMediaType";
 
 type Level = { node: AtlasNode | null; page: number; focus: [number, number]; key?: string };
 const STACK_KEY = "horizon.atlas.stack";
 const MODE_KEY = "horizon.atlas.mode";
-const loadStack = (): Level[] => { try { const s = JSON.parse(sessionStorage.getItem(STACK_KEY) ?? "null"); return Array.isArray(s) && s.length ? s : [{ node: null, page: 0, focus: [0, 0] }]; } catch { return [{ node: null, page: 0, focus: [0, 0] }]; } };
+const loadStack = (key: string): Level[] => { try { const s = JSON.parse(sessionStorage.getItem(key) ?? "null"); return Array.isArray(s) && s.length ? s : [{ node: null, page: 0, focus: [0, 0] }]; } catch { return [{ node: null, page: 0, focus: [0, 0] }]; } };
 // Only ids and positions are remembered; group contents always come from the fresh /api/atlas response.
-const saveStack = (s: Level[]) => sessionStorage.setItem(STACK_KEY, JSON.stringify(s.map((l) => ({ ...l, node: l.node && { ...l.node, children: undefined } }))));
+const saveStack = (s: Level[], key: string) => sessionStorage.setItem(key, JSON.stringify(s.map((l) => ({ ...l, node: l.node && { ...l.node, children: undefined } }))));
 
-function nodeQuery(n: AtlasNode): string {
-  if (n.kind === "type") return `view=${n.value === "movie" ? "movies" : "shows"}`;
-  if (n.kind === "genre") return `genre=${encodeURIComponent(String(n.value))}`;
-  return `collection=${n.value}`;
+function nodeQuery(n: AtlasNode, type: MediaType | null): string {
+  const query = n.kind === "type" ? `view=${n.value === "movie" ? "movies" : "shows"}` : n.kind === "genre" ? `genre=${encodeURIComponent(String(n.value))}` : `collection=${n.value}`;
+  return query + (type ? `&media_type=${type}` : "");
 }
 const toSky = (n: AtlasNode): SkyNode => ({ key: n.id, label: n.label, kind: n.kind === "more" ? "more" : n.kind, count: n.count, source: n.source });
 const itemSky = (m: MediaItem): SkyNode => ({ key: m.key, label: m.title, kind: m.type, image: m.poster_url, state: m.state });
 
 export default function Atlas() {
   const navigate = useNavigate();
-  const { data, error, reload } = useAsync(() => api<AtlasData>("/api/atlas"), []);
-  const [stack, setStack] = useState<Level[]>(loadStack);
+  const mediaType = useMediaType();
+  const stackKey = `${STACK_KEY}.${mediaType ?? "all"}`;
+  const { data, error, reload } = useAsync(() => api<AtlasData>(`/api/atlas${mediaType ? `?media_type=${mediaType}` : ""}`), [mediaType]);
+  const [stack, setStack] = useState<Level[]>(() => loadStack(stackKey));
   const [mode, setMode] = useState<"orbit" | "grid">(() => (localStorage.getItem(MODE_KEY) === "grid" ? "grid" : "orbit"));
   const [zoom, setZoom] = useState<"in" | "out" | null>(null);
   const [page, setPage] = useState<{ key: string; items: MediaItem[]; total: number } | null>(null);
+  const [pageError, setPageError] = useState<{ key: string; message: string } | null>(null);
+  const [pageRevision, setPageRevision] = useState(0);
   const toolbar = useRef<HTMLDivElement>(null);
   const level = stack[stack.length - 1];
   const overview = useMemo(() => (data ? overviewRings(data) : []), [data]);
@@ -42,15 +47,19 @@ export default function Atlas() {
     return m;
   }, [overview]);
   const node = level.node ? live.get(level.node.id) ?? null : null;
-  useEffect(() => saveStack(stack), [stack]);
+  useEffect(() => saveStack(stack, stackKey), [stack, stackKey]);
 
-  const pageKey = node && node.kind !== "more" ? `${nodeQuery(node)}&p=${level.page}` : null;
+  const pageKey = node && node.kind !== "more" ? `${nodeQuery(node, mediaType)}&p=${level.page}` : null;
   useEffect(() => {
     if (!node || node.kind === "more") return;
-    const key = `${nodeQuery(node)}&p=${level.page}`;
-    api<DiscoverPage>(`/api/discover?${nodeQuery(node)}&sort=title&offset=${level.page * PAGE_SIZE}&limit=${PAGE_SIZE}`)
-      .then((d) => setPage({ key, items: d.items as MediaItem[], total: d.total }));
-  }, [node, level.page]);
+    const controller = new AbortController();
+    setPageError(null);
+    const key = `${nodeQuery(node, mediaType)}&p=${level.page}`;
+    api<DiscoverPage>(`/api/discover?${nodeQuery(node, mediaType)}&sort=title&offset=${level.page * PAGE_SIZE}&limit=${PAGE_SIZE}`, { signal: controller.signal })
+      .then((d) => { if (!controller.signal.aborted) setPage({ key, items: d.items as MediaItem[], total: d.total }); })
+      .catch((failure: Error) => { if (!controller.signal.aborted) setPageError({ key, message: failure.message }); });
+    return () => controller.abort();
+  }, [node, level.page, mediaType, pageRevision]);
 
   const groupItems = node?.kind === "more" ? (node.children ?? []).slice(level.page * PAGE_SIZE, (level.page + 1) * PAGE_SIZE) : null;
   const titles = page && page.key === pageKey ? page.items : null;
@@ -103,7 +112,7 @@ export default function Atlas() {
     const target = flat[idx];
     if (!target) return;
     focusAt(r, i);
-    if ("type" in target && (target.type === "movie" || target.type === "show")) { navigate(detailPath(target)); return; }
+    if ("type" in target && (target.type === "movie" || target.type === "show")) { navigate(scopedPath(detailPath(target), mediaType)); return; }
     setZoom("in");
     setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], focus: [r, i], key: rings[r]?.[i]?.key }, { node: target as AtlasNode, page: 0, focus: [0, 0] }]);
     focusSelected();
@@ -132,9 +141,9 @@ export default function Atlas() {
   if (!data.total) return (
     <div className="page atlas-empty" data-testid="atlas-empty"><h1>Your Atlas is waiting</h1>
       <p>Add a media folder and your movies and series will appear here as a map of genres and collections.</p>
-      <button className="hbtn hbtn--primary" data-autofocus onClick={() => navigate("/settings")} data-testid="atlas-add-folder">Add media folder</button></div>
+      <button className="hbtn hbtn--primary" data-autofocus onClick={() => navigate(scopedPath("/settings?section=libraries", mediaType))} data-testid="atlas-add-folder">Library Settings</button></div>
   );
-  const crumb = node ? node.label : "Your library";
+  const crumb = node ? node.label : mediaType === "movie" ? "Your movies" : mediaType === "tv" ? "Your TV shows" : "Your library";
   return (
     <div className={`atlas atlas--${mode}`} data-testid="atlas-page" data-level={node ? "cluster" : "overview"}>
       <div className="atlas-toolbar" ref={toolbar} data-nav-row data-testid="atlas-toolbar">
@@ -153,7 +162,7 @@ export default function Atlas() {
       {data.sources.unreachable > 0 && <p className="atlas-banner" data-testid="atlas-unreachable">{data.sources.unreachable} media folder{data.sources.unreachable === 1 ? " is" : "s are"} unavailable. Its titles are still listed.</p>}
       <div className="atlas-body">
         <InfoPanel node={focused} level={node ? "cluster" : "overview"} />
-        {node && !groupItems && !titles ? <Loading /> : mode === "orbit" ? (
+        {node && !groupItems && !titles ? pageError?.key === pageKey ? <ErrorState message={pageError.message} onRetry={() => setPageRevision(value => value + 1)} /> : <Loading /> : mode === "orbit" ? (
           <Sky key={`${node?.id ?? "root"}-${level.page}`} rings={rings} focus={level.focus} level={node ? "cluster" : "overview"} zoom={zoom} offset={groupItems ? groupRings(groupItems).offset : 0}
             onFocus={focusAt} onOpen={openAt}
             onExitUp={() => toolbar.current?.querySelector<HTMLElement>("button:not([disabled]):not([hidden])")?.focus()}

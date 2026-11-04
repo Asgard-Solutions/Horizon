@@ -8,10 +8,11 @@ import { WatchProgress } from "../detail/WatchProgress";
 import { formatBytes, formatRuntime, formatTime, isPartial } from "../format";
 import { useAsync } from "../hooks";
 import type { Movie, PlaybackInfo } from "../types";
+import { scopedPath } from "../home/context";
 
 function MovieActions({ movie }: { movie: Movie }) {
   const navigate = useNavigate();
-  const play = (start: number) => navigate(`/play/${movie.file_id}?start=${Math.floor(start)}`);
+  const play = (start: number) => navigate(scopedPath(`/play/${movie.file_id}?start=${Math.floor(start)}`, "movie"));
   if (isPartial(movie.progress)) {
     return (
       <div className="dt-actions">

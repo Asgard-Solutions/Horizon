@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-11-04T06:14:05.226Z",
+  "scope": "Targeted actual-browser checks for Settings background and header; full integration harness not rerun. Back focus restoration was checked after the existing asynchronous focus routine settled.",
+  "observations": [
+    {
+      "backButtons": 1,
+      "background": "linear-gradient(rgba(11, 17, 27, 0.2), rgba(11, 17, 27, 0.3)), url(\"http://127.0.0.1:8765/assets/horizon-home-background-BVJVOHzk.png\")",
+      "overflow": false,
+      "phase": "settings-wide",
+      "route": "/settings",
+      "settingsButtons": 0,
+      "viewport": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "background": "linear-gradient(rgba(11, 17, 27, 0.2), rgba(11, 17, 27, 0.3)), url(\"http://127.0.0.1:8765/assets/horizon-home-background-BVJVOHzk.png\")",
+      "classes": "shell home-shell home-shell--selection",
+      "phase": "home-retained",
+      "route": "/",
+      "settingsButtons": 1
+    },
+    {
+      "focused": "pref-resume-ask",
+      "inPanel": true,
+      "input": "keys",
+      "phase": "keyboard-enter-panel"
+    },
+    {
+      "focused": "settings-cat-playback",
+      "inRail": true,
+      "phase": "keyboard-back-to-category",
+      "section": "playback"
+    },
+    {
+      "focused": "home-movies",
+      "phase": "app-back-home",
+      "route": "/",
+      "settingsButtons": 1
+    },
+    {
+      "focused": "global-settings",
+      "phase": "app-back-home-settled",
+      "route": "/",
+      "settingsButtons": 1
+    },
+    {
+      "background": "linear-gradient(rgba(11, 17, 27, 0.2), rgba(11, 17, 27, 0.3)), url(\"http://127.0.0.1:8765/assets/horizon-home-background-BVJVOHzk.png\")",
+      "overflow": false,
+      "phase": "settings-compact",
+      "railColumns": "906.625px",
+      "settingsButtons": 0,
+      "viewport": [
+        1024,
+        768
+      ]
+    }
+  ]
+}

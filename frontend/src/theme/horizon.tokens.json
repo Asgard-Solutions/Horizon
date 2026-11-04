@@ -1,7 +1,7 @@
 {
   "format": "DTCG-inspired design token JSON with Horizon runtime extensions",
   "name": "Horizon",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Proposed visual tokens for Horizon - The Living Cinema. Values are design targets, not measured runtime behavior.",
   "color": {
     "bg": {
@@ -385,6 +385,386 @@
       "trailingColor": "{color.accent.amber}",
       "visibleOnlyForFocusedItem": true,
       "disableMotionWhenReduced": true
+    },
+    "home": {
+      "color": {
+        "canvas": {
+          "$type": "color",
+          "$value": "#0B111B"
+        },
+        "surface": {
+          "$type": "color",
+          "$value": "#141F2D"
+        },
+        "focusedSurface": {
+          "$type": "color",
+          "$value": "#1B2A3C"
+        },
+        "border": {
+          "$type": "color",
+          "$value": "#344359"
+        },
+        "text": {
+          "$type": "color",
+          "$value": "#F3F7FC"
+        },
+        "secondaryText": {
+          "$type": "color",
+          "$value": "#B7C4D5"
+        },
+        "focus": {
+          "$type": "color",
+          "$value": "#6FE3D3"
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "#F2CE87"
+        },
+        "accent": {
+          "$type": "color",
+          "$value": "#E7B778"
+        },
+        "panelTop": {
+          "$type": "color",
+          "$value": "#1A3040"
+        },
+        "panelBottom": {
+          "$type": "color",
+          "$value": "#101B2A"
+        },
+        "panelEdge": {
+          "$type": "color",
+          "$value": "#466477"
+        }
+      },
+      "fontFamily": {
+        "$type": "fontFamily",
+        "$value": [
+          "Segoe UI",
+          "system-ui",
+          "sans-serif"
+        ]
+      },
+      "fontSize": {
+        "heading": {
+          "$type": "dimension",
+          "$value": "56px"
+        },
+        "mediaHeading": {
+          "$type": "dimension",
+          "$value": "64px"
+        },
+        "primaryCard": {
+          "$type": "dimension",
+          "$value": "52px"
+        },
+        "navigationCard": {
+          "$type": "dimension",
+          "$value": "40px"
+        },
+        "body": {
+          "$type": "dimension",
+          "$value": "28px"
+        },
+        "navigationDescription": {
+          "$type": "dimension",
+          "$value": "26px"
+        },
+        "section": {
+          "$type": "dimension",
+          "$value": "32px"
+        },
+        "resumeTitle": {
+          "$type": "dimension",
+          "$value": "28px"
+        },
+        "metadata": {
+          "$type": "dimension",
+          "$value": "24px"
+        },
+        "brand": {
+          "$type": "dimension",
+          "$value": "32px"
+        },
+        "utility": {
+          "$type": "dimension",
+          "$value": "28px"
+        }
+      },
+      "lineHeight": {
+        "heading": {
+          "$type": "dimension",
+          "$value": "72px"
+        },
+        "mediaHeading": {
+          "$type": "dimension",
+          "$value": "76px"
+        },
+        "primaryCard": {
+          "$type": "dimension",
+          "$value": "64px"
+        },
+        "navigationCard": {
+          "$type": "dimension",
+          "$value": "52px"
+        },
+        "body": {
+          "$type": "dimension",
+          "$value": "40px"
+        },
+        "navigationDescription": {
+          "$type": "dimension",
+          "$value": "36px"
+        },
+        "section": {
+          "$type": "dimension",
+          "$value": "44px"
+        },
+        "resumeTitle": {
+          "$type": "dimension",
+          "$value": "36px"
+        },
+        "metadata": {
+          "$type": "dimension",
+          "$value": "32px"
+        },
+        "brand": {
+          "$type": "dimension",
+          "$value": "44px"
+        },
+        "utility": {
+          "$type": "dimension",
+          "$value": "40px"
+        }
+      },
+      "radius": {
+        "card": {
+          "$type": "dimension",
+          "$value": "20px"
+        },
+        "utility": {
+          "$type": "dimension",
+          "$value": "14px"
+        },
+        "status": {
+          "$type": "dimension",
+          "$value": "16px"
+        }
+      },
+      "borderWidth": {
+        "normal": {
+          "$type": "dimension",
+          "$value": "2px"
+        },
+        "focus": {
+          "$type": "dimension",
+          "$value": "4px"
+        }
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "24px"
+      },
+      "focusedScale": {
+        "$type": "number",
+        "$value": 1
+      },
+      "duration": {
+        "focus": {
+          "$type": "duration",
+          "$value": "100ms"
+        },
+        "screen": {
+          "$type": "duration",
+          "$value": "120ms"
+        }
+      },
+      "referenceViewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "safeInsetPx": {
+        "horizontal": 96,
+        "vertical": 54
+      },
+      "header": {
+        "bounds": [
+          96,
+          64,
+          1728,
+          72
+        ],
+        "brand": [
+          96,
+          64,
+          400,
+          72
+        ],
+        "settings": [
+          1616,
+          64,
+          208,
+          72
+        ],
+        "divider": [
+          96,
+          152,
+          1728,
+          2
+        ]
+      },
+      "footer": [
+        96,
+        982,
+        1728,
+        44
+      ],
+      "home": {
+        "heading": [
+          96,
+          252,
+          1728,
+          72
+        ],
+        "description": [
+          96,
+          336,
+          1728,
+          40
+        ],
+        "movies": [
+          96,
+          424,
+          852,
+          328
+        ],
+        "tv": [
+          972,
+          424,
+          852,
+          328
+        ]
+      },
+      "hub": {
+        "breadcrumb": [
+          96,
+          168,
+          1728,
+          36
+        ],
+        "heading": [
+          96,
+          224,
+          1728,
+          76
+        ],
+        "description": [
+          96,
+          304,
+          1728,
+          40
+        ],
+        "atlas": [
+          96,
+          364,
+          560,
+          208
+        ],
+        "discover": [
+          680,
+          364,
+          560,
+          208
+        ],
+        "search": [
+          1264,
+          364,
+          560,
+          208
+        ],
+        "resumeHeading": [
+          96,
+          604,
+          1728,
+          44
+        ],
+        "resumeRegion": [
+          96,
+          672,
+          1696,
+          272
+        ],
+        "empty": [
+          96,
+          604,
+          1728,
+          168
+        ],
+        "retry": [
+          96,
+          976,
+          400,
+          50
+        ]
+      },
+      "resumeCard": {
+        "width": 320,
+        "height": 272,
+        "artwork": [
+          0,
+          0,
+          320,
+          180
+        ],
+        "progress": [
+          12,
+          162,
+          296,
+          6
+        ],
+        "title": [
+          0,
+          196,
+          320,
+          36
+        ],
+        "metadata": [
+          0,
+          240,
+          320,
+          32
+        ],
+        "gap": 24,
+        "maxCompleteCardsAtReference": 5
+      },
+      "compact": {
+        "widthBelowPx": 1100,
+        "heightBelowPx": 600,
+        "maxAspectRatio": [
+          4,
+          3
+        ],
+        "horizontalMinPaddingPx": 24,
+        "horizontalPaddingViewportPercent": 5,
+        "verticalPaddingPx": 24,
+        "hubStackBelowPx": 720,
+        "homeStackBelowPx": 640,
+        "headerWrapBelowPx": 640
+      },
+      "input": {
+        "stickActivationThreshold": 0.5,
+        "stickReleaseThreshold": 0.3,
+        "initialRepeatDelayMs": 300,
+        "repeatIntervalMs": 120,
+        "activationUsesRisingEdges": true
+      },
+      "assets": {
+        "background": "frontend/src/assets/horizon-home-background.png",
+        "movieBackground": "frontend/src/assets/horizon-movies-card-background-v1.png",
+        "tvBackground": "frontend/src/assets/horizon-tv-card-background-v1.png",
+        "logoOnDark": "frontend/src/assets/horizon-media-center-logo-on-dark.png",
+        "logoOnLight": "frontend/src/assets/horizon-media-center-logo-on-light.png"
+      }
     }
   },
   "behavior": {
@@ -394,7 +774,10 @@
     "offlineFirst": true,
     "realLibraryDataOnly": true,
     "preserveMediaFileBytes": true,
-    "atlasOptionalUntilCoreReady": true
+    "atlasOptionalUntilCoreReady": false,
+    "homeTwoStageSelection": true,
+    "globalSourcesAndSettings": true,
+    "atlasMapOptionalUntilCoreReady": true
   },
   "caveats": [
     "TV sizes are design targets in logical CSS pixels, not verified physical Xbox outputs.",

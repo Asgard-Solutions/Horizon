@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-11-04T04:35:52.991Z",
+  "results": [
+    "empty launch uses real counts and focuses Movies",
+    "TV destination and Back preserve selected type and exact hub focus",
+    "Retry keeps focus during a pending request then restores a valid control",
+    "Settings and Sources restore their invoking utility focus",
+    "held gamepad A activates only one screen; B restores Movies",
+    "keyboard activation holds do not cascade into a destination",
+    "compact and TV layouts keep controls and rings inside the viewport",
+    "manual text scaling increases Home text and keeps utility controls reachable",
+    "real indexed test files and saved history populate only the selected type",
+    "completing the focused last item removes its row and recovers focus",
+    "modal close restores a valid control after its opener disappears",
+    "Search keeps scope and native caret movement; Atlas drill-down stays scoped",
+    "switching type cancels a delayed movie request before TV data renders",
+    "unreachable source keeps history and offers a working Sources recovery",
+    "return from failed startup keeps saved progress and makes reordered resume focus visible"
+  ],
+  "scope": "Actual local app and isolated indexed test files; simulated Gamepad API and locally simulated source outage. Physical gamepad/NAS and successful video playback not verified."
+}

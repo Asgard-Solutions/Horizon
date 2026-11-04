@@ -1,4 +1,6 @@
-# Open Media Center — Phase 0 (technical proof of concept)
+# Horizon Media Center
+
+The current Home interface uses the two-stage Movies / TV Shows → Atlas / Discover / Search flow, with real selected-type Continue Watching and globally reachable Sources / Settings. See [Home integration and verification](docs/HOME_INTEGRATION.md) for the actual changes, test results and remaining runtime checks. The technical Phase 0 notes below describe the existing media host that the interface preserves.
 
 A self-hosted media center for **personal Movies and TV Shows**, runs entirely on your own Windows PC and home network.
 No accounts, no cloud services, no metadata APIs, no API keys. Media folders are **read-only** to the app.

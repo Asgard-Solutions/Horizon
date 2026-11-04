@@ -9,6 +9,7 @@ import { WatchProgress } from "../detail/WatchProgress";
 import { defaultEpisode, forgetShowFocus, nextUp, recallShowFocus, rememberShowFocus, type NextUp } from "../detail/nextUp";
 import { episodeCode, formatTime, isPartial } from "../format";
 import { useAsync, useQuietRefresh } from "../hooks";
+import { scopedPath } from "../home/context";
 import type { Episode, ShowDetail as Show } from "../types";
 
 const LABEL: Record<NextUp["mode"], string> = { resume: "Resume", next: "Next episode", start: "Play", rewatch: "Watch again" };
@@ -51,7 +52,7 @@ function ShowView({ show }: { show: Show }) {
   const play = useCallback((ep: Episode, start: number, onCard: boolean) => {
     const idx = seasons.findIndex((s) => s.episodes.some((e) => e.id === ep.id));
     rememberShowFocus({ showId: show.id, season: idx, episodeId: ep.id, onCard });
-    navigate(`/play/${ep.file_id}?start=${Math.floor(start)}`);
+    navigate(scopedPath(`/play/${ep.file_id}?start=${Math.floor(start)}`, "tv"));
   }, [navigate, seasons, show.id]);
   const onSelect = useCallback((ep: Episode) => setPicked((p) => ({ ...p, [seasonIdx]: ep.id })), [seasonIdx]);
   const onCard = useCallback((ep: Episode) => play(ep, isPartial(ep.progress) ? ep.progress!.position : 0, true), [play]);

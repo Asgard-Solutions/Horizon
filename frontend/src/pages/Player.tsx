@@ -8,6 +8,7 @@ import { PlayerControls, type ControlsMode, type ControlsState } from "../player
 import { mediaErrorMessage, NextCountdown, ProblemPanel, ResumedChip, ResumePrompt } from "../player/Panels";
 import { loadPreferences } from "../settings/PlaybackSection";
 import type { PlaybackInfo } from "../types";
+import { scopedPath } from "../home/context";
 
 type Phase = "blocked" | "resume" | "starting" | "ready" | "error";
 type Flash = { n: number; kind: "play" | "pause" | "back" | "fwd"; step?: number };
@@ -100,7 +101,7 @@ export default function Player() {
     persist();
     setCountdown(null);
     setMode("osd");
-    navigate(`/play/${info.context.next_file_id}?start=0`, { replace: true });
+    navigate(scopedPath(`/play/${info.context.next_file_id}?start=0`, "tv"), { replace: true });
   }, [info, persist, navigate]);
   // Auto-play next: a visible 10-second countdown that B / Cancel stops.
   useEffect(() => {

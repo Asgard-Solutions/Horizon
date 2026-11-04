@@ -1,0 +1,79 @@
+{
+  "timestamp": "2026-11-04T06:06:33.920Z",
+  "scope": "Targeted mouse and keyboard checks in the actual local interface; no media data changed; full browser harness not rerun",
+  "observations": [
+    {
+      "focused": "home-movies",
+      "height": 1080,
+      "hovered": false,
+      "input": "mouse",
+      "neutral": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px",
+      "phase": "movies-return",
+      "shadow": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px",
+      "width": 1920
+    },
+    {
+      "focused": "home-movies",
+      "hovered": true,
+      "input": "mouse",
+      "phase": "movies-hover",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px"
+    },
+    {
+      "focused": "home-movies",
+      "hovered": false,
+      "phase": "movies-leave",
+      "shadow": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px"
+    },
+    {
+      "focused": "home-tv",
+      "hovered": false,
+      "input": "mouse",
+      "neutral": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px",
+      "phase": "tv-return",
+      "shadow": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px"
+    },
+    {
+      "focused": "home-tv",
+      "hovered": true,
+      "input": "mouse",
+      "phase": "tv-hover",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px"
+    },
+    {
+      "focused": "home-tv",
+      "hovered": false,
+      "phase": "tv-leave",
+      "shadow": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px"
+    },
+    {
+      "focused": "home-movies",
+      "input": "keys",
+      "phase": "keyboard-left",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 4px inset, rgba(111, 227, 211, 0.05) 0px 0px 48px 0px inset, rgba(0, 0, 0, 0.25) 0px 12px 32px 0px"
+    },
+    {
+      "focused": "home-movies",
+      "input": "keys",
+      "phase": "keyboard-return",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 4px inset, rgba(111, 227, 211, 0.05) 0px 0px 48px 0px inset, rgba(0, 0, 0, 0.25) 0px 12px 32px 0px"
+    },
+    {
+      "compact": true,
+      "focused": "home-movies",
+      "height": 768,
+      "hovered": false,
+      "input": "mouse",
+      "neutral": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px",
+      "overflow": false,
+      "phase": "compact-return",
+      "shadow": "rgb(70, 100, 119) 0px 0px 0px 2px inset, rgba(243, 247, 252, 0.04) 0px 3px 0px 0px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px",
+      "width": 1024
+    },
+    {
+      "hovered": true,
+      "phase": "compact-hover",
+      "shadow": "rgb(111, 227, 211) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.2) 0px 12px 32px 0px"
+    }
+  ]
+}

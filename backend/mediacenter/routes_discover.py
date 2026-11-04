@@ -1,6 +1,7 @@
 """Discover, search and Library Atlas API. Reads the catalog only; every value comes from scanned records."""
 import json
 import re
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
@@ -122,21 +123,24 @@ def _collections(conn) -> list[dict]:
 @router.get("/discover")
 def discover(request: Request, view: str = "all", sort: str = "title", genre: str | None = None, decade: str | None = None,
              state: str | None = None, type: str | None = None, collection: int | None = None,
-             offset: int = Query(0, ge=0), limit: int = Query(120, ge=1, le=500)):
+             offset: int = Query(0, ge=0), limit: int = Query(120, ge=1, le=500),
+             media_type: Literal["movie", "tv"] | None = None):
     conn = request.state.db
     if sort not in SORTS:
         raise HTTPException(status_code=400, detail="Unknown sort")
     if view == "collections":
-        cols = _collections(conn)
+        cols = _collections(conn) if media_type != "tv" else []
         return {"view": view, "total": len(cols), "offset": offset, "items": cols[offset:offset + limit], "facets": None}
     kinds = {"movies": ("movie",), "shows": ("show",), "all": ("movie", "show")}.get(view)
     if kinds is None:
         raise HTTPException(status_code=400, detail="Unknown view")
+    kinds = tuple(kind for kind in kinds if kind in _scope_kinds(media_type))
     items = load_items(conn, kinds)
     col = None
     if collection is not None:
         items = [i for i in items if i["collection_id"] == collection]
-        row = conn.execute("SELECT id, name, source FROM collections WHERE id = ?", (collection,)).fetchone()
+        row = (conn.execute("SELECT id, name, source FROM collections WHERE id = ?", (collection,)).fetchone()
+               if media_type != "tv" else None)
         col = {"id": row["id"], "title": row["name"], "source": row["source"]} if row else None
     facets = _facets(items)
     g, d, s, t = _split(genre), _split(decade), _split(state), _split(type)
@@ -155,8 +159,13 @@ def _like(token: str) -> str:
     return "%" + re.sub(r"([\\%_])", r"\\\1", token) + "%"
 
 
+def _scope_kinds(media_type: Literal["movie", "tv"] | None) -> tuple[str, ...]:
+    return {"movie": ("movie",), "tv": ("show",)}.get(media_type, ("movie", "show"))
+
+
 @router.get("/search")
-def search(request: Request, q: str = "", limit: int = Query(30, ge=1, le=100)):
+def search(request: Request, q: str = "", limit: int = Query(30, ge=1, le=100),
+           media_type: Literal["movie", "tv"] | None = None):
     """Offline title / show / episode search; every word must match (case-insensitive)."""
     conn = request.state.db
     tokens = [t for t in q.strip().split() if t][:6]
@@ -175,16 +184,22 @@ def search(request: Request, q: str = "", limit: int = Query(30, ge=1, le=100)):
         return " AND ".join(parts), args
 
     mw, ma = where(["m.title"])
+    if media_type == "tv":
+        mw += " AND 0"
     movies = [_public(_movie_item(r)) for r in conn.execute(
         MOVIE_ROWS + f" WHERE {mw} ORDER BY (m.title LIKE ? ESCAPE '\\') DESC, m.sort_title LIMIT ?", (*ma, prefix, limit))]
     m_total = conn.execute(f"SELECT COUNT(*) FROM movies m WHERE {mw}", ma).fetchone()[0]
     sw, sa = where(["sh.title"])
+    if media_type == "movie":
+        sw += " AND 0"
     show_ids = [r[0] for r in conn.execute(
         f"SELECT sh.id FROM shows sh WHERE {sw} ORDER BY (sh.title LIKE ? ESCAPE '\\') DESC, sh.sort_title LIMIT ?", (*sa, prefix, limit))]
     s_total = conn.execute(f"SELECT COUNT(*) FROM shows sh WHERE {sw}", sa).fetchone()[0]
     by_id = {r["id"]: r for r in conn.execute(SHOW_ROWS.replace("GROUP BY sh.id", f"WHERE sh.id IN ({','.join('?' * len(show_ids))}) GROUP BY sh.id"), show_ids)} if show_ids else {}
     shows = [_public(_show_item(by_id[i])) for i in show_ids if i in by_id]
     ew, ea = where(["e.title", "e.plot", "sh.title"])
+    if media_type == "movie":
+        ew += " AND 0"
     ep_sql = (" FROM episodes e JOIN seasons s ON s.id = e.season_id JOIN shows sh ON sh.id = s.show_id"
               " JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.path_key = f.path_key"
               f" WHERE {ew.replace('year = ?', 'sh.year = ?')}")
@@ -202,11 +217,11 @@ def search(request: Request, q: str = "", limit: int = Query(30, ge=1, le=100)):
 
 
 @router.get("/atlas")
-def atlas(request: Request):
+def atlas(request: Request, media_type: Literal["movie", "tv"] | None = None):
     """Rings of real groups: media type, genres (+ Uncategorized), collections. Positions are assigned by the client
     from this stable order (count desc, then name), never randomly."""
     conn = request.state.db
-    items = load_items(conn)
+    items = load_items(conn, _scope_kinds(media_type))
     sample: dict[str, list[str]] = {}
 
     def add(node_id: str, item: dict):
@@ -228,7 +243,8 @@ def atlas(request: Request):
                    for g, c in sorted(genres.items(), key=lambda x: (x[0] == NONE, -x[1], x[0].casefold()))]
     col_nodes = [{"id": f"collection:{c['id']}", "kind": "collection", "value": c["id"], "label": c["title"], "count": c["count"],
                   "source": c["source"], "posters": [c["poster_url"]] if c["poster_url"] else []}
-                 for c in sorted(_collections(conn), key=lambda c: (c["source"] != "nfo", -c["count"], c["title"].casefold()))]
+                 for c in sorted(_collections(conn) if media_type != "tv" else [],
+                                 key=lambda c: (c["source"] != "nfo", -c["count"], c["title"].casefold()))]
     libs = conn.execute("SELECT path FROM libraries").fetchall()
     return {"total": len(items), "rings": [
         {"id": "types", "label": "Media", "nodes": type_nodes},

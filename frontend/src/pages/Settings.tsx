@@ -55,7 +55,7 @@ export default function Settings() {
   const panel = useRef<HTMLDivElement>(null);
   const lastInPanel = useRef<Record<string, HTMLElement | null>>({});
 
-  const select = (id: string) => { if (id !== section) setParams({ section: id }, { replace: true }); };
+  const select = (id: string) => { if (id !== section) { const next = new URLSearchParams(params); next.set("section", id); setParams(next, { replace: true }); } };
   const enterPanel = () => {
     const remembered = lastInPanel.current[section];
     const target = remembered && panel.current?.contains(remembered) ? remembered : focusables().find((el) => panel.current?.contains(el));

@@ -1,7 +1,7 @@
 # Automated test results (actual runs)
 
-**Platform note:** every run below was executed in the Linux development container (Debian 12, Python 3.11.18, SQLite 3.40.1, FFprobe 5.1 dev-only).
-**No test has been executed on Windows or Xbox.** Windows path rules are exercised with Python's `ntpath` module (Windows semantics simulated on Linux), which is not a substitute for a Windows run.
+**Historical platform note:** the older runs below were executed in the Linux development container (Debian 12, Python 3.11.18, SQLite 3.40.1, FFprobe 5.1 dev-only).
+**New Home integration evidence:** [HOME_INTEGRATION.md](HOME_INTEGRATION.md) records the later Windows/Python/Chrome local runs, including one pre-existing unit failure and the hardware/media checks still unverified. Those results do not establish Xbox compatibility.
 
 ## Phase 0.5 backend suite — `cd backend && python -m pytest -v -n 0`
 

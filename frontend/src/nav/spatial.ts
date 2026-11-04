@@ -139,16 +139,17 @@ function isTextInput(el: Element | null): el is HTMLInputElement {
 
 function onKeyDown(e: KeyboardEvent) {
   if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
-  document.body.dataset.input = "keys";
+  if (e.isTrusted) document.body.dataset.input = "keys";
   const dir = KEY_DIR[e.key];
   const active = document.activeElement;
   if (dir) {
-    if (isTextInput(active) && (dir === "left" || dir === "right")) {
-      const atStart = active.selectionStart === 0 && active.selectionEnd === 0;
-      const atEnd = active.selectionStart === active.value.length;
-      if (!((dir === "left" && atStart) || (dir === "right" && atEnd))) return;
-    }
+    if (e.isTrusted && (isTextInput(active) || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable))) return;
     if (move(dir)) e.preventDefault();
+    return;
+  }
+  if ((e.key === "Enter" || e.key === " ") && (active instanceof HTMLButtonElement || active instanceof HTMLAnchorElement)) {
+    e.preventDefault();
+    if (!e.repeat && !(active instanceof HTMLButtonElement && active.disabled)) active.click();
     return;
   }
   if (e.key === "Escape" || e.key === "GoBack" || e.key === "BrowserBack" || (e.key === "Backspace" && !isTextInput(active))) {
@@ -159,12 +160,13 @@ function onKeyDown(e: KeyboardEvent) {
 
 /* Gamepad API polling (Xbox / XInput standard mapping). */
 const PAD_DIR: Record<number, Dir> = { 12: "up", 13: "down", 14: "left", 15: "right" };
-const REPEAT_DELAY = 380;
-const REPEAT_RATE = 110;
+const REPEAT_DELAY = 300;
+const REPEAT_RATE = 120;
 const held: Record<string, number> = {};
 let rafId = 0;
 
 function dispatchKey(key: string) {
+  document.body.dataset.input = "pad";
   const target = document.activeElement ?? document.body;
   const ev = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
   target.dispatchEvent(ev);
@@ -191,9 +193,13 @@ function pollGamepads() {
     if (!pad) continue;
     const ax = pad.axes[0] ?? 0;
     const ay = pad.axes[1] ?? 0;
-    const stick: Record<Dir, boolean> = { left: ax < -0.6, right: ax > 0.6, up: ay < -0.6, down: ay > 0.6 };
-    for (const [btn, dir] of Object.entries(PAD_DIR)) {
-      const down = !!pad.buttons[Number(btn)]?.pressed || stick[dir];
+    const threshold = (dir: Dir) => held[`${pad.index}-${dir}`] === undefined ? 0.5 : 0.3;
+    const stick: Record<Dir, boolean> = { left: ax < -threshold("left"), right: ax > threshold("right"), up: ay < -threshold("up"), down: ay > threshold("down") };
+    const directions = { up: !!pad.buttons[12]?.pressed || stick.up, down: !!pad.buttons[13]?.pressed || stick.down,
+      left: !!pad.buttons[14]?.pressed || stick.left, right: !!pad.buttons[15]?.pressed || stick.right };
+    for (const dir of Object.values(PAD_DIR)) {
+      const opposite = { up: "down", down: "up", left: "right", right: "left" }[dir] as Dir;
+      const down = directions[dir] && !directions[opposite];
       const key = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" }[dir];
       pressed(`${pad.index}-${dir}`, down, now, () => { document.body.dataset.input = "pad"; dispatchKey(key); }, true);
     }
@@ -210,6 +216,8 @@ function pollGamepads() {
     pressed(`${pad.index}-rb`, !!pad.buttons[5]?.pressed, now, () => dispatchKey("PageDown"), false);
     pressed(`${pad.index}-play`, !!pad.buttons[9]?.pressed, now, () => dispatchKey("MediaPlayPause"), false);
   }
+  const connected = new Set(Array.from(navigator.getGamepads?.() ?? []).filter(pad => pad !== null).map(pad => String(pad!.index)));
+  for (const key of Object.keys(held)) if (!connected.has(key.split("-")[0])) delete held[key];
   rafId = requestAnimationFrame(pollGamepads);
 }
 

@@ -1,4 +1,10 @@
 /* Horizon Stage 4: Settings, Library Manager, player prefs UI. Tokens only (horizon.theme.css). */
+.shell--settings {
+  background-color: var(--h-component-home-color-canvas);
+  background-image: linear-gradient(rgba(11,17,27,.2),rgba(11,17,27,.3)),url("../assets/horizon-home-background.png");
+  background-position: center; background-size: cover; background-attachment: fixed;
+}
+.shell--settings .hub-header--browse { background: rgba(11,17,27,.85); }
 .settings-layout { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: var(--h-spacing-8); align-items: start; }
 .settings-rail {
   position: sticky; top: 96px; display: flex; flex-direction: column; gap: var(--h-spacing-1);

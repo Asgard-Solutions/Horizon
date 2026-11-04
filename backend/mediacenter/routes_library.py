@@ -1,5 +1,6 @@
 """Catalog, playback and streaming API (used by the web UI and reusable by a future native client)."""
 import json
+import math
 import os
 from typing import Literal
 
@@ -142,13 +143,22 @@ def metadata_status(request: Request):
 
 
 @router.get("/home")
-def home(request: Request):
+def home(request: Request, media_type: Literal["movie", "tv"] | None = None):
     conn = request.state.db
     rd = _reader(request)
     cont = []
+    resume_where = "p.watched = 0 AND p.position > 10"
+    resume_args = ()
+    if media_type is not None:
+        resume_where = ("p.watched = 0 AND f.kind = ?"
+                        " AND typeof(p.duration) IN ('integer', 'real')"
+                        " AND p.duration > 0 AND p.duration < ?"
+                        " AND typeof(p.position) IN ('integer', 'real')"
+                        " AND p.position > 0 AND p.position < p.duration")
+        resume_args = ("movie" if media_type == "movie" else "episode", math.inf)
     for p in conn.execute(
         "SELECT f.id AS file_id, f.kind FROM progress p JOIN media_files f ON f.path_key = p.path_key"
-        " WHERE p.watched = 0 AND p.position > 10 ORDER BY p.updated_at DESC LIMIT 12"
+        f" WHERE {resume_where} ORDER BY p.updated_at DESC, f.id LIMIT 12", resume_args
     ):
         if p["kind"] == "movie":
             row = conn.execute(MOVIE_SQL + " WHERE m.file_id = ?", (p["file_id"],)).fetchone()
@@ -161,18 +171,30 @@ def home(request: Request):
                 cont.append({"type": "episode", **_episode(row, rd),
                              "show_poster_url": _art("show-poster", show["id"], show["poster_path"]),
                              "show_fanart_url": _art("show-fanart", show["id"], show["fanart_path"])})
-    movies = [_movie(r, rd) for r in conn.execute(MOVIE_SQL + f" ORDER BY f.added_at DESC, m.sort_title LIMIT {HOME_LIMIT}")]
-    episodes = [_episode(r, rd) for r in conn.execute(EPISODE_SQL + f" ORDER BY f.added_at DESC LIMIT {HOME_LIMIT}")]
+    movies = ([_movie(r, rd) for r in conn.execute(MOVIE_SQL + f" ORDER BY f.added_at DESC, m.sort_title LIMIT {HOME_LIMIT}")]
+              if media_type != "tv" else [])
+    episodes = ([_episode(r, rd) for r in conn.execute(EPISODE_SQL + f" ORDER BY f.added_at DESC LIMIT {HOME_LIMIT}")]
+                if media_type != "movie" else [])
+    if media_type is not None:
+        for item in cont + movies + episodes:
+            if item["progress"]:
+                for key in ("position", "duration"):
+                    item["progress"][key] = _finite_number(item["progress"][key])
+            runtime = item["runtime"]
+            item["runtime"] = _finite_number(runtime)
+            if runtime is not None and item["runtime"] is None:
+                item["runtime_status"] = "unknown"
     _read_first(request, cont + movies + episodes)
-    shows = [_show_summary(conn, r) for r in conn.execute(f"SELECT * FROM shows ORDER BY sort_title LIMIT {HOME_LIMIT}")]
+    shows = ([_show_summary(conn, r) for r in conn.execute(f"SELECT * FROM shows ORDER BY sort_title LIMIT {HOME_LIMIT}")]
+             if media_type != "movie" else [])
     libs = conn.execute("SELECT path, last_scan_at FROM libraries").fetchall()
     # Viewer-safe source status: counts only, never paths (devices must not learn host paths).
     sources = {"total": len(libs), "unreachable": sum(1 for lib in libs if not paths.dir_reachable(lib["path"])),
                "last_scan_at": max((lib["last_scan_at"] for lib in libs if lib["last_scan_at"]), default=None)}
     counts = {
-        "movies": conn.execute("SELECT COUNT(*) FROM movies").fetchone()[0],
-        "shows": conn.execute("SELECT COUNT(*) FROM shows").fetchone()[0],
-        "episodes": conn.execute("SELECT COUNT(*) FROM episodes").fetchone()[0],
+        "movies": conn.execute("SELECT COUNT(*) FROM movies").fetchone()[0] if media_type != "tv" else 0,
+        "shows": conn.execute("SELECT COUNT(*) FROM shows").fetchone()[0] if media_type != "movie" else 0,
+        "episodes": conn.execute("SELECT COUNT(*) FROM episodes").fetchone()[0] if media_type != "movie" else 0,
         "libraries": conn.execute("SELECT COUNT(*) FROM libraries").fetchone()[0],
     }
     return {"continue_watching": cont, "recent_movies": movies, "recent_episodes": episodes,
@@ -180,6 +202,10 @@ def home(request: Request):
 
 
 HOME_LIMIT = 24
+
+
+def _finite_number(value):
+    return value if isinstance(value, (int, float)) and math.isfinite(value) else None
 
 
 @router.get("/movies")
