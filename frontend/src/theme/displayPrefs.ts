@@ -1,5 +1,6 @@
 // Device-local display preferences (this screen only): motion and UI size. Playback preferences live on the server.
 import { applyUiScale } from "./uiScale";
+import { startAppearancePrefs } from "./appearancePrefs";
 
 const MOTION_KEY = "horizon.motion";
 export type MotionPref = "system" | "reduce";
@@ -21,6 +22,7 @@ export function setMotionPref(p: MotionPref) {
 }
 
 export function startDisplayPrefs() {
+  startAppearancePrefs();
   applyMotion();
   applyUiScale();
 }

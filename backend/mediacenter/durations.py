@@ -86,6 +86,11 @@ class DurationWorker:
             " SUM(probe_json IS NOT NULL AND json_extract(probe_json, '$.duration') IS NULL) AS unknown FROM media_files"
         ).fetchone()
         with self._cond:
+            if self._skipped:
+                # Removed sources and metadata cached by playback must not hide unrelated pending work.
+                self._skipped.intersection_update(r["id"] for r in conn.execute(
+                    "SELECT id FROM media_files WHERE probe_json IS NULL"
+                    " AND id IN (SELECT value FROM json_each(?))", (json.dumps(list(self._skipped)),)))
             active, skipped = len(self._claimed), len(self._skipped)
         return {"available": self.enabled, "workers": self.workers, "pending": max(0, (row["pending"] or 0) - skipped),
                 "known": row["known"] or 0, "unknown": row["unknown"] or 0, "active": active, "unreachable": skipped,

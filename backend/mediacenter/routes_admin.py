@@ -15,7 +15,7 @@ from .db import get_setting, now_iso, set_setting
 from .parser import is_video
 from .probe import ffprobe_version, find_ffprobe
 from .scanjobs import record_scan
-from .scanner import SCAN_LOCK, assign_collections, cleanup_orphans, folder_collections_enabled, path_key, scan_library
+from .scanner import SCAN_LOCK, assign_collections, cleanup_orphans, folder_collections_enabled, nfo_collections_enabled, path_key, scan_library
 from .security import hash_pin, lan_enabled, require_host, validate_new_pin
 from .winfs import list_windows_drives
 
@@ -133,23 +133,36 @@ def remove_library(library_id: int, request: Request):
 
 
 class LibraryPrefsIn(BaseModel):
-    folder_collections: bool
+    folder_collections: bool = True
+    nfo_collections: bool = True
 
 
 @router.get("/settings/library")
 def get_library_prefs(request: Request):
-    return {"folder_collections": folder_collections_enabled(request.state.db)}
+    conn = request.state.db
+    return {"folder_collections": folder_collections_enabled(conn),
+            "nfo_collections": nfo_collections_enabled(conn)}
 
 
 @router.post("/settings/library")
 def set_library_prefs(body: LibraryPrefsIn, request: Request):
-    """Folder-based collections on/off. Only the catalog is regrouped; media files are never touched."""
+    """Independently toggle collection sources, regrouping only the indexed catalog."""
     conn = request.state.db
-    set_setting(conn, "folder_collections", "1" if body.folder_collections else "0")
-    assign_collections(conn, body.folder_collections)
-    conn.commit()
-    return {"folder_collections": body.folder_collections,
-            "collections": conn.execute("SELECT COUNT(*) FROM collections").fetchone()[0]}
+    if not SCAN_LOCK.acquire(timeout=30):
+        raise HTTPException(status_code=409, detail="A scan is still finishing. Try again in a moment.")
+    try:
+        with conn:
+            # Lock and start the transaction BEFORE reading/merging either preference.
+            conn.execute("BEGIN IMMEDIATE")
+            prefs = get_library_prefs(request)
+            prefs.update(body.model_dump(exclude_unset=True))
+            for key, enabled in prefs.items():
+                set_setting(conn, key, "1" if enabled else "0")
+            assign_collections(conn, prefs["folder_collections"], prefs["nfo_collections"])
+            result = {**prefs, "collections": conn.execute("SELECT COUNT(*) FROM collections").fetchone()[0]}
+        return result
+    finally:
+        SCAN_LOCK.release()
 
 
 @router.post("/libraries/{library_id}/scan")

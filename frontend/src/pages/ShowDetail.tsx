@@ -6,6 +6,8 @@ import { ErrorState, Loading } from "../components/States";
 import { DetailShell } from "../detail/DetailShell";
 import { EpisodeJourney } from "../detail/EpisodeJourney";
 import { WatchProgress } from "../detail/WatchProgress";
+import { MetadataDetails } from "../detail/MetadataDetails";
+import { NfoEditLink } from "../components/NfoEditLink";
 import { defaultEpisode, forgetShowFocus, nextUp, recallShowFocus, rememberShowFocus, type NextUp } from "../detail/nextUp";
 import { episodeCode, formatTime, isPartial } from "../format";
 import { useAsync, useQuietRefresh } from "../hooks";
@@ -69,6 +71,9 @@ function ShowView({ show }: { show: Show }) {
         </ul>
         {show.plot && <p className="dt-plot" data-testid="show-plot">{show.plot}</p>}
         {up && <NextUpActions up={up} autofocus={!restored?.onCard} onPlay={play} />}
+        <MetadataDetails info={show} />
+        <div className="dt-actions"><NfoEditLink kind="tv" id={show.id} label="Edit show NFO" />
+          {selectedId != null && <NfoEditLink kind="episode" id={selectedId} label="Edit selected episode NFO" />}</div>
       </div>
       {season && (
         <EpisodeJourney seasons={seasons} seasonIdx={seasonIdx} onSeason={setSeasonIdx} selectedId={selectedId}

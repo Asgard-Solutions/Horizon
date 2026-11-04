@@ -28,7 +28,7 @@ export function FirstRun({ hasFolders }: { hasFolders: boolean }) {
         <p>
           {hasFolders
             ? "Your library folders were scanned, but no movies or episodes were recognised. Check the folder contents or scan again."
-            : "Point Horizon at a folder on this PC, a mapped drive or a network share like \\\\NAS\\Media. Files are only read, never changed."}
+            : "Point REELHEIM at a folder on this PC, a mapped drive or a network share like \\\\NAS\\Media. Files are only read, never changed."}
         </p>
         {host ? (
           <button className="hbtn hbtn--primary hbtn--large" data-autofocus onClick={() => navigate("/settings")}

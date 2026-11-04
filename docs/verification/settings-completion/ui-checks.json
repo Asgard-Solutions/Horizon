@@ -1,0 +1,241 @@
+{
+  "timestamp": "2026-11-04T16:44:47.509Z",
+  "scope": "Mutation/playback tests use disposable loopback data and mocked SMB/credentials. Last check is read-only normal-app setup. Real NAS authentication, credential persistence and screen-reader speech not verified.",
+  "checks": [
+    {
+      "check": "Light theme selected",
+      "observation": {
+        "contrast": "normal",
+        "focus": "display-theme-light",
+        "theme": "light"
+      }
+    },
+    {
+      "check": "Light persists on reload",
+      "observation": {
+        "bg": "rgb(243, 245, 247)",
+        "logo": "/assets/horizon-media-center-logo-on-light-DPmQ5rVj.png",
+        "pageWidth": 1920,
+        "theme": "light",
+        "width": 1920
+      }
+    },
+    {
+      "check": "NFO Off keeps folder grouping",
+      "observation": {
+        "folder": "true",
+        "nfo": "false",
+        "result": "1 collection in your library now."
+      }
+    },
+    {
+      "check": "Collection Off choices persist",
+      "observation": {
+        "folder": "false",
+        "nfo": "false"
+      }
+    },
+    {
+      "check": "Screen reader test creates polite live message without moving focus",
+      "observation": {
+        "focus": "a11y-reader-test",
+        "live": "polite",
+        "message": "Horizon test announcement. Additional screen reader announcements are enabled."
+      }
+    },
+    {
+      "check": "Turning announcements Off clears the extra live channel",
+      "observation": {
+        "message": "",
+        "pref": "off"
+      }
+    },
+    {
+      "check": "High Contrast and announcements persist with Light theme",
+      "observation": {
+        "announcements": "on",
+        "background": "rgb(255, 255, 255)",
+        "contrast": "high",
+        "primary": "rgb(0, 0, 0)",
+        "theme": "light"
+      }
+    },
+    {
+      "check": "Mock NAS sign-in failure is actionable and clears password",
+      "observation": {
+        "error": "The test share rejected this sign-in. Check the username and password.",
+        "focus": "smb-connect",
+        "password": ""
+      }
+    },
+    {
+      "check": "Mock NAS connection success records location and clears password",
+      "observation": {
+        "focus": "smb-connect",
+        "locationCount": 1,
+        "message": "Connected and folder access checked. Sign-in is saved securely on this PC.",
+        "passwordEmpty": true
+      }
+    },
+    {
+      "check": "Cancel forgetting a mock sign-in restores its opener",
+      "observation": {
+        "focusText": "Forget saved sign-in"
+      }
+    },
+    {
+      "check": "Forget mock sign-in preserves connection location and focus",
+      "observation": {
+        "focus": "smb-server",
+        "locationCount": 1,
+        "message": "Saved sign-in forgotten. Existing connections and sources are unchanged."
+      }
+    },
+    {
+      "check": "Connected mock share opens the one library manager with its path prefilled",
+      "observation": {
+        "path": "C:\\Users\\army_\\.codex\\.chatgpt-projects\\g-p-6aeaa10d8664819182f2dc7d7977f3d9\\Horizon\\data\\settings-completion-20261104\\media",
+        "url": "http://127.0.0.1:8767/settings?media=movie&section=libraries&source_path=C%3A%5CUsers%5Carmy_%5C.codex%5C.chatgpt-projects%5Cg-p-6aeaa10d8664819182f2dc7d7977f3d9%5CHorizon%5Cdata%5Csettings-completion-20261104%5Cmedia"
+      }
+    },
+    {
+      "check": "Browse starts at the connected path",
+      "observation": "C:\\Users\\army_\\.codex\\.chatgpt-projects\\g-p-6aeaa10d8664819182f2dc7d7977f3d9\\Horizon\\data\\settings-completion-20261104\\media"
+    },
+    {
+      "check": "Light Home retains original card artwork and geometry",
+      "observation": {
+        "cards": [
+          {
+            "background": true,
+            "color": "rgb(255, 255, 255)",
+            "text": "Movies2 movies"
+          },
+          {
+            "background": true,
+            "color": "rgb(255, 255, 255)",
+            "text": "TV Shows0 TV shows"
+          }
+        ],
+        "contrast": "normal",
+        "pageWidth": 1920,
+        "theme": "light",
+        "width": 1920
+      }
+    },
+    {
+      "check": "Light detail page with missing artwork",
+      "observation": {
+        "color": "rgb(20, 37, 52)",
+        "pageWidth": 1905,
+        "title": "Settings verification clip 1",
+        "width": 1920
+      }
+    },
+    {
+      "check": "Light player retains real playback and readable controls",
+      "observation": {
+        "duration": 90,
+        "phase": "ready",
+        "theme": "light",
+        "videoWidth": 640
+      }
+    },
+    {
+      "check": "390px at 200% interface size",
+      "observation": [
+        {
+          "category": "display",
+          "outside": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "width": 390
+        },
+        {
+          "category": "accessibility",
+          "outside": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "width": 390
+        },
+        {
+          "category": "network",
+          "outside": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "width": 390
+        }
+      ]
+    },
+    {
+      "check": "Keyboard Right enters panel; Escape returns selected category",
+      "observation": [
+        {
+          "category": "collections",
+          "entered": true,
+          "back": "settings-cat-collections"
+        },
+        {
+          "category": "display",
+          "entered": true,
+          "back": "settings-cat-display"
+        },
+        {
+          "category": "accessibility",
+          "entered": true,
+          "back": "settings-cat-accessibility"
+        },
+        {
+          "category": "network",
+          "entered": true,
+          "back": "settings-cat-network"
+        },
+        {
+          "category": "libraries",
+          "entered": true,
+          "back": "settings-cat-libraries"
+        }
+      ]
+    },
+    {
+      "check": "Default Dark Home retains approved background and card art",
+      "observation": {
+        "background": "linear-gradient(rgba(11, 17, 27, 0.2), rgba(11, 17, 27, 0.3)), url(\"http://127.0.0.1:8767/assets/horizon-home-background-BVJVOHzk.png\")",
+        "cards": 2,
+        "contrast": "normal",
+        "theme": "dark"
+      }
+    },
+    {
+      "check": "Final Light High Contrast artwork focus uses distinct inner and outer rings",
+      "observation": {
+        "contrast": "high",
+        "focus": "home-tv",
+        "outline": "rgb(0, 76, 61)",
+        "shadow": "rgb(255, 255, 255) 0px 0px 0px 3px inset",
+        "theme": "light"
+      }
+    },
+    {
+      "check": "Final player progress, extent and buffer styles",
+      "observation": {
+        "buffer": "rgb(119, 119, 119)",
+        "contrast": "high",
+        "fill": "rgb(0, 0, 0)",
+        "theme": "light",
+        "track": "rgb(255, 255, 255)",
+        "trackOutline": "rgb(0, 0, 0)",
+        "videoWidth": 640
+      }
+    },
+    {
+      "check": "Normal app exposes real Windows SMB setup without connecting",
+      "observation": {
+        "policy": "Device access is enabled",
+        "readiness": "Device access is saved On, but no LAN listener was reachable. Start Horizon with Start.bat to apply it, then refresh. Check the Windows network and firewall if it is still unavailable.",
+        "serverEmpty": true,
+        "theme": "dark"
+      }
+    }
+  ]
+}

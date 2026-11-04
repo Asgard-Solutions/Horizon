@@ -1,0 +1,26 @@
+[
+  {
+    "alerts": 0,
+    "buttons": 9,
+    "tab": "playback",
+    "text": "Playback\n\nSaved on the host, so they apply on this PC and on paired devices such as the Xbox.\n\nResume\nAsk shows Resume / Start over. Automatic continues where you stopped and offers Start over for a few seconds.\nAsk each time\nResume automatically\nAuto-play next episode\nWhen an episode ends, the next one starts after a 10-second countdown you can cancel.\nOff\nSkip step\nHow far Left / Right (D-pad or keyboard) and the skip buttons jump.\n10 s\n30 s\n60 s\nMark as watched at\nApplies to movies and episodes from now on. Titles already marked watched stay watched.\n90%\n95%\nThe end\nLocal subtitle files\nSubtitles stored next to the video (.srt / .vtt). Not available yet.\nComing later"
+  },
+  {
+    "alerts": 0,
+    "buttons": 0,
+    "tab": "collections",
+    "text": ""
+  },
+  {
+    "alerts": 0,
+    "buttons": 0,
+    "tab": "network",
+    "text": ""
+  },
+  {
+    "alerts": 0,
+    "buttons": 0,
+    "tab": "system",
+    "text": "System & diagnostics\n\nEverything runs on this PC. Nothing is sent to the internet.\n\nTHIS BROWSER\nBrowser\nMozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36\nWindow\n1280 × 720 CSS px · display scaling 100%\nInterface size\n100% · zoom supported\nController access\nAvailable (Gamepad API)\nMotion\nFollow system · system full"
+  }
+]

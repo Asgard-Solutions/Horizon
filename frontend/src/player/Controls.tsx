@@ -1,4 +1,4 @@
-import { ArrowLeft, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Captions, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
 import type { RefObject } from "react";
 import { formatTime } from "../format";
 
@@ -31,6 +31,8 @@ interface Props {
   onFullscreen: () => void;
   onNext: () => void;
   onExit: () => void;
+  onSubtitles: () => void;
+  subtitlesOn: boolean;
 }
 
 function Timeline({ s, active, onSeekTo, onToggle }: { s: ControlsState; active: boolean; onSeekTo: (t: number) => void; onToggle: () => void }) {
@@ -76,6 +78,8 @@ function ButtonRow(p: Props) {
       </button>
       <button className="pc-btn" onClick={() => p.onSeekBy(p.skip)} aria-label={`Forward ${p.skip} seconds`} data-testid="player-forward-button"><RotateCw size={28} /><small>{p.skip}</small></button>
       <span className="pc-spacer" />
+      <button className="hbtn pc-subtitles-button" onClick={p.onSubtitles} aria-label={`Subtitles${p.subtitlesOn ? ", on" : ", off"}`}
+        data-testid="player-subtitles-button"><Captions size={24} /><span>Subtitles</span></button>
       {p.hasNext && (
         <button className="hbtn" onClick={p.onNext} data-testid="player-next-episode-button"><SkipForward size={22} /> Next episode</button>
       )}
@@ -92,7 +96,7 @@ function ButtonRow(p: Props) {
   );
 }
 
-/** Horizon OSD: hidden during playback, a minimal timeline on interaction, full controls after Up. */
+/** REELHEIM OSD: hidden during playback, a minimal timeline on interaction, full controls after Up. */
 export function PlayerControls(p: Props) {
   const expanded = p.mode === "expanded";
   return (

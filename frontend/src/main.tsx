@@ -10,6 +10,7 @@ import "./player/player.css";
 import "./discover/discover.css";
 import "./settings/settings.css";
 import "./home/hub.css";
+import "./theme/appearance.css";
 import App from "./App";
 import { startDisplayPrefs } from "./theme/displayPrefs";
 import { startUiScale } from "./theme/uiScale";

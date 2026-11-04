@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { autoScale, getScalePref, SCALE_OPTIONS, setScalePref, zoomSupported, type ScalePref } from "../theme/uiScale";
-import { Choice, ComingLater, SectionHead, SettingRow } from "./ui";
+import { Choice, SectionHead, SettingRow } from "./ui";
 
 const LABEL: Record<ScalePref, string> = { auto: "Auto", "1": "100%", "1.25": "125%", "1.5": "150%", "1.75": "175%", "2": "200%" };
 
@@ -28,8 +28,8 @@ export function DisplaySection() {
       <SectionHead title="Appearance & 4K scaling" intro="Saved on this device only." />
       <SettingRow label="Interface size" testId="display-scale-row"
         hint={supported
-          ? `Auto fits Horizon's 1080p layout to this screen (currently ${auto}%). It never adds to Windows display scaling, which this browser already applies.`
-          : "This browser cannot zoom the interface, so Horizon stays at 100%. Use the browser's own zoom (Ctrl + / Ctrl -) instead."}>
+          ? `Auto fits REELHEIM's 1080p layout to this screen (currently ${auto}%). It never adds to Windows display scaling, which this browser already applies.`
+          : "This browser cannot zoom the interface, so REELHEIM stays at 100%. Use the browser's own zoom (Ctrl + / Ctrl -) instead."}>
         <Choice testId="display-scale" value={pref} onChange={choose} disabled={!supported}
           options={SCALE_OPTIONS.map((o) => ({ value: o, label: LABEL[o] }))} />
       </SettingRow>
@@ -39,10 +39,9 @@ export function DisplaySection() {
         <dt>Display scaling</dt><dd data-testid="display-dpr">{Math.round(v.dpr * 100)}% (set by Windows / the console)</dd>
       </dl>
       {pref !== "auto" && v.w / Number(pref) < 1280 && (
-        <p className="lm-note" data-testid="display-scale-warning">At this size the screen is narrower than Horizon's smallest layout; some rows may scroll sideways.</p>
+        <p className="lm-note" data-testid="display-scale-warning">Larger interface sizes show fewer settings at once. Scroll down to reach the remaining controls.</p>
       )}
       {pref !== "auto" && <button className="hbtn hbtn--quiet" onClick={() => choose("auto")} data-testid="display-scale-reset">Reset to Auto</button>}
-      <ComingLater testId="display-theme-later" label="Light theme" hint="Horizon currently uses its dark Obsidian theme only." />
     </div>
   );
 }

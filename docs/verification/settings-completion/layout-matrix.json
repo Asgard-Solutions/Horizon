@@ -1,0 +1,442 @@
+{
+  "cases": [
+    {
+      "category": "collections",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "light",
+      "width": 1920
+    },
+    {
+      "category": "display",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "light",
+      "width": 1920
+    },
+    {
+      "category": "accessibility",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "light",
+      "width": 1920
+    },
+    {
+      "category": "network",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "light",
+      "width": 1920
+    },
+    {
+      "category": "libraries",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1905,
+      "theme": "light",
+      "width": 1920
+    },
+    {
+      "category": "collections",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "light",
+      "width": 1280
+    },
+    {
+      "category": "display",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "light",
+      "width": 1280
+    },
+    {
+      "category": "accessibility",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "light",
+      "width": 1280
+    },
+    {
+      "category": "network",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "light",
+      "width": 1280
+    },
+    {
+      "category": "libraries",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "light",
+      "width": 1280
+    },
+    {
+      "category": "collections",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "category": "display",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "alerts": [],
+      "category": "accessibility",
+      "contrast": "normal",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "requested": [
+        390,
+        844
+      ],
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "category": "network",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "category": "libraries",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "light",
+      "width": 390
+    },
+    {
+      "category": "collections",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "category": "display",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "category": "accessibility",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "category": "network",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "category": "libraries",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 844,
+      "outside": [],
+      "pageWidth": 375,
+      "theme": "dark",
+      "width": 390
+    },
+    {
+      "category": "collections",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "dark",
+      "width": 1280
+    },
+    {
+      "category": "display",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "dark",
+      "width": 1280
+    },
+    {
+      "category": "accessibility",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "dark",
+      "width": 1280
+    },
+    {
+      "category": "network",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "dark",
+      "width": 1280
+    },
+    {
+      "category": "libraries",
+      "requested": [
+        1280,
+        720
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 720,
+      "outside": [],
+      "pageWidth": 1265,
+      "theme": "dark",
+      "width": 1280
+    },
+    {
+      "category": "collections",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "dark",
+      "width": 1920
+    },
+    {
+      "category": "display",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "dark",
+      "width": 1920
+    },
+    {
+      "category": "accessibility",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "dark",
+      "width": 1920
+    },
+    {
+      "category": "network",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1920,
+      "theme": "dark",
+      "width": 1920
+    },
+    {
+      "category": "libraries",
+      "requested": [
+        1920,
+        1080
+      ],
+      "alerts": [],
+      "contrast": "high",
+      "height": 1080,
+      "outside": [],
+      "pageWidth": 1905,
+      "theme": "dark",
+      "width": 1920
+    }
+  ],
+  "beforeFix": [
+    {
+      "category": "accessibility",
+      "requested": [
+        390,
+        844
+      ],
+      "alerts": [],
+      "contrast": "normal",
+      "height": 844,
+      "outside": [
+        "a11y-reader-test"
+      ],
+      "pageWidth": 405,
+      "theme": "light",
+      "width": 390
+    }
+  ]
+}

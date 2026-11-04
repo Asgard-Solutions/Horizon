@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-04",
+  "instance": "isolated loopback :8767, own database, fake NAS and credential operations",
+  "checks": {
+    "distinctLocations": 4,
+    "twoNasAddresses": true,
+    "twoShares": true,
+    "sameShareMoviesAndTV": true,
+    "persistedAfterRefresh": true,
+    "reconnectEarlierEntryCount": 4,
+    "newLocationReset": {
+      "server": true,
+      "share": true,
+      "folder": true,
+      "windowsAccount": true,
+      "username": true,
+      "password": true,
+      "rememberOff": true,
+      "listRetained": true,
+      "serverFocus": true
+    },
+    "desktop": {
+      "width": 1920,
+      "height": 1080,
+      "documentWidth": 1905
+    },
+    "compact": {
+      "width": 390,
+      "height": 844,
+      "documentWidth": 375,
+      "buttonsWithinViewport": true
+    },
+    "escapeRestoresNetworkCategory": true,
+    "normalApp": {
+      "port": 8765,
+      "bindHost": "127.0.0.1",
+      "preexistingLocationCount": 1,
+      "preexistingSavedSigninIndicator": true
+    }
+  },
+  "notTested": [
+    "Physical NAS authentication",
+    "OS credential persistence",
+    "NAS outage",
+    "Physical gamepad"
+  ],
+  "noRealNasOrCredentialMutations": true
+}

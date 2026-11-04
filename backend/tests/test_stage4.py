@@ -1,12 +1,15 @@
 """Stage 4: background scans, cancel/interrupt safety, unreachable sources, playback preferences, metadata reader control."""
 import shutil
+import sqlite3
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
 from tests.conftest import HOST_HEADERS, FixedClientIP
-from mediacenter import paths
+from mediacenter import paths, routes_library
 from mediacenter.app import create_app
 from mediacenter.db import connect
 from mediacenter.scanner import scan_library
@@ -135,7 +138,7 @@ def test_slow_network_path_reports_unreachable_quickly(monkeypatch):
 
 def test_preferences_defaults_validation_and_persistence(app, host):
     assert host.get("/api/preferences").json() == {"resume": "ask", "autoplay_next": False, "skip_seconds": 10,
-                                                   "watched_threshold": "95"}
+                                                   "watched_threshold": "95", "subtitles": "off"}
     assert host.put("/api/preferences", json={"skip_seconds": 15}).status_code == 422
     assert host.put("/api/preferences", json={"watched_threshold": "80"}).status_code == 422
     r = host.put("/api/preferences", json={"skip_seconds": 30, "autoplay_next": True}).json()
@@ -143,6 +146,55 @@ def test_preferences_defaults_validation_and_persistence(app, host):
     restarted = TestClient(FixedClientIP(create_app(app.state.config), "127.0.0.1"), base_url="http://localhost:8765")
     restarted.headers.update(HOST_HEADERS)
     assert restarted.get("/api/preferences").json()["skip_seconds"] == 30
+
+
+def test_concurrent_partial_preferences_preserve_both_fields(app, host, monkeypatch):
+    first_read = threading.Event()
+    second_attempt = threading.Event()
+
+    class ObservedConnection(sqlite3.Connection):
+        def execute(self, sql, parameters=()):
+            # With serialization, let the first writer finish when the second attempts its lock.
+            if sql.upper().startswith("BEGIN"):
+                second_attempt.set()
+            cursor = super().execute(sql, parameters)
+            # Without serialization, both values have now been read before either writer proceeds.
+            if sql.startswith("SELECT value FROM settings"):
+                second_attempt.set()
+            return cursor
+
+    first = connect(app.state.config.db_path)
+    second = sqlite3.connect(app.state.config.db_path, timeout=5, check_same_thread=False,
+                             factory=ObservedConnection)
+    second.row_factory = sqlite3.Row
+    original = routes_library.preferences
+
+    def coordinated_preferences(conn):
+        prefs = original(conn)
+        if conn is first:
+            first_read.set()
+            assert second_attempt.wait(5), "second writer did not attempt its update"
+        return prefs
+
+    monkeypatch.setattr(routes_library, "preferences", coordinated_preferences)
+
+    def save(conn, **changes):
+        request = SimpleNamespace(state=SimpleNamespace(db=conn))
+        return routes_library.put_preferences(routes_library.PreferencesIn(**changes), request)
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            a = pool.submit(save, first, skip_seconds=30)
+            assert first_read.wait(5), "first writer did not read preferences"
+            b = pool.submit(save, second, resume="auto")
+            assert a.result(timeout=10)["skip_seconds"] == 30
+            assert b.result(timeout=10)["resume"] == "auto"
+        saved = host.get("/api/preferences").json()
+        assert saved["skip_seconds"] == 30
+        assert saved["resume"] == "auto"
+    finally:
+        first.close()
+        second.close()
 
 
 def test_watched_threshold_applies_to_new_saves_only(host, library):

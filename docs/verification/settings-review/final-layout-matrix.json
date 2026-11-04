@@ -1,0 +1,338 @@
+{
+  "timestamp": "2026-11-04T15:11:28.252Z",
+  "setupNote": "The initial TV Libraries check still displayed the intentionally injected scan-start error. That form message was cleared through the UI, then all 32 cases below were independently rechecked.",
+  "priorAttempts": [
+    {
+      "alerts": 1,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1905,
+      "scale": "1",
+      "tab": "libraries",
+      "width": 1920,
+      "zeroLabels": 0
+    }
+  ],
+  "cases": [
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1905,
+      "scale": "1",
+      "tab": "libraries",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1905,
+      "scale": "1",
+      "tab": "playback",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1920,
+      "scale": "1",
+      "tab": "collections",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1920,
+      "scale": "1",
+      "tab": "display",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1920,
+      "scale": "1",
+      "tab": "accessibility",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1905,
+      "scale": "1",
+      "tab": "input",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1920,
+      "scale": "1",
+      "tab": "network",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "pageWidth": 1905,
+      "scale": "1",
+      "tab": "system",
+      "width": 1920,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "libraries",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "playback",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "collections",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "display",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "accessibility",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "input",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "network",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "pageWidth": 1265,
+      "scale": "1",
+      "tab": "system",
+      "width": 1280,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "libraries",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "playback",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "collections",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "display",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "accessibility",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "input",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "network",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "pageWidth": 1009,
+      "scale": "1",
+      "tab": "system",
+      "width": 1024,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "libraries",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "playback",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "collections",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "display",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "accessibility",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "input",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "network",
+      "width": 390,
+      "zeroLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "pageWidth": 375,
+      "scale": "1",
+      "tab": "system",
+      "width": 390,
+      "zeroLabels": 0
+    }
+  ]
+}

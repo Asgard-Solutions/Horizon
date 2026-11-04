@@ -15,7 +15,7 @@ function status(lib: Library, job: ScanJob | undefined) {
 }
 
 /** One media source: what it holds, whether it is reachable, how its last scan went, and its actions. */
-export function SourceRow({ lib, job, onRescan, onRemove }: { lib: Library; job?: ScanJob; onRescan: () => void; onRemove: () => void }) {
+export function SourceRow({ lib, job, pending, onRescan, onRemove }: { lib: Library; job?: ScanJob; pending?: boolean; onRescan: () => void; onRemove: () => void }) {
   const st = status(lib, job);
   const s = lib.last_scan_summary;
   const Icon = lib.network ? Network : HardDrive;
@@ -53,7 +53,7 @@ export function SourceRow({ lib, job, onRescan, onRemove }: { lib: Library; job?
       </div>
       <div className="lm-source-actions" data-nav-row>
         {/* Stays focusable while busy (a disabled button would drop controller focus). */}
-        <button className="hbtn" onClick={() => !job && onRescan()} aria-disabled={!!job} data-testid={`library-rescan-button-${lib.id}`}>
+        <button className="hbtn" onClick={() => !job && !pending && onRescan()} aria-disabled={!!job || pending || undefined} data-testid={`library-rescan-button-${lib.id}`}>
           <RefreshCw size={20} className={job?.state === "running" ? "spin" : ""} /> {job ? (job.state === "running" ? "Scanning…" : "Queued") : "Rescan"}
         </button>
         <button className="hbtn btn--danger" onClick={onRemove} data-testid={`library-remove-button-${lib.id}`}>

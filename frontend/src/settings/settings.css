@@ -1,11 +1,18 @@
 /* Horizon Stage 4: Settings, Library Manager, player prefs UI. Tokens only (horizon.theme.css). */
 .shell--settings {
   background-color: var(--h-component-home-color-canvas);
-  background-image: linear-gradient(rgba(11,17,27,.2),rgba(11,17,27,.3)),url("../assets/horizon-home-background.png");
+  background-image: linear-gradient(rgba(11,17,27,.2),rgba(11,17,27,.3)),url("../assets/reelheim-aurora-midnight-fjord.png");
   background-position: center; background-size: cover; background-attachment: fixed;
 }
 .shell--settings .hub-header--browse { background: rgba(11,17,27,.85); }
+.settings { container: settings-page / inline-size; }
 .settings-layout { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: var(--h-spacing-8); align-items: start; }
+.settings-resource-status { margin: 16px 0; }
+.settings-resource-status p { margin: 0 0 12px; }
+.settings button[aria-disabled="true"] { opacity: .6; cursor: wait; }
+.settings .fb-list { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); }
+.settings .fb-item { grid-template-columns: auto minmax(0, 1fr); }
+.settings .fb-item span, .settings .fb-item small { overflow-wrap: anywhere; }
 .settings-rail {
   position: sticky; top: 96px; display: flex; flex-direction: column; gap: var(--h-spacing-1);
   padding: var(--h-spacing-3); border-radius: var(--h-radius-panel); background: var(--h-color-bg-surface);
@@ -28,6 +35,7 @@
 .settings-cat[aria-current="true"] svg { color: var(--h-color-accent-aurora); }
 
 .settings-panel {
+  overflow-wrap: anywhere;
   min-width: 0; padding: var(--h-spacing-8) var(--h-spacing-12) var(--h-spacing-12); border-radius: var(--h-radius-panel);
   background: linear-gradient(180deg, rgba(23, 39, 55, 0.55), rgba(16, 25, 37, 0.85)); border: 1px solid var(--h-color-border-default);
   min-height: 60vh;
@@ -48,6 +56,10 @@
 .srow-text strong { font-size: var(--fs-action); font-weight: 600; }
 .srow-text span { color: var(--h-color-text-tertiary); font-size: var(--fs-meta); max-width: 68ch; }
 .srow-control { display: flex; justify-content: flex-end; }
+@container settings-page (max-width: 1400px) {
+  .settings [data-testid="display-scale-row"] { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .settings [data-testid="display-scale-row"] .srow-control { justify-content: flex-start; min-width: 0; }
+}
 .srow--later { opacity: 0.72; }
 .srow--later strong { color: var(--h-color-text-secondary); }
 
@@ -171,10 +183,31 @@ html[data-motion="reduce"] .pc-flash { opacity: 1; }
 html[data-motion="reduce"] .ep-art, html[data-motion="reduce"] .ep--selected .ep-art { transform: none !important; }
 html[data-motion="reduce"] .lm-bar span { width: 100%; opacity: 0.6; }
 
-@media (max-width: 1100px) {
+@container settings-page (max-width: 1100px) {
   .settings-layout { grid-template-columns: 1fr; }
   .settings-rail { position: static; flex-direction: row; flex-wrap: wrap; }
   .lm-source { grid-template-columns: auto minmax(0, 1fr); }
   .lm-source-actions { grid-column: 2; }
+}
+@container settings-page (max-width: 900px) {
+  .settings-panel { padding: 24px; }
+  .settings .srow { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .settings .srow-control { justify-content: flex-start; min-width: 0; }
+  .settings .sfacts { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .settings .sfacts dt { margin-top: 8px; }
+  .settings .sfacts dd { min-width: 0; }
+  .settings .lm-source, .settings .lm-activity { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+  .settings .lm-source-actions { grid-column: auto; flex-wrap: wrap; }
+  .settings .lm-activity-actions { flex-wrap: wrap; }
+  .settings .pin-form input { width: min(300px, 100%); }
+}
+@container settings-page (max-width: 300px) {
+  .settings-cat { min-width: 0; max-width: 100%; gap: 10px; padding: 12px; }
+  .settings-cat span { min-width: 0; overflow-wrap: anywhere; }
+  .settings .schoice, .settings .stoggle { max-width: 100%; }
+  .settings .schoice-opt { max-width: 100%; padding: 12px; white-space: normal; overflow-wrap: anywhere; }
+  .settings .hbtn, .settings .btn, .settings .stoggle { max-width: 100%; flex-wrap: wrap; padding-inline: 12px; white-space: normal; overflow-wrap: anywhere; }
+  .settings .sfacts kbd { max-width: 100%; overflow-wrap: anywhere; }
+  .settings .sbadge { max-width: 100%; white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) { .lm-bar span { animation: none; width: 100%; opacity: 0.6; } }

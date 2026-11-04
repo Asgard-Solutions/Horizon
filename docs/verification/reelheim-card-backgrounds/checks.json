@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-04",
+  "assetsCopiedExactly": {
+    "reelheim-movies-background-1920x740.webp": {
+      "bytes": 234970,
+      "sha256": "ff8cbdeec2534065c8d872c7b2d18f44ee082506e9a6e98b8e3deefc48eb6195"
+    },
+    "reelheim-tv-shows-background-1920x740.webp": {
+      "bytes": 189208,
+      "sha256": "bc0936b95fffe3287611f4f8ca46d8be60f9998091240d54c5b77807197a928e"
+    }
+  },
+  "frontendChecksPassed": 24,
+  "typecheckAndBuild": "passed; existing bundle-size advisory",
+  "actualBrowserViewport": [
+    1280,
+    720
+  ],
+  "actualUi": "Both new card backgrounds decoded with labels/counts visible; no horizontal overflow",
+  "backendChanged": false,
+  "screenshots": [
+    "home.png"
+  ],
+  "changes": "local, uncommitted"
+}

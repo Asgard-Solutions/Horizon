@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-04",
+  "feature": "Recoverable removal of existing local NFO files",
+  "movieError": "User confirmed movie editing working again; representative movie NFO reads and disposable movie save verified",
+  "backend": {
+    "passed": 590,
+    "skipped": 10,
+    "warnings": 3,
+    "exitCode": 0,
+    "command": ".venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp data/nfo-removal-release-check"
+  },
+  "focusedRemovalCases": 14,
+  "frontendHelpersPassed": 24,
+  "typecheckAndBuild": "passed, bundle-size advisory",
+  "actualDisposableUi": [
+    "Movie save followed by delete with retained recovery file",
+    "Cancel retained unsaved plot and restored Delete NFO focus",
+    "Malformed NFO could be removed without editable fields",
+    "Successful removal restored the item Edit NFO button focus",
+    "Home navigation after removal had no stale draft prompt"
+  ],
+  "windowsRegressions": [
+    "Old close/rename replacement race reproduced then fixed",
+    "Replacement denied while verified Windows handle is open",
+    "Long recovery path reproduced then returned as usable extended-length Windows path"
+  ],
+  "review": "Original Windows and POSIX removal races fixed; follow-up read-only review found no important issues",
+  "posix": "Linux atomic renameat2(RENAME_NOREPLACE); unsupported systems refuse removal; not executed on this Windows host",
+  "actualDialogViewport": {
+    "width": 1280,
+    "height": 720,
+    "overflow": false
+  },
+  "viewportOverride": "390/1920 overrides did not change the tested tab; no new compact/TV dialog verification claimed",
+  "normalPreview": {
+    "counts": {
+      "libraries": 2,
+      "media_files": 14593,
+      "movies": 2689,
+      "shows": 158,
+      "episodes": 11904,
+      "progress": 7
+    },
+    "sourcesProgressSha256": "f55012ebaa22817e321fe01c8060c3b60546c9e89ac06105f2cf27ff14b56a44",
+    "bindHost": "127.0.0.1",
+    "deleteEndpointPresent": true,
+    "realNasNfoReadOnly": "10 Cloverfield Lane",
+    "realNfoWritesOrRemovalsByAgent": 0,
+    "scanNote": "A normal-library scan ran and reported cancelled during this pass; this task did not start/cancel it. Final restart waited for inactive scans."
+  },
+  "ownedRecoveryFilesRetained": 4,
+  "notVerified": [
+    "Physical NAS rename permissions and outages",
+    "Linux runtime removal",
+    "Hardware controllers/Xbox",
+    "New deletion dialog at TV/compact widths"
+  ],
+  "screenshots": [
+    "delete-confirm-1280.png",
+    "delete-success.png",
+    "normal-nfo-delete-control.png"
+  ],
+  "changes": "Local and uncommitted"
+}

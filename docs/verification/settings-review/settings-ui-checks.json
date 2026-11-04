@@ -1,0 +1,641 @@
+{
+  "timestamp": "2026-11-04T14:45:17.567Z",
+  "scope": "Actual CUA observations; before-and-after cases are named individually. Mutations use only the disposable loopback instance on 8767. Normal 8765 preferences were read without changing them.",
+  "observations": [
+    {
+      "case": "remove-cancel-focus",
+      "focused": "library-remove-button-1",
+      "sourceStillPresent": true
+    },
+    {
+      "askStillSelected": true,
+      "case": "playback-save-failure",
+      "error": "Temporary review server error",
+      "focused": "pref-resume-auto"
+    },
+    {
+      "case": "collections-save-failure",
+      "error": "Temporary review server error",
+      "onStillSelected": true
+    },
+    {
+      "alerts": 1,
+      "case": "load-failure-playback",
+      "preferenceControls": 0,
+      "retryButtons": 1,
+      "text": "Playback\n\nSaved on the host, so they apply on this PC and on paired devices such as the Xbox.\n\nCould not load settings: Temporary review server error\n\nRetry"
+    },
+    {
+      "alerts": 1,
+      "case": "load-failure-collections",
+      "preferenceControls": 0,
+      "retryButtons": 1,
+      "text": "Collections & folders\n\nOnly Horizon's catalog is regrouped. Your folders and files are never changed.\n\nCould not load settings: Temporary review server error\n\nRetry"
+    },
+    {
+      "alerts": 1,
+      "case": "load-failure-network",
+      "preferenceControls": 0,
+      "retryButtons": 1,
+      "text": "Could not load settings: Temporary review server error\n\nRetry"
+    },
+    {
+      "alerts": 2,
+      "case": "load-failure-system",
+      "preferenceControls": 0,
+      "retryButtons": 2,
+      "text": "System & diagnostics\n\nEverything runs on this PC. Nothing is sent to the internet.\n\nRefresh diagnostics\n\nCould not load settings: Temporary review server error\n\nRetry\n\nCould not load settings: Temporary review server error\n\nRetry\nTHIS BROWSER\nBrowser\nMozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36\nWindow\n1280 × 720 CSS px · display scaling 100%\nInterface size\n100% · zoom supported\nController access\nAvailable (Gamepad API)\nMotion\nFollow system · system full"
+    },
+    {
+      "alerts": 3,
+      "case": "load-failure-libraries",
+      "preferenceControls": 0,
+      "retryButtons": 3,
+      "text": "Libraries & scanning\n\nHorizon reads your folders and never moves, renames, changes or deletes media files. Scans run only when you ask, in the background.\n\nRescan all\n\nCould not load settings: Temporary review server error\n\nRetry\n\nCould not load settings: Temporary review server error\n\nRetry\nADD A SOURCE\nBrowse\nAdd source\n\nNetwork shares: use the full path (\\\\NAS\\Share). Mapped drive letters are not visible to every Windows account.\n\nBACKGROUND READING\n\nCould not load settings: Temporary review server error\n\nRetry"
+    },
+    {
+      "case": "library-load-retry",
+      "focused": "library-rescan-all-button",
+      "hasSource": true
+    },
+    {
+      "case": "network-load-retry",
+      "focused": "pin-input",
+      "text": "Network access\n\nOff by default. When on, other devices on your private home network (for example the Xbox browser) can open the library after entering the PIN. The server never configures your router and refuses connections from public internet addresses.\n\nLAN access is OFF\nTurn on LAN access\nSave PIN\nNo PIN set yet\nPaired devices\n\nNo devices have paired yet."
+    },
+    {
+      "case": "playback-pending",
+      "focused": "pref-resume-auto",
+      "pending": "true",
+      "status": "Saving playback settings…"
+    },
+    {
+      "case": "playback-delayed-save-persisted",
+      "resumeAuto": true
+    },
+    {
+      "case": "source-registration-scan-failure",
+      "error": "Source added, but its scan could not start. Use Rescan to try again. Temporary review server error",
+      "sourceVisible": true
+    },
+    {
+      "case": "settings-manual-200-before-layout-check",
+      "panel": 353,
+      "rows": [
+        0,
+        0
+      ],
+      "scale": "2",
+      "scrollWidth": 1362,
+      "width": 1280
+    },
+    {
+      "case": "manual-200-layout-fixed",
+      "labels": [
+        1037,
+        1037
+      ],
+      "scale": "2",
+      "scrollWidth": 1265,
+      "width": 1280
+    },
+    {
+      "case": "manual-200-small-screen",
+      "controls": [
+        "display-scale-reset"
+      ],
+      "scrollWidth": 474,
+      "width": 390
+    },
+    {
+      "case": "390-wide-at-200-percent",
+      "checks": [
+        {
+          "outsideControls": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "tab": "libraries",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "tab": "playback",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 378,
+          "scale": "2",
+          "tab": "collections",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 394,
+          "scale": "2",
+          "tab": "display",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 404,
+          "scale": "2",
+          "tab": "accessibility",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "tab": "input",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 375,
+          "scale": "2",
+          "tab": "network",
+          "viewport": 390,
+          "zeroLabels": 0
+        },
+        {
+          "outsideControls": [],
+          "pageWidth": 385,
+          "scale": "2",
+          "tab": "system",
+          "viewport": 390,
+          "zeroLabels": 0
+        }
+      ]
+    },
+    {
+      "case": "final-390-at-200-text",
+      "checks": [
+        {
+          "tab": "display",
+          "pageWidth": 375,
+          "scale": "2",
+          "width": 390
+        },
+        {
+          "tab": "accessibility",
+          "pageWidth": 375,
+          "scale": "2",
+          "width": 390
+        }
+      ]
+    },
+    {
+      "case": "all-interface-sizes",
+      "choices": [
+        {
+          "choice": "1",
+          "applied": "100% (manual)",
+          "overflow": false,
+          "scale": "1"
+        },
+        {
+          "choice": "1.25",
+          "applied": "125% (manual)",
+          "overflow": false,
+          "scale": "1.25"
+        },
+        {
+          "choice": "1.5",
+          "applied": "150% (manual)",
+          "overflow": false,
+          "scale": "1.5"
+        },
+        {
+          "choice": "1.75",
+          "applied": "175% (manual)",
+          "overflow": false,
+          "scale": "1.75"
+        },
+        {
+          "choice": "2",
+          "applied": "200% (manual)",
+          "overflow": false,
+          "scale": "2"
+        },
+        {
+          "choice": "auto",
+          "applied": "100% (Auto)",
+          "overflow": false,
+          "scale": "1"
+        }
+      ]
+    },
+    {
+      "animation": "none",
+      "case": "reduced-motion-persisted",
+      "motion": "reduce"
+    },
+    {
+      "applied": "200% (Auto)",
+      "case": "auto-4k-scaling",
+      "overflow": false,
+      "scale": "2"
+    },
+    {
+      "case": "folder-load-error-retry",
+      "error": "Temporary review server error",
+      "focusInside": true,
+      "retry": true
+    },
+    {
+      "case": "folder-close-focus-restored",
+      "focused": "library-browse-button"
+    },
+    {
+      "case": "normal-instance-ffprobe",
+      "errors": [],
+      "ffprobe": "ffprobe version 9.0.1-essentials_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers (C:\\Users\\army_\\.codex\\.chatgpt-projects\\g-p-6aeaa10d8664819182f2dc7d7977f3d9\\Horizon\\tools\\ffprobe.exe)",
+      "reader": "Media reader2 workers · running · 0 pending · 25 known · 0 unreadable · 0 offline"
+    },
+    {
+      "autoplay": "true",
+      "case": "actual-playback-preserved",
+      "resumeAsk": "true",
+      "skip10": "true",
+      "watched95": "true"
+    },
+    {
+      "case": "folder-listing-failure",
+      "error": "Temporary review server error",
+      "focusInside": true,
+      "retry": true
+    },
+    {
+      "alerts": 0,
+      "case": "folder-listing-retry-success",
+      "path": "C:\\Users\\army_\\.codex\\.chatgpt-projects\\g-p-6aeaa10d8664819182f2dc7d7977f3d9\\Horizon\\data\\settings-review-20261104\\fixtures\\Second source",
+      "videoCount": "0 video file(s) directly in this folder"
+    },
+    {
+      "case": "reader-pause-persisted",
+      "state": "Paused"
+    },
+    {
+      "case": "reader-resume",
+      "state": "Up to date"
+    },
+    {
+      "case": "source-rescan-success",
+      "text": "Second source\nWaiting to scan\nLocal\nC:\\Users\\army_\\.codex\\.chatgpt-projects\\g-p-6aeaa10d8664819182f2dc7d7977f3d9\\Horizon\\data\\settings-review-20261104\\fixtures\\Second source\n0 movies · 0 series · 0 episodes · 0 B\nLast successful scan: Nov 4, 2026, 8:22 AM\nLast scan: 0 videos · 0 new · 0 changed · 0 removed\nQueued\nRemove"
+    },
+    {
+      "case": "pending-tab-switch-before",
+      "pending": null,
+      "status": null
+    },
+    {
+      "blocked": "true",
+      "case": "cross-tab-guard-green",
+      "status": "Saving playback settings…"
+    },
+    {
+      "case": "cross-tab-write-count",
+      "writes": 1
+    },
+    {
+      "case": "cross-tab-later-choice-persisted",
+      "skipSeconds": 60
+    },
+    {
+      "case": "stale-system-read-fenced",
+      "errors": [],
+      "state": "LAN access is ON"
+    }
+  ],
+  "layoutMatrix": [
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1905,
+      "tab": "libraries",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1905,
+      "tab": "playback",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1920,
+      "tab": "collections",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1920,
+      "tab": "display",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1920,
+      "tab": "accessibility",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1905,
+      "tab": "input",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1920,
+      "tab": "network",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 1080,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1905,
+      "tab": "system",
+      "width": 1920,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "libraries",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "playback",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "collections",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "display",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "accessibility",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "input",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "network",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 720,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1265,
+      "tab": "system",
+      "width": 1280,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "libraries",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "playback",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "collections",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "display",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "accessibility",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "input",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "network",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 768,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 1009,
+      "tab": "system",
+      "width": 1024,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "libraries",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "playback",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "collections",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "display",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "accessibility",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "input",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "network",
+      "width": 390,
+      "zeroWidthLabels": 0
+    },
+    {
+      "alerts": 0,
+      "height": 844,
+      "outsideControls": [],
+      "scale": "1",
+      "scrollWidth": 375,
+      "tab": "system",
+      "width": 390,
+      "zeroWidthLabels": 0
+    }
+  ]
+}

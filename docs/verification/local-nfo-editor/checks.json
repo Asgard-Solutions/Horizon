@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-04",
+  "scope": "Local existing NFO editor; online scraping/downloads removed",
+  "backend": {
+    "passed": 576,
+    "skipped": 10,
+    "warnings": 3,
+    "exitCode": 0,
+    "command": ".venv/Scripts/python.exe -m pytest backend/tests -q --tb=short -p no:cacheprovider --basetemp data/nfo-complete-final"
+  },
+  "frontend": {
+    "helperTestsPassed": 24,
+    "typecheckAndProductionBuild": "passed",
+    "advisory": "Bundle larger than 500 kB"
+  },
+  "actualDisposableUi": [
+    "Movie NFO save and backup",
+    "TV show NFO save and backup",
+    "Episode NFO save and backup",
+    "Unknown XML, comments and resume position retained",
+    "External file edit refused; draft retained",
+    "Reload from disk and missing NFO error",
+    "Tab from Title to Sort title",
+    "Escape restores Edit NFO button focus",
+    "Browser Back cancel preserves draft; confirm leaves",
+    "Home link guards drafts even while Playback tab hides editor",
+    "Re-entry has no stale draft prompt",
+    "Movie/TV hub links preserve media filter; empty history row hidden"
+  ],
+  "layouts": {
+    "1920x1080": "two columns; no horizontal overflow",
+    "1280x720": "two columns; no horizontal overflow",
+    "390x844": "one column; no horizontal field overflow"
+  },
+  "normalApp": {
+    "counts": {
+      "libraries": 2,
+      "media_files": 14593,
+      "movies": 2689,
+      "shows": 158,
+      "episodes": 11904,
+      "progress": 7
+    },
+    "sourcesProgressBeforeAfterRestartSha256": "2e1f55d6e274358282019aad9723fe5d201cc1740ea05ae72c2e2617f291a6c4",
+    "bindHost": "127.0.0.1",
+    "port": 8765,
+    "existingNasNfoRead": "10 Cloverfield Lane; no save",
+    "noRealNfoWrites": true,
+    "noSourceScanStarted": true,
+    "noCredentialsPinOrLanPolicyChanges": true
+  },
+  "retainedDisposableNfoFiles": 3,
+  "retainedDisposableBackups": 4,
+  "combinationNfo": "UTF-8 XML with trailing HTTP(S) links; preserved without network lookup",
+  "notVerified": [
+    "Physical NAS writes and interrupted network writes",
+    "Physical controller/Xbox",
+    "POSIX-only descriptor guard",
+    "Native browser close/reload warning",
+    "Legacy tests_live (requests missing)"
+  ],
+  "screenshots": [
+    "editor-tv.png",
+    "editor-compact.png",
+    "normal-library-editor.png",
+    "normal-nfo-fields.png"
+  ],
+  "changes": "local, uncommitted and not pushed"
+}

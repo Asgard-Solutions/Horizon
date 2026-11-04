@@ -96,13 +96,23 @@ _reach_slow: dict[str, float] = {}
 _reach_lock = threading.Lock()
 
 
+def _dir_reachable(path: str) -> bool:
+    from .network_shares import ensure_saved_connection
+
+    # A successful reconnect already checked this same pinned IPv4 folder.
+    # Hostname sources skip automatic IP reconnect and check their actual path.
+    if ensure_saved_connection(path):
+        return True
+    return os.path.isdir(path)
+
+
 def dir_reachable(path: str) -> bool:
     with _reach_lock:
         since = _reach_slow.get(path)
         if since is not None and time.monotonic() - since < REACH_RETRY_S:
             return False
     try:
-        ok = _reach_pool.submit(os.path.isdir, path).result(timeout=REACH_TIMEOUT_S)
+        ok = _reach_pool.submit(_dir_reachable, path).result(timeout=REACH_TIMEOUT_S)
     except FutureTimeout:
         with _reach_lock:
             _reach_slow[path] = time.monotonic()

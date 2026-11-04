@@ -5,6 +5,8 @@ import { CompatBadge } from "../components/CompatBadge";
 import { ErrorState, Loading } from "../components/States";
 import { DetailShell } from "../detail/DetailShell";
 import { WatchProgress } from "../detail/WatchProgress";
+import { MetadataDetails } from "../detail/MetadataDetails";
+import { NfoEditLink } from "../components/NfoEditLink";
 import { formatBytes, formatRuntime, formatTime, isPartial } from "../format";
 import { useAsync } from "../hooks";
 import type { Movie, PlaybackInfo } from "../types";
@@ -62,6 +64,8 @@ export default function MovieDetail() {
         {movie.plot && <p className="dt-plot" data-testid="movie-plot">{movie.plot}</p>}
         <WatchProgress progress={movie.progress} testId="movie-progress" />
         <MovieActions movie={movie} />
+        <MetadataDetails info={movie} />
+        <NfoEditLink kind="movie" id={movie.id} />
         <div className="dt-tech">
           <CompatBadge compat={playback.compatibility} />
           <dl className="file-facts" data-testid="movie-file-facts">

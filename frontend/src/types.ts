@@ -4,7 +4,15 @@ export interface Progress {
   watched: boolean;
 }
 
-export interface Movie {
+export interface TitleMetadata {
+  tagline?: string | null;
+  cast?: { name: string; role: string }[];
+  rating?: number | null;
+  premiered?: string | null;
+  external_ids?: Record<string, string>;
+}
+
+export interface Movie extends TitleMetadata {
   id: number;
   file_id: number;
   title: string;
@@ -21,7 +29,7 @@ export interface Movie {
   runtime_status: "known" | "pending" | "unknown";
 }
 
-export interface Episode {
+export interface Episode extends TitleMetadata {
   id: number;
   file_id: number;
   show_id: number;
@@ -40,7 +48,7 @@ export interface Episode {
   runtime_status: "known" | "pending" | "unknown";
 }
 
-export interface ShowSummary {
+export interface ShowSummary extends TitleMetadata {
   id: number;
   title: string;
   year: number | null;
@@ -140,6 +148,14 @@ export interface Preferences {
   autoplay_next: boolean;
   skip_seconds: 10 | 30 | 60;
   watched_threshold: "90" | "95" | "end";
+  subtitles: "off" | "auto";
+}
+
+export interface LocalSubtitle {
+  id: string;
+  label: string;
+  language: string | null;
+  url: string;
 }
 
 export interface Library {

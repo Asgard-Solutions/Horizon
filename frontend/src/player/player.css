@@ -39,6 +39,18 @@ body[data-input="keys"] .seekbar:focus .seek-knob, body[data-input="pad"] .seekb
 
 .pc-buttons { display: flex; align-items: center; gap: 14px; animation: pc-in var(--h-duration-details) var(--h-cubicBezier-settle) both; }
 .pc-spacer { flex: 1; }
+.pc-buttons { flex-wrap: wrap; }
+.pc-subtitles-button { flex-shrink: 0; }
+.subtitle-dialog { width: min(760px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; min-width: 0; }
+.subtitle-dialog p, .subtitle-options button { overflow-wrap: anywhere; }
+.subtitle-options { display: flex; flex-direction: column; gap: 10px; }
+.subtitle-options button { justify-content: flex-start; text-align: left; white-space: normal; }
+.subtitle-options button[aria-pressed="true"] { border-color: var(--accent); background: rgb(135 232 208 / 0.14); }
+.subtitle-dialog .detail-actions { flex-wrap: wrap; }
+.subtitle-dialog .btn { min-width: 0; max-width: 100%; }
+.pc-subtitle-notice { position: absolute; top: 24px; left: 5%; right: 5%; z-index: 3; display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: center; gap: 14px; padding: 12px; background: rgb(10 14 21 / 0.94); border-radius: 12px; }
+.player-video::cue { color: #fff; background: rgb(0 0 0 / 0.8); }
 .pc-btn { position: relative; display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; border: 1px solid transparent;
   background: rgb(16 25 37 / 0.6); color: var(--text);
   transition: background-color var(--h-duration-focus), transform var(--h-duration-focus) var(--h-cubicBezier-focus); }

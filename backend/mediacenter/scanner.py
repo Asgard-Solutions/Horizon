@@ -19,7 +19,7 @@ SKIP_DIRS = {"$recycle.bin", "system volume information", "@eadir", "#recycle", 
 GENERIC_FOLDERS = {"movies", "movie", "films", "film", "media", "video", "videos", "tv", "tv shows", "tvshows", "shows",
                    "series", "library", "collections", "collection", "4k", "uhd", "hd", "1080p", "720p", "2160p",
                    "downloads", "download", "completed", "new", "unsorted", "misc", "other", "kids", "children"}
-MAX_NFO_BYTES = 1_000_000
+MAX_NFO_BYTES = 1024 * 1024
 SCAN_LOCK = threading.Lock()
 
 
@@ -32,7 +32,9 @@ def _read_nfo(path: str | None) -> dict:
         return {}
     try:
         with open(path, "rb") as fh:
-            data = fh.read(MAX_NFO_BYTES)
+            data = fh.read(MAX_NFO_BYTES + 1)
+        if len(data) > MAX_NFO_BYTES:
+            return {}
         end = data.rfind(b">")
         root = ET.fromstring(data[: end + 1]) if end > 0 else None
     except (OSError, ET.ParseError, ValueError):
@@ -40,10 +42,12 @@ def _read_nfo(path: str | None) -> dict:
     if root is None:
         return {}
     out = {}
-    for tag in ("title", "plot", "year", "season", "episode"):
+    for tag in ("title", "plot", "year", "season", "episode", "tagline"):
         el = root.find(tag)
         if el is not None and el.text and el.text.strip():
             out[tag] = el.text.strip()
+    if root.findtext("sorttitle"):
+        out["sort_title"] = root.findtext("sorttitle").strip()
     genres: list[str] = []
     for el in root.findall("genre"):
         for part in (el.text or "").replace("|", "/").split("/"):
@@ -62,7 +66,51 @@ def _read_nfo(path: str | None) -> dict:
             out["year"] = int(out["year"][:4])
         except ValueError:
             out.pop("year")
+    ids = {}
+    for el in root.findall("uniqueid"):
+        provider, value = el.get("type", "").lower(), (el.text or "").strip()
+        if provider in ("tmdb", "tvdb") and value.isdigit() or provider == "imdb" and value.startswith("tt") and value[2:].isdigit():
+            ids[provider] = value
+    if ids:
+        out["ids"] = ids
+    cast = [{"name": (a.findtext("name") or "").strip()[:200], "role": (a.findtext("role") or "").strip()[:200]}
+            for a in root.findall("actor")[:30] if a.findtext("name")]
+    if cast:
+        out["cast"] = cast
+    date = root.findtext("premiered") or root.findtext("aired")
+    if date:
+        out["premiered"] = date.strip()[:10]
+        if "year" not in out and date[:4].isdigit():
+            out["year"] = int(date[:4])
+    try:
+        rating = float(root.findtext("ratings/rating[@default='true']/value") or root.findtext("rating") or "")
+        if 0 <= rating <= 10:
+            out["rating"] = rating
+    except ValueError:
+        pass
+    from .nfo_document import parse_fields, NfoError
+    try:
+        fields = parse_fields(data, root.tag)
+    except NfoError:
+        return {}
+    for key in ("rating", "ids", "premiered"):
+        if fields.get(key) is not None and fields.get(key) != "" and fields.get(key) != {}:
+            out[key] = fields[key]
+        else:
+            out.pop(key, None)
+    if fields.get("year") is not None:
+        out["year"] = fields["year"]
     return out
+
+
+def _metadata_snapshot(conn, kind, row_id, nfo, **base):
+    from .local_metadata import record_local
+    if kind != "episode":
+        base["sort_title"] = sort_key(nfo.get("sort_title") or base["title"])
+    overrides = set(nfo).intersection(base)
+    overrides.update(k for k in ("poster_path", "fanart_path", "thumb_path") if base.get(k))
+    extras = {k: nfo[k] for k in ("ids", "cast", "rating", "premiered", "tagline") if k in nfo}
+    record_local(conn, kind, row_id, base, overrides, extras)
 
 
 class DirIndex:
@@ -142,9 +190,12 @@ def _save_movie(conn, file_id, directory, name, rel_dirs, idx: DirIndex):
         " ON CONFLICT(file_id) DO UPDATE SET title=excluded.title, sort_title=excluded.sort_title, year=excluded.year,"
         " plot=excluded.plot, poster_path=excluded.poster_path, fanart_path=excluded.fanart_path, genres=excluded.genres,"
         " nfo_set=excluded.nfo_set, group_path=excluded.group_path",
-        (file_id, title, sort_key(title), year, nfo.get("plot"), poster, fanart,
+        (file_id, title, sort_key(nfo.get("sort_title") or title), year, nfo.get("plot"), poster, fanart,
          json.dumps(genres) if genres else None, nfo.get("set"), group),
     )
+    movie_id = conn.execute("SELECT id FROM movies WHERE file_id=?", (file_id,)).fetchone()["id"]
+    _metadata_snapshot(conn, "movie", movie_id, nfo, title=title, year=year, plot=nfo.get("plot"),
+                       genres=json.dumps(genres) if genres else None, poster_path=poster, fanart_path=fanart)
 
 
 def _save_episode(conn, file_id, root, directory, name, rel_dirs, info, idx: DirIndex, show_cache: dict):
@@ -157,7 +208,7 @@ def _save_episode(conn, file_id, root, directory, name, rel_dirs, info, idx: Dir
 
     show_nfo = _read_nfo(idx.find(show_dir, ["tvshow"], (".nfo",)))
     title = show_nfo.get("title") or info["show_title"]
-    year = info["show_year"] or show_nfo.get("year")
+    year = show_nfo.get("year") or info["show_year"]
     key = info["show_key"]
     if key not in show_cache:
         poster = idx.find(show_dir, ["poster", "folder", "cover", "show"])
@@ -170,10 +221,18 @@ def _save_episode(conn, file_id, root, directory, name, rel_dirs, info, idx: Dir
             " poster_path=COALESCE(excluded.poster_path, shows.poster_path),"
             " fanart_path=COALESCE(excluded.fanart_path, shows.fanart_path),"
             " genres=CASE WHEN excluded.folder_path IS NOT NULL THEN excluded.genres ELSE shows.genres END",
-            (key, title, sort_key(title), year, show_nfo.get("plot"), show_dir, poster, fanart,
+            (key, title, sort_key(show_nfo.get("sort_title") or title), year, show_nfo.get("plot"), show_dir, poster, fanart,
              json.dumps(show_nfo["genres"]) if show_nfo.get("genres") else None),
         )
         show_cache[key] = conn.execute("SELECT id FROM shows WHERE show_key = ?", (key,)).fetchone()["id"]
+        previous_local = conn.execute("SELECT local_metadata FROM shows WHERE id=?", (show_cache[key],)).fetchone()[0]
+        if show_dir is None and previous_local:
+            from .local_metadata import apply_local
+            apply_local(conn, "tv", show_cache[key])
+        else:
+            _metadata_snapshot(conn, "tv", show_cache[key], show_nfo, title=title, year=year, plot=show_nfo.get("plot"),
+                               genres=json.dumps(show_nfo["genres"]) if show_nfo.get("genres") else None,
+                               poster_path=poster, fanart_path=fanart)
     show_id = show_cache[key]
 
     season_no = info["season"]
@@ -199,6 +258,9 @@ def _save_episode(conn, file_id, root, directory, name, rel_dirs, info, idx: Dir
         (file_id, season_id, info["episode"], info["episode_end"], ep_nfo.get("title") or info["episode_title"],
          ep_nfo.get("plot"), thumb),
     )
+    episode_id = conn.execute("SELECT id FROM episodes WHERE file_id=?", (file_id,)).fetchone()["id"]
+    _metadata_snapshot(conn, "episode", episode_id, ep_nfo, title=ep_nfo.get("title") or info["episode_title"],
+                       plot=ep_nfo.get("plot"), thumb_path=thumb)
 
 
 def cleanup_orphans(conn: Connection) -> None:
@@ -210,12 +272,18 @@ def folder_collections_enabled(conn: Connection) -> bool:
     return get_setting(conn, "folder_collections", "1") == "1"
 
 
-def assign_collections(conn: Connection, folder_groups: bool) -> None:
-    """Explicit NFO sets win; otherwise (if enabled) a non-generic folder holding 2+ movies becomes a folder collection.
+def nfo_collections_enabled(conn: Connection) -> bool:
+    return get_setting(conn, "nfo_collections", "1") == "1"
+
+
+def assign_collections(conn: Connection, folder_groups: bool, nfo_groups: bool | None = None) -> None:
+    """Enabled NFO sets win; otherwise (if enabled) a non-generic folder holding 2+ movies becomes a folder collection.
     Collection ids stay stable across rescans (keyed by set name / folder path)."""
+    if nfo_groups is None:
+        nfo_groups = nfo_collections_enabled(conn)
     groups: dict[str, list] = {}
     for r in conn.execute("SELECT id, nfo_set, group_path FROM movies"):
-        if r["nfo_set"]:
+        if nfo_groups and r["nfo_set"]:
             key, name, source = "nfo:" + r["nfo_set"].casefold(), r["nfo_set"], "nfo"
         elif folder_groups and r["group_path"]:
             key = "folder:" + os.path.normcase(r["group_path"])

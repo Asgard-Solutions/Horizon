@@ -1,0 +1,22 @@
+.network-shares { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 20px; }
+.network-shares h3 { display: flex; align-items: center; gap: 12px; }
+.network-share-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.network-location strong { overflow-wrap: anywhere; }
+.network-share-form { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.network-share-fields { display: flex; flex-wrap: wrap; gap: 16px; width: 100%; }
+.network-share-fields label { display: flex; flex: 1 1 220px; flex-direction: column; gap: 8px; min-width: 0; }
+.network-share-fields input { width: 100%; min-width: 0; }
+.network-account-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.network-remember { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.network-share-result { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; }
+.network-share-result code, .network-location code { overflow-wrap: anywhere; white-space: normal; }
+.network-share-result p { flex-basis: 100%; }
+.network-location-list { display: flex; flex-direction: column; gap: 14px; }
+.network-location { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+.network-location > div { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.network-listener { display: flex; flex-direction: column; gap: 12px; margin-block: 20px; }
+.network-address { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.network-address code { overflow-wrap: anywhere; }
+.network-listener dl { margin: 0; }
+.network-shares .schoice { flex-wrap: wrap; }
+.network-shares button { max-width: 100%; white-space: normal; }

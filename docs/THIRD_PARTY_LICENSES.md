@@ -10,7 +10,7 @@ Node: `yarn licenses list`). Full machine-generated lists: `docs/licenses/python
 `lightningcss` (MPL-2.0) and `certifi` (MPL-2.0) need the weak-copyleft note below. Redistributing the wheels in `vendor/wheels`
 is allowed by each package's license; their license texts are inside each wheel (`*.dist-info/`).
 
-No dependency is GPL. No dependency calls a paid or online service. Nothing is downloaded at runtime (fonts are bundled).
+No dependency is GPL. Fonts and application dependencies are bundled. Horizon reads local metadata and artwork supplied by other applications; it has no online metadata service or provider branding. Those applications and their downloaded content have their own terms.
 
 ## Shipped at runtime — Python server
 

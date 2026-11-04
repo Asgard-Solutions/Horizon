@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-04",
+  "verification": {
+    "backend": {
+      "passed": 609,
+      "skipped": 9,
+      "dependencyWarnings": 3
+    },
+    "frontend": {
+      "passed": 24
+    },
+    "productionBuild": true,
+    "isolatedBrowser": {
+      "automaticMovieAndShowMatch": true,
+      "existingEpisodeEnrichment": true,
+      "uncertainTitleReview": true,
+      "manualSearchSelection": true,
+      "searchButtonFocusRestored": true,
+      "escapeReturnsToMatchOpener": true,
+      "localNfoPlotAndCastPreserved": true,
+      "cachedPngDecoded": {
+        "naturalWidth": 1,
+        "syntheticFixtureOnly": true
+      },
+      "desktop": {
+        "width": 1920,
+        "height": 1080
+      },
+      "compact": {
+        "documentWidth": 375,
+        "outside": [],
+        "width": 390
+      }
+    },
+    "normalApp": {
+      "sources": 2,
+      "mediaFiles": 14593,
+      "movies": 2689,
+      "shows": 158,
+      "episodes": 11904,
+      "progressRows": 7,
+      "unchangedSourcesProgressSha256": "b7aabe33acfb579691ed2169278b2f020d7a3d5322351960362547b0d02c75f8",
+      "configured": false,
+      "automaticAfterScans": false,
+      "existingTitlesNeedRescan": 2847,
+      "bindHost": "127.0.0.1"
+    },
+    "liveProviderNotVerified": true,
+    "legacyLiveHarness": "Four collection errors due to absent requests; see HOME_INTEGRATION.md",
+    "notVerified": [
+      "Real TMDB authentication or results",
+      "Physical gamepad",
+      "New media decoding or Xbox compatibility"
+    ],
+    "normalLibraryNeverRescannedOrScrapedByThisTask": true
+  }
+}

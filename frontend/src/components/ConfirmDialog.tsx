@@ -14,8 +14,13 @@ interface Props {
 export function ConfirmDialog({ title, message, confirmLabel, onConfirm, onCancel }: Props) {
   useBack(() => onCancel());
   useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
     const t = window.setTimeout(() => focusFirst(document.querySelector(".modal")), 20);
-    return () => window.clearTimeout(t);
+    return () => {
+      window.clearTimeout(t);
+      if (opener?.isConnected && (document.activeElement === document.body || document.activeElement?.closest('[data-testid="confirm-dialog"]')))
+        opener.focus({ preventScroll: true });
+    };
   }, []);
   return (
     <div className="modal-backdrop" data-nav-scope="modal" data-testid="confirm-dialog">

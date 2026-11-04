@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import threading
 import time
+from pathlib import Path
 
 import pytest
 
@@ -134,20 +135,61 @@ def test_visible_items_are_read_first(app, host, clips):
     assert names[first["id"]].startswith("Demo - S01E")
 
 
-def test_missing_file_is_skipped_not_cached(app, host, media_root):
+def test_missing_file_is_skipped_not_cached(app, host, media_root, monkeypatch):
     host.post("/api/libraries", json={"path": str(media_root)})
     (media_root / "TV" / "Flat.Show.S03E07.720p.WEB-DL.mp4").unlink()  # e.g. NAS went offline after the scan
-    w = DurationWorker(app.state.config.db_path, shutil.which("ffprobe") or "/bin/false", 1)
+    monkeypatch.setattr(dmod, "find_ffprobe", lambda _p: "mock-ffprobe")
+    monkeypatch.setattr(dmod, "probe_file", lambda *_a, **_kw: {"error": "invalid synthetic media"})
+    w = DurationWorker(app.state.config.db_path, None, 1)
     app.state.durations = w
-    w.run_until_idle()
+    assert w.run_until_idle() == 7
     assert rows(app)["Flat.Show.S03E07.720p.WEB-DL.mp4"] is None  # still pending: retried after a rescan/restart
-    assert w.status(connect(app.state.config.db_path))["unreachable"] >= 1
+    conn = connect(app.state.config.db_path)
+    try:
+        assert w.status(conn)["unreachable"] >= 1
+    finally:
+        conn.close()
     assert host.get("/api/metadata/status").json()["pending"] == 0  # unreachable files are not counted as pending
     flat = next(s for s in host.get("/api/shows").json() if s["title"].startswith("Flat"))
     ep = host.get(f"/api/shows/{flat['id']}").json()["seasons"][0]["episodes"][0]
     assert ep["runtime_status"] == "unknown"  # the UI must not show "Reading length…" for files it cannot reach
     w.wake()  # a rescan clears the unreachable list, so the file is pending again
     assert host.get(f"/api/shows/{flat['id']}").json()["seasons"][0]["episodes"][0]["runtime_status"] == "pending"
+
+
+@pytest.mark.parametrize("resolved", ["removed", "cached"])
+def test_status_prunes_skipped_files_that_are_no_longer_pending(app, host, media_root, monkeypatch, resolved):
+    library = host.post("/api/libraries", json={"path": str(media_root)}).json()
+    other = media_root.parent / "other-source"
+    other.mkdir()
+    (other / "Other (2020).mp4").write_bytes(b"fixture")
+    assert host.post("/api/libraries", json={"path": str(other)}).status_code == 200
+    monkeypatch.setattr(dmod, "find_ffprobe", lambda _p: "mock-ffprobe")
+    worker = DurationWorker(app.state.config.db_path, None, 1)
+    app.state.durations = worker
+    conn = connect(app.state.config.db_path)
+    try:
+        row = worker._claim(conn, block=False)
+        # Process one genuinely missing fixture; the remaining seven must still count as pending.
+        Path(row["path"]).unlink()
+        worker._process(conn, row)
+        worker._release(row["id"])
+        assert worker.status(conn)["unreachable"] == 1
+        if resolved == "removed":
+            # Removing a source cascades its media rows without waking the reader.
+            assert host.delete(f"/api/libraries/{library['id']}").status_code == 200
+            expected_pending, expected_known = 1, 0
+        else:
+            conn.execute("UPDATE media_files SET probe_json = ? WHERE id = ?", ('{"duration":12}', row["id"]))
+            conn.commit()
+            expected_pending, expected_known = 7, 1
+        status = host.get("/api/metadata/status").json()
+        assert status["unreachable"] == 0
+        assert status["pending"] == expected_pending
+        assert status["known"] == expected_known
+        assert worker.is_unreachable(row["id"]) is False
+    finally:
+        conn.close()
 
 
 def test_no_ffprobe_means_unknown_not_pending(app, host, media_root, monkeypatch):
@@ -172,8 +214,8 @@ def test_concurrency_is_limited(app, host, media_root, monkeypatch):
             active[0] -= 1
         return {"duration": 12.0, "video": [], "audio": [], "subtitles": []}
     monkeypatch.setattr(dmod, "probe_file", slow_probe)
-    w = DurationWorker(app.state.config.db_path, shutil.which("ffprobe") or "/bin/true", 2)
-    w.ffprobe = w.ffprobe or "/bin/true"
+    monkeypatch.setattr(dmod, "find_ffprobe", lambda _p: "mock-ffprobe")
+    w = DurationWorker(app.state.config.db_path, None, 2)
     w.start()
     try:
         deadline = time.time() + 10

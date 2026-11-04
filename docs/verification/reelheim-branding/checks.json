@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-04",
+  "productName": "REELHEIM Media Center",
+  "assetsCopiedExactly": {
+    "reelheim-logo-header-1120.png": "e89b39f5ca6ef77932e0943411dfba12eedd7ce22d07382f8d975b7c348ae8c1",
+    "reelheim-emblem-icon-256.png": "44cffa5c0fef99abd6f16b3471f6b531c31fea544f5ffe03bfd9440c50c1fd74",
+    "reelheim-emblem-icon-48.png": "1b9f9f94bcac229e16b4f212ccdac417d4cfa4392f1f00d3caefbc847037e71b",
+    "reelheim-aurora-midnight-fjord.png": "ad311ce1fc457e1771afce57ead56d254d2c6c1e6865cf5d371e5e69d3a81929"
+  },
+  "layout": "Existing Home cards/navigation retained; full transparent logo fitted above divider",
+  "backgrounds": [
+    "Home selection",
+    "Settings"
+  ],
+  "existingCardArt": "Movies and TV Shows retain distinct approved images",
+  "frontendChecksPassed": 24,
+  "focusedBackendChecksPassed": 143,
+  "backendWarnings": 3,
+  "typecheckAndBuild": "passed, existing bundle-size advisory",
+  "actualBrowserViewport": [
+    1280,
+    720
+  ],
+  "actualUiChecks": [
+    "Original transparent logo decoded",
+    "Original supplied fjord background applied",
+    "REELHEIM browser title and accessible Home label",
+    "Keyboard Right and Enter into TV",
+    "Media-scoped Atlas/Discover/Search links",
+    "Settings shares fjord background and complete logo",
+    "Scaling explanation remains readable",
+    "Return Home neutral card appearance",
+    "Real counts: 2689 movies, 158 shows, 2 sources"
+  ],
+  "favicon": "served as image/png",
+  "serverProductTitle": "REELHEIM Media Center",
+  "compatibility": "Existing storage/credential/header/backup internal names intentionally retained",
+  "sourcesProgressSha256": "f55012ebaa22817e321fe01c8060c3b60546c9e89ac06105f2cf27ff14b56a44",
+  "notVerified": [
+    "New physical controller checks",
+    "New TV/compact viewport visual checks",
+    "Full backend/live suites for this cosmetic pass"
+  ],
+  "screenshots": [
+    "home.png",
+    "settings.png"
+  ],
+  "changes": "local, uncommitted; repository name/location and remote unchanged"
+}

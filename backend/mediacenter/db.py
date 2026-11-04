@@ -108,6 +108,10 @@ ADDED_COLUMNS = {
     "shows": {"genres": "TEXT"},
     "libraries": {"last_success_at": "TEXT"},
 }
+for _table in ("movies", "shows", "episodes"):
+    ADDED_COLUMNS.setdefault(_table, {}).update({
+        "local_metadata": "TEXT",
+    })
 
 
 def now_iso() -> str:

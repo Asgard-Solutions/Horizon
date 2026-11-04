@@ -3,12 +3,19 @@ import { useAsync } from "../hooks";
 import type { MetadataStatus, ScanStatus, SystemInfo } from "../types";
 import { getMotionPref } from "../theme/displayPrefs";
 import { zoomSupported } from "../theme/uiScale";
-import { SectionHead } from "./ui";
+import { ResourceStatus, SectionHead } from "./ui";
+import { useEffect, useReducer } from "react";
 
 /** System information and diagnostics: what this install and this browser actually report. */
-export function SystemSection({ system }: { system: SystemInfo | null }) {
+export function SystemSection({ system, loading, error, onRetry }: { system: SystemInfo | null; loading: boolean; error: string | null; onRetry: () => Promise<void> }) {
   const meta = useAsync(() => api<MetadataStatus>("/api/metadata/status"), []);
-  const scans = useAsync(() => (system ? api<ScanStatus>("/api/scans") : Promise.resolve(null)), [system]);
+  const scans = useAsync(() => (system ? api<ScanStatus>("/api/scans") : Promise.resolve(null)), [!!system]);
+  const [, refreshBrowser] = useReducer((value: number) => value + 1, 0);
+  useEffect(() => {
+    window.addEventListener("resize", refreshBrowser);
+    window.addEventListener("horizon-ui-scale", refreshBrowser);
+    return () => { window.removeEventListener("resize", refreshBrowser); window.removeEventListener("horizon-ui-scale", refreshBrowser); };
+  }, []);
   const root = document.documentElement;
   const browser: [string, string][] = [
     ["Browser", navigator.userAgent],
@@ -21,7 +28,9 @@ export function SystemSection({ system }: { system: SystemInfo | null }) {
   const last = scans.data?.recent[0];
   return (
     <div className="ssection" data-testid="settings-system">
-      <SectionHead title="System & diagnostics" intro="Everything runs on this PC. Nothing is sent to the internet." />
+      <SectionHead title="System & diagnostics" intro="REELHEIM reads your local media, NFO metadata and artwork. No online metadata services are used." />
+      <button className="hbtn hbtn--quiet" onClick={() => { onRetry(); meta.reload(); scans.reload(); }} data-testid="system-refresh">Refresh diagnostics</button>
+      <ResourceStatus loading={loading && !system} error={error} onRetry={onRetry} testId="system-load" label="system information" />
       {system && (
         <dl className="sfacts" tabIndex={0} data-nav data-testid="system-facts">
           <dt>Version</dt><dd data-testid="system-version">{system.version}</dd>
@@ -29,9 +38,11 @@ export function SystemSection({ system }: { system: SystemInfo | null }) {
           <dt>Data folder</dt><dd data-testid="system-data-dir">{system.data_dir}</dd>
           <dt>FFprobe</dt>
           <dd data-testid="system-ffprobe">{system.ffprobe.path ? `${system.ffprobe.version ?? "found"} (${system.ffprobe.path})` : "Not found — codec inspection disabled. See README."}</dd>
-          <dt>Last scan</dt><dd data-testid="system-last-scan">{last ? `${last.library_name}: ${last.state} · ${last.files_found} files` : "None since the server started"}</dd>
+          <dt>Last scan</dt><dd data-testid="system-last-scan">{scans.error ? "Unavailable — scan status could not be loaded" : scans.loading && !scans.data ? "Loading…" : last ? `${last.library_name}: ${last.state} · ${last.files_found} files` : "None since the server started"}</dd>
         </dl>
       )}
+      {system && <ResourceStatus loading={scans.loading && !scans.data} error={scans.error} onRetry={scans.reload} testId="system-scans-load" label="scan status" />}
+      <ResourceStatus loading={meta.loading && !meta.data} error={meta.error} onRetry={meta.reload} testId="system-metadata-load" label="media reader status" />
       {m && (
         <dl className="sfacts" tabIndex={0} data-nav data-testid="system-metadata">
           <dt>Media reader</dt>

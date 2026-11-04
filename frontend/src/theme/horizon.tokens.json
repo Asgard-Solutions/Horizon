@@ -1,8 +1,8 @@
 {
-  "format": "DTCG-inspired design token JSON with Horizon runtime extensions",
-  "name": "Horizon",
+  "format": "DTCG-inspired design token JSON with REELHEIM runtime extensions",
+  "name": "REELHEIM",
   "version": "1.1.0",
-  "description": "Proposed visual tokens for Horizon - The Living Cinema. Values are design targets, not measured runtime behavior.",
+  "description": "Proposed visual tokens for REELHEIM - The Living Cinema. Values are design targets, not measured runtime behavior.",
   "color": {
     "bg": {
       "canvas": {
@@ -759,11 +759,11 @@
         "activationUsesRisingEdges": true
       },
       "assets": {
-        "background": "frontend/src/assets/horizon-home-background.png",
-        "movieBackground": "frontend/src/assets/horizon-movies-card-background-v1.png",
-        "tvBackground": "frontend/src/assets/horizon-tv-card-background-v1.png",
-        "logoOnDark": "frontend/src/assets/horizon-media-center-logo-on-dark.png",
-        "logoOnLight": "frontend/src/assets/horizon-media-center-logo-on-light.png"
+        "background": "frontend/src/assets/reelheim-aurora-midnight-fjord.png",
+        "movieBackground": "frontend/src/assets/reelheim-movies-background-1920x740.webp",
+        "tvBackground": "frontend/src/assets/reelheim-tv-shows-background-1920x740.webp",
+        "logoOnDark": "frontend/src/assets/reelheim-logo-header-1120.png",
+        "logoOnLight": "frontend/src/assets/reelheim-logo-header-1120.png"
       }
     }
   },

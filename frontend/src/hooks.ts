@@ -20,9 +20,17 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
       .finally(() => { if (request === sequence.current) setLoading(false); });
   }, []);
 
+  // Applying an authoritative mutation result invalidates reads started before that write completed.
+  const replaceData = useCallback((value: T) => {
+    sequence.current++;
+    setData(value);
+    setError(null);
+    setLoading(false);
+  }, []);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { reload(); return () => { sequence.current++; }; }, deps);
-  return { data, error, loading, reload, setData };
+  return { data, error, loading, reload, setData, replaceData };
 }
 
 /** While `pending`, quietly re-fetches every few seconds (no loading state) until the server fills the data in. */

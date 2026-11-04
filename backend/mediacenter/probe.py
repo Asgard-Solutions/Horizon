@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 
 from .config import PROJECT_DIR
@@ -22,23 +23,35 @@ MIME = {"mp4": "video/mp4", "m4v": "video/mp4", "mov": "video/mp4", "webm": "vid
 
 
 def find_ffprobe(configured: str | None) -> str | None:
-    if configured and Path(configured).is_file():
+    if configured and ffprobe_version(configured):
         return configured
     bundled = PROJECT_DIR / "tools" / ("ffprobe.exe" if os.name == "nt" else "ffprobe")
-    if bundled.is_file():
+    if ffprobe_version(str(bundled)):
         return str(bundled)
-    return shutil.which("ffprobe")
+    found = shutil.which("ffprobe")
+    return found if found and ffprobe_version(found) else None
 
 
 def ffprobe_version(ffprobe: str | None) -> str | None:
     if not ffprobe:
         return None
     try:
-        out = subprocess.run([ffprobe, "-version"], capture_output=True, text=True, timeout=10,
-                             stdin=subprocess.DEVNULL, creationflags=NO_WINDOW)
-        return out.stdout.splitlines()[0] if out.stdout else None
-    except (OSError, subprocess.SubprocessError):
+        binary = Path(ffprobe).resolve()
+        info = binary.stat()
+        # Successful validation is reused until the executable changes; failures remain retryable.
+        return _validated_version(str(binary), (info.st_mtime_ns, info.st_ctime_ns, info.st_size))
+    except (OSError, ValueError, subprocess.SubprocessError):
         return None
+
+
+@lru_cache(maxsize=32)
+def _validated_version(ffprobe: str, _fingerprint: tuple[int, int, int]) -> str:
+    out = subprocess.run([ffprobe, "-version"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
+                         stdin=subprocess.DEVNULL, creationflags=NO_WINDOW)
+    lines = (out.stdout or "").splitlines()
+    if out.returncode != 0 or not lines or not lines[0].startswith("ffprobe version "):
+        raise ValueError("Executable did not report a valid FFprobe version.")
+    return lines[0]
 
 
 def probe_file(ffprobe: str, path: str, background: bool = False) -> dict:

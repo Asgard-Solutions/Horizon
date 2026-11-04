@@ -9,6 +9,7 @@ import { continueItems, focusFallback, hubPath, loadHomeSpot, saveHomeSpot, scop
 import { ResumeDialog } from "./ResumeDialog";
 import { useHomeLibrary } from "./useHomeLibrary";
 import { useHomeLayout } from "./useHomeLayout";
+import { MediaTypeIcon } from "./MediaTypeIcon";
 
 const navigation = [
   { id: "atlas", label: "Atlas", description: "Browse your indexed library", icon: MapIcon },
@@ -124,6 +125,7 @@ export function HomeScreen({ type }: { type: MediaType | null }) {
             data-nav-up={stackedHome && index === 1 ? "#home-movies" : "#global-settings"}
             data-nav-down={stackedHome && index === 0 ? "#home-tv" : error ? "#hub-retry" : `#${id}`}
             data-nav-left={!stackedHome && index === 1 ? "#home-movies" : `#${id}`} data-nav-right={!stackedHome && index === 0 ? "#home-tv" : `#${id}`}>
+            <MediaTypeIcon type={choice} />
             <strong>{choice === "movie" ? "Movies" : "TV Shows"}</strong>
             {count !== undefined && <span className="hub-card-count" data-testid={`${id}-count`}>{count.toLocaleString()} {noun}{count === 1 ? "" : "s"}</span>}
           </Link>;

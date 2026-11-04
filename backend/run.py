@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from mediacenter.config import BACKEND_DIR, load_config  # noqa: E402
+from mediacenter.config import BACKEND_DIR, load_config, load_env_file  # noqa: E402
 
 MIN_PYTHON = (3, 11)
 REQUIRED = ["fastapi", "starlette", "uvicorn", "pydantic", "pydantic_core", "anyio", "h11", "click"]
@@ -62,7 +62,7 @@ def run_checks(port: int) -> bool:
             ok = False
         print(f"  [{status:4}] {label}{(' - ' + detail) if detail else ''}")
 
-    print("Open Media Center - startup checks")
+    print("REELHEIM Media Center - startup checks")
     v = sys.version_info
     report("OK" if v[:2] >= MIN_PYTHON else "FAIL", f"Python {v.major}.{v.minor}.{v.micro}",
            "" if v[:2] >= MIN_PYTHON else "Python 3.11 or newer is required")
@@ -128,7 +128,8 @@ def run_checks(port: int) -> bool:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Open Media Center - Phase 0 local server")
+    load_env_file(BACKEND_DIR / ".env")
+    parser = argparse.ArgumentParser(description="REELHEIM Media Center - Phase 0 local server")
     parser.add_argument("--port", type=int, default=int(os.environ.get("MC_PORT") or "8765"))
     parser.add_argument("--check", action="store_true", help="run startup checks, initialise the database and exit")
     parser.add_argument("--open-browser", action="store_true", help="open the UI in the default browser after start")
@@ -145,7 +146,7 @@ def main():
     import uvicorn
 
     url = f"http://127.0.0.1:{args.port}/"
-    print(f"Open Media Center: {url}  (LAN access {'ON' if host == '0.0.0.0' else 'OFF'})")
+    print(f"REELHEIM Media Center: {url}  (LAN access {'ON' if host == '0.0.0.0' else 'OFF'})")
     print(f"Data folder: {cfg.data_dir}")
     print("Press Ctrl+C or close this window to stop the server.")
     if not (cfg.frontend_dist / "index.html").is_file():

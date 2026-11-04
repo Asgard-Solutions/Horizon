@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useNavigationType } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate, Route, Routes, useLocation, useNavigate, useNavigationType } from "react-router-dom";
 import { api } from "./api";
 import { useAsync } from "./hooks";
 import { focusFirst, installNavigation, setFallbackBack } from "./nav/spatial";
@@ -18,6 +18,8 @@ import Pair from "./pages/Pair";
 import { hubPath, scopedPath } from "./home/context";
 import { useMediaType } from "./home/useMediaType";
 import { useHomeLayout } from "./home/useHomeLayout";
+import { AnnouncementProvider, RouteAnnouncements } from "./accessibility/Announcer";
+import { NfoNavigationPrompt } from "./settings/library/NfoNavigationPrompt";
 
 export const AuthContext = createContext<{ auth: AuthStatus; refresh: () => void } | null>(null);
 export const useAuth = () => useContext(AuthContext)!;
@@ -113,16 +115,26 @@ function Shell() {
   );
 }
 
+function RouterContents() {
+  const {auth}=useAuth();
+  return <AnnouncementProvider>
+    <NavBridge />
+    {auth.role!=="none"&&<RouteAnnouncements />}
+    {auth.role==="none"?<Pair />:<Shell />}
+    <NfoNavigationPrompt />
+  </AnnouncementProvider>;
+}
+
+let appRouter:ReturnType<typeof createBrowserRouter>|null=null;
+function getAppRouter(){return appRouter??=(createBrowserRouter([{path:"*",element:<RouterContents />}]))}
+
 export default function App() {
   const { data: auth, error, reload } = useAsync(() => api<AuthStatus>("/api/auth/status"), []);
   if (error) return <div className="fatal" data-testid="server-unreachable">Cannot reach the media server: {error}</div>;
   if (!auth) return <Loading label="Connecting to media server" />;
   return (
     <AuthContext.Provider value={{ auth, refresh: reload }}>
-      <BrowserRouter>
-        <NavBridge />
-        {auth.role === "none" ? <Pair /> : <Shell />}
-      </BrowserRouter>
+      <RouterProvider router={getAppRouter()} />
     </AuthContext.Provider>
   );
 }

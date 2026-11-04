@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "frontendTests": 24,
+  "build": true,
+  "oldSavedChoicesIgnored": "unit-tested including startup and cross-tab updates",
+  "desktop": {
+    "width": 1920,
+    "height": 1080,
+    "documentWidth": 1920,
+    "theme": "dark",
+    "contrast": "normal",
+    "removedControls": 0,
+    "keyboardEnterAndEscape": true
+  },
+  "compact": [
+    {
+      "documentWidth": 375,
+      "motion": true,
+      "page": "accessibility",
+      "reader": true,
+      "removedControls": 0,
+      "width": 390
+    },
+    {
+      "documentWidth": 375,
+      "page": "display",
+      "removedControls": 0,
+      "sizeOptions": 7,
+      "width": 390
+    }
+  ],
+  "normalAppPreferencesNotChanged": true
+}

@@ -1,5 +1,5 @@
 import { Accessibility, Film, Gamepad2, Info, Library, LogOut, Monitor, Network, Rows3, type LucideIcon } from "lucide-react";
-import { useRef, type KeyboardEvent } from "react";
+import { Activity, useRef, type KeyboardEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, post } from "../api";
 import { useAuth } from "../App";
@@ -13,7 +13,7 @@ import { InputSection } from "../settings/InputSection";
 import { LibraryManager } from "../settings/library/LibraryManager";
 import { NetworkSection } from "../settings/NetworkSection";
 import { PlaybackSection } from "../settings/PlaybackSection";
-import { SectionHead } from "../settings/ui";
+import { ResourceStatus, SectionHead } from "../settings/ui";
 import { SystemSection } from "../settings/SystemSection";
 import type { SystemInfo } from "../types";
 
@@ -56,9 +56,11 @@ export default function Settings() {
   const lastInPanel = useRef<Record<string, HTMLElement | null>>({});
 
   const select = (id: string) => { if (id !== section) { const next = new URLSearchParams(params); next.set("section", id); setParams(next, { replace: true }); } };
-  const enterPanel = () => {
-    const remembered = lastInPanel.current[section];
-    const target = remembered && panel.current?.contains(remembered) ? remembered : focusables().find((el) => panel.current?.contains(el));
+  const enterPanel = (id = section) => {
+    const activePanel = panel.current?.querySelector(`[data-settings-section="${id}"]`);
+    const candidates = focusables().filter((el) => activePanel?.contains(el));
+    const remembered = lastInPanel.current[id];
+    const target = remembered && candidates.includes(remembered) ? remembered : candidates[0];
     target?.focus({ preventScroll: false });
     return !!target;
   };
@@ -67,9 +69,14 @@ export default function Settings() {
   const panelKey = (e: KeyboardEvent) => {
     if (e.key !== "ArrowLeft" || e.defaultPrevented) return;
     const el = document.activeElement as HTMLElement;
+    if (el.closest('[data-nav-scope="modal"]')) return;
     if (el instanceof HTMLInputElement && el.selectionStart) return;
     const row = el.closest("[data-nav-row]");
-    const first = row ? focusables().find((x) => row.contains(x)) === el : el.getBoundingClientRect().left - (panel.current?.getBoundingClientRect().left ?? 0) < 48;
+    const box = panel.current!.getBoundingClientRect();
+    const style = getComputedStyle(panel.current!);
+    const zoom = box.width / Math.max(1, panel.current!.offsetWidth);
+    const leftEdge = (parseFloat(style.paddingLeft) + parseFloat(style.borderLeftWidth) + 2) * zoom;
+    const first = row ? focusables().find((x) => row.contains(x)) === el : el.getBoundingClientRect().left - box.left <= leftEdge;
     if (!first) return;
     e.preventDefault();
     document.querySelector<HTMLElement>(RAIL_SEL)?.focus();
@@ -87,24 +94,31 @@ export default function Settings() {
         <nav className="settings-rail" aria-label="Settings categories" data-nav-prefer-selected onKeyDown={railKey} data-testid="settings-rail">
           {cats.map((c) => (
             <button key={c.id} className="settings-cat" aria-current={c.id === section} data-autofocus={c.id === section ? true : undefined}
-              onFocus={() => select(c.id)} onClick={() => { select(c.id); window.setTimeout(enterPanel, 0); }} data-testid={`settings-cat-${c.id}`}>
+              onFocus={() => select(c.id)} onClick={() => { select(c.id); window.setTimeout(() => enterPanel(c.id), 0); }} data-testid={`settings-cat-${c.id}`}>
               <c.icon size={24} aria-hidden="true" /><span>{c.label}</span>
             </button>
           ))}
         </nav>
         <div className="settings-panel" ref={panel} onKeyDown={panelKey} data-testid="settings-panel"
           onFocus={(e) => { lastInPanel.current[section] = e.target as HTMLElement; }}>
-          {section === "libraries" && <LibraryManager />}
-          {section === "device" && <DeviceSection />}
-          {section === "playback" && <PlaybackSection />}
-          {section === "collections" && <CollectionsSection />}
-          {section === "display" && <DisplaySection />}
-          {section === "accessibility" && <AccessibilitySection />}
-          {section === "input" && <InputSection />}
-          {section === "network" && system.data && (
-            <div className="ssection"><NetworkSection system={system.data} onChange={system.setData} /></div>
+          {cats.map((category) => <Activity key={category.id} mode={section === category.id ? "visible" : "hidden"}>
+            <div data-settings-section={category.id}>
+          {category.id === "libraries" && <LibraryManager />}
+          {category.id === "device" && <DeviceSection />}
+          {category.id === "playback" && <PlaybackSection />}
+          {category.id === "collections" && <CollectionsSection />}
+          {category.id === "display" && <DisplaySection />}
+          {category.id === "accessibility" && <AccessibilitySection />}
+          {category.id === "input" && <InputSection />}
+          {category.id === "network" && (
+            <div className="ssection">
+              <ResourceStatus loading={system.loading && !system.data} error={system.error} onRetry={system.reload} testId="network-load" label="network settings" />
+              {system.data && <NetworkSection system={system.data} onChange={system.replaceData} onReload={system.reload} />}
+            </div>
           )}
-          {section === "system" && <SystemSection system={system.data} />}
+          {category.id === "system" && <SystemSection system={system.data} loading={system.loading} error={system.error} onRetry={system.reload} />}
+            </div>
+          </Activity>)}
         </div>
       </div>
     </div>

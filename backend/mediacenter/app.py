@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 import mimetypes
+import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -7,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import routes_admin, routes_auth, routes_discover, routes_library
+from . import routes_admin, routes_auth, routes_discover, routes_library, routes_network, routes_nfo
 from .config import APP_VERSION, Config, load_config
 from .db import connect, get_setting, init_db
 from .durations import DurationWorker
@@ -40,9 +41,10 @@ def create_app(config: Config | None = None) -> FastAPI:
         scans.stop()
         durations.stop()
 
-    app = FastAPI(title="Open Media Center (Phase 0)", version=APP_VERSION, docs_url="/api/docs",
+    app = FastAPI(title="REELHEIM Media Center", version=APP_VERSION, docs_url="/api/docs",
                   openapi_url="/api/openapi.json", redoc_url=None, lifespan=lifespan)
     app.state.config = cfg
+    app.state.instance_id = secrets.token_hex(16)  # Readiness identity, never an authorization credential.
     app.state.durations = durations
     app.state.scans = scans
 
@@ -61,11 +63,17 @@ def create_app(config: Config | None = None) -> FastAPI:
         return response
 
     @app.get("/api/health")
-    def health():
-        return {"ok": True, "version": APP_VERSION}
+    def health(request: Request):
+        result = {"ok": True, "version": APP_VERSION}
+        probe = request.headers.get("x-horizon-instance")
+        if probe is not None:
+            result["instance_matches"] = secrets.compare_digest(probe.encode("utf-8"), app.state.instance_id.encode("ascii"))
+        return result
 
     app.include_router(routes_auth.router)
     app.include_router(routes_admin.router)
+    app.include_router(routes_network.router)
+    app.include_router(routes_nfo.router)
     app.include_router(routes_library.router)
     app.include_router(routes_discover.router)
     _mount_frontend(app, cfg.frontend_dist)

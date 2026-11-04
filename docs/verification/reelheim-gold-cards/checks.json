@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-04",
+  "request": "Match supplied card reference; full gold glow on selected Movies/TV card",
+  "changes": [
+    "Gold-gradient clapperboard/play and television/play icons",
+    "Title/count positions and sizing match reference",
+    "Subtle neutral bottom glow",
+    "Full gold outline and surrounding glow for selection",
+    "Mouse remembered focus stays neutral without hover",
+    "Compact stacking and native forced-colors/reduced-motion styling"
+  ],
+  "frontendChecksPassed": 25,
+  "typecheckAndProductionBuild": "passed, existing bundle-size advisory",
+  "focusRegression": "Observed failing teal result before change, passing gold result after change",
+  "actualBrowserViewport": [
+    1280,
+    720
+  ],
+  "actualUiChecks": [
+    "Gold icons rendered with unique SVG gradient IDs",
+    "Right focused TV, Left focused Movies",
+    "Settled TV focus outline rgb(255,206,105), gold inner and outer glow",
+    "Movies Enter retained media=movie destinations",
+    "Mouse Home return checked separately"
+  ],
+  "sourceLibrary": "Real 2689 movies, 158 TV shows, 2 sources",
+  "notVerified": [
+    "Physical gamepad/Xbox",
+    "New compact/TV viewport visual matrix",
+    "Backend regression suite for this CSS/markup-only pass"
+  ],
+  "screenshots": [
+    "tv-focused.png",
+    "mouse-neutral.png"
+  ],
+  "changesStatus": "local and uncommitted"
+}

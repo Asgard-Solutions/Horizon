@@ -5,10 +5,10 @@ import os
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 
-from . import paths
+from . import paths, subtitles, local_metadata
 from .db import get_setting, now_iso, set_setting
 from .parser import IMAGE_EXTENSIONS
 from .paths import library_real_path
@@ -27,7 +27,7 @@ ART_SOURCES = {
     "season-poster": ("seasons", "poster_path"),
     "episode-thumb": ("episodes", "thumb_path"),
 }
-PREF_DEFAULTS = {"resume": "ask", "autoplay_next": False, "skip_seconds": 10, "watched_threshold": "95"}
+PREF_DEFAULTS = {"resume": "ask", "autoplay_next": False, "skip_seconds": 10, "watched_threshold": "95", "subtitles": "off"}
 END_SLACK_S = 2.0  # "End": within the last couple of seconds (players rarely report the exact final frame)
 
 
@@ -96,6 +96,7 @@ JOIN media_files f ON f.id = e.file_id LEFT JOIN progress p ON p.path_key = f.pa
 
 def _movie(row, reader=None) -> dict:
     return {
+        **local_metadata.public_details(row),
         "id": row["id"], "file_id": row["file_id"], "title": row["title"], "year": row["year"], "plot": row["plot"],
         "filename": row["filename"], "container": row["container"], "size": row["size"], "added_at": row["added_at"],
         "poster_url": _art("movie-poster", row["id"], row["poster_path"]),
@@ -106,6 +107,7 @@ def _movie(row, reader=None) -> dict:
 
 def _episode(row, reader=None) -> dict:
     return {
+        **local_metadata.public_details(row),
         "id": row["id"], "file_id": row["file_id"], "show_id": row["show_id"], "show_title": row["show_title"],
         "season_number": row["season_number"], "episode_number": row["episode_number"],
         "episode_end": row["episode_end"], "title": row["title"], "plot": row["plot"], "filename": row["filename"],
@@ -121,6 +123,7 @@ def _show_summary(conn, row) -> dict:
         " LEFT JOIN episodes e ON e.season_id = s.id WHERE s.show_id = ?", (row["id"],)
     ).fetchone()
     return {
+        **local_metadata.public_details(row),
         "id": row["id"], "title": row["title"], "year": row["year"], "plot": row["plot"],
         "poster_url": _art("show-poster", row["id"], row["poster_path"]),
         "fanart_url": _art("show-fanart", row["id"], row["fanart_path"]),
@@ -308,6 +311,17 @@ def playback_info(file_id: int, request: Request):
     }
 
 
+@router.get("/files/{file_id}/subtitles")
+def file_subtitles(file_id: int, request: Request):
+    return subtitles.discover_tracks(request.state.db, _file_row(request.state.db, file_id))
+
+
+@router.get("/files/{file_id}/subtitles/{track_id}")
+def subtitle_track(file_id: int, track_id: str, request: Request):
+    content = subtitles.read_track(request.state.db, _file_row(request.state.db, file_id), track_id)
+    return Response(content, media_type="text/vtt", headers={"Cache-Control": "no-store"})
+
+
 class ProgressIn(BaseModel):
     position: float = Field(ge=0)
     duration: float | None = Field(default=None, ge=0)
@@ -334,6 +348,7 @@ class PreferencesIn(BaseModel):
     autoplay_next: bool | None = None
     skip_seconds: Literal[10, 30, 60] | None = None
     watched_threshold: Literal["90", "95", "end"] | None = None
+    subtitles: Literal["off", "auto"] | None = None
 
 
 @router.get("/preferences")
@@ -345,9 +360,11 @@ def get_preferences(request: Request):
 @router.put("/preferences")
 def put_preferences(body: PreferencesIn, request: Request):
     conn = request.state.db
-    prefs = {**preferences(conn), **body.model_dump(exclude_none=True)}
-    set_setting(conn, "playback_prefs", json.dumps(prefs))
-    conn.commit()
+    with conn:
+        # Acquire the writer lock before reading so concurrent partial updates cannot overwrite each other.
+        conn.execute("BEGIN IMMEDIATE")
+        prefs = {**preferences(conn), **body.model_dump(exclude_none=True)}
+        set_setting(conn, "playback_prefs", json.dumps(prefs))
     return prefs
 
 

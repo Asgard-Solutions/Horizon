@@ -1,0 +1,151 @@
+{
+  "timestamp": "2026-11-04T15:52:28.602Z",
+  "scope": "Mutation/playback checks use an isolated loopback instance and owned synthetic media. Last check reads normal app Settings only.",
+  "checks": [
+    {
+      "check": "SRT loads, Escape returns focus, seek 30 seconds",
+      "observation": {
+        "alerts": 0,
+        "focus": "player-forward-button",
+        "phase": "ready",
+        "time": 30,
+        "trackReady": 2
+      }
+    },
+    {
+      "check": "WebVTT manual switch",
+      "observation": {
+        "alerts": 0,
+        "label": "es · Subtitle verification clip.es.vtt",
+        "ready": 2
+      }
+    },
+    {
+      "check": "Manual Off",
+      "observation": {
+        "time": 30,
+        "trackCount": 0
+      }
+    },
+    {
+      "check": "Malformed SRT feedback without video failure",
+      "observation": {
+        "alert": "This subtitle could not be loaded. The file may have changed, be unreadable or be unavailable.",
+        "phase": "ready",
+        "trackReady": 3
+      }
+    },
+    {
+      "check": "Retry succeeds without losing dialog focus",
+      "observation": {
+        "alerts": 0,
+        "focus": "subtitle-track-retry",
+        "trackReady": 2
+      }
+    },
+    {
+      "check": "Tab remains inside subtitle dialog",
+      "observation": {
+        "inside": true
+      }
+    },
+    {
+      "check": "Discovery failure is retryable and not reported empty",
+      "observation": {
+        "alert": "Could not find subtitle files: Temporary subtitle verification error",
+        "empty": false,
+        "phase": "ready"
+      }
+    },
+    {
+      "check": "Refresh recovers discovery",
+      "observation": {
+        "alerts": 0,
+        "focus": "subtitle-refresh"
+      }
+    },
+    {
+      "check": "Automatic subtitle preference persists through reload",
+      "observation": "true"
+    },
+    {
+      "check": "Automatic episode subtitles",
+      "observation": {
+        "label": "en · Subtitle verification series S01E01.en.srt",
+        "phase": "ready",
+        "ready": 2
+      }
+    },
+    {
+      "check": "Episode end holds modal focus and defers autoplay",
+      "observation": {
+        "countdown": false,
+        "ended": true,
+        "inDialog": true
+      }
+    },
+    {
+      "check": "Automatic next episode starts with its own empty subtitle list",
+      "observation": {
+        "empty": "No matching subtitle files found. Use the video's filename with .srt or .vtt, optionally adding a language, such as Movie.en.srt.",
+        "focus": "subtitle-off",
+        "tracks": 0,
+        "url": "http://127.0.0.1:8767/play/3?start=0&media=tv"
+      }
+    },
+    {
+      "check": "390px subtitle dialog and player controls fit",
+      "observation": {
+        "modalWidth": 326,
+        "outside": [],
+        "pageWidth": 390,
+        "width": 390
+      }
+    },
+    {
+      "check": "390px Playback setting fits",
+      "observation": {
+        "outside": [],
+        "pageWidth": 375,
+        "width": 390
+      }
+    },
+    {
+      "check": "1920x1080 Playback setting fits",
+      "observation": {
+        "outside": [],
+        "pageWidth": 1905,
+        "width": 1920
+      }
+    },
+    {
+      "check": "Subtitles remain visible with controls hidden",
+      "observation": {
+        "mode": "hidden",
+        "paused": false,
+        "ready": 2
+      }
+    },
+    {
+      "check": "Final backend and TV-safe subtitle placement",
+      "observation": {
+        "mode": "hidden",
+        "phase": "ready",
+        "time": 41.7663,
+        "trackReady": 2,
+        "videoWidth": 640
+      }
+    },
+    {
+      "check": "Normal app exposes the additive subtitle setting without changing existing preferences",
+      "observation": {
+        "auto": "false",
+        "autoplay": "true",
+        "off": "true",
+        "resumeAsk": "true",
+        "skip10": "true",
+        "watched95": "true"
+      }
+    }
+  ]
+}

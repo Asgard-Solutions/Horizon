@@ -5,6 +5,7 @@ import { api, mediaUrl, saveProgress } from "../api";
 import { ErrorState, Loading } from "../components/States";
 import { useAsync, useBack } from "../hooks";
 import { PlayerControls, type ControlsMode, type ControlsState } from "../player/Controls";
+import { SubtitleDialog, useLocalSubtitles } from "../player/LocalSubtitles";
 import { mediaErrorMessage, NextCountdown, ProblemPanel, ResumedChip, ResumePrompt } from "../player/Panels";
 import { loadPreferences } from "../settings/PlaybackSection";
 import type { PlaybackInfo } from "../types";
@@ -46,6 +47,10 @@ export default function Player() {
   const [countdown, setCountdown] = useState<number | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [subtitlesOpen, setSubtitlesOpen] = useState(false);
+  const subtitlesOpenRef = useRef(false);
+  subtitlesOpenRef.current = subtitlesOpen;
+  useEffect(() => { setSubtitlesOpen(false); }, [fileId]);
   const stageRef = useRef<HTMLDivElement>(null);
   const playRef = useRef<HTMLButtonElement>(null);
   const hideTimer = useRef<number>(0);
@@ -57,6 +62,7 @@ export default function Player() {
   const [mode, setMode] = useState<ControlsMode>("osd");
   const modeRef = useRef(mode);
   modeRef.current = mode;
+  const subtitles = useLocalSubtitles(fileId, prefs, videoRef, !!info, mode !== "hidden");
   const [flash, setFlash] = useState<Flash | null>(null);
   const [s, setS] = useState<ControlsState>({
     playing: false, time: 0, duration: 0, buffered: 0,
@@ -125,7 +131,7 @@ export default function Player() {
   const arm = useCallback(() => {
     window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(() => {
-      if (videoRef.current && !videoRef.current.paused) {
+      if (!subtitlesOpenRef.current && videoRef.current && !videoRef.current.paused) {
         setMode("hidden");
         stageRef.current?.focus({ preventScroll: true });
       }
@@ -219,6 +225,7 @@ export default function Player() {
   useEffect(() => {
     if (phase !== "ready" && phase !== "starting") return;
     const onKey = (e: KeyboardEvent) => {
+      if (subtitlesOpenRef.current) return;
       if (BACK_KEYS.includes(e.key) || e.altKey || e.ctrlKey || e.metaKey || countdownRef.current !== null) return;
       const stop = () => { e.preventDefault(); e.stopPropagation(); };
       const onChip = (document.activeElement as HTMLElement | null)?.dataset.startOver !== undefined;
@@ -294,11 +301,12 @@ export default function Player() {
         onVolumeChange={(e) => { localStorage.setItem("mc-volume", String(e.currentTarget.volume)); update(); }}
         onEnded={() => {
           update(); persist();
+          if (subtitlesOpenRef.current) return;
           if (prefs?.autoplay_next && ctx.next_file_id) setCountdown(10);
           else expand();
         }}
         onError={(e) => { setReasons([mediaErrorMessage(e.currentTarget.error), ...info.compatibility.reasons]); setPhase("error"); }}
-      />
+      >{subtitles.track}</video>
       {phase === "starting" && startAt !== null && (
         <div className="player-loading" data-testid="player-starting"><Loader2 className="spin" size={54} /><span>Starting playback…</span></div>
       )}
@@ -315,6 +323,10 @@ export default function Player() {
         <ProblemPanel info={info} title="Playback failed" reasons={reasons} onBack={exit} testId="playback-error-panel" />
       )}
       {warning && phase === "ready" && <div className="player-warning" role="status" data-testid="player-warning">{warning}</div>}
+      {subtitles.trackError && phase === "ready" && !subtitlesOpen && <div className="pc-subtitle-notice" role="alert">
+        <span>Subtitle unavailable. Video playback can continue.</span>
+        <button className="hbtn" onClick={() => { setMode("expanded"); setSubtitlesOpen(true); }}>Subtitle options</button>
+      </div>}
       {phase === "ready" && flash && <FlashMark key={flash.n} flash={flash} />}
       {phase === "ready" && resumed !== null && countdown === null && (
         <ResumedChip position={resumed} onStartOver={() => { setResumed(null); seekTo(0); surface(); }} />
@@ -328,8 +340,12 @@ export default function Player() {
           title={ctx.title ?? info.filename} subtitle={ctx.subtitle}
           hasNext={!!ctx.next_file_id} playRef={playRef} onToggle={toggle} onSeekBy={seekBy} onSeekTo={seekTo} skip={skip}
           onVolumeBy={volumeBy} onMute={mute} onFullscreen={fullscreen} onExit={exit}
-          onNext={playNext} />
+          onNext={playNext} onSubtitles={() => { setSubtitlesOpen(true); window.clearTimeout(hideTimer.current); }} subtitlesOn={!!subtitles.selected && !subtitles.trackError} />
       )}
+      {subtitlesOpen && phase === "ready" && <SubtitleDialog subtitles={subtitles} onClose={() => {
+        setSubtitlesOpen(false); setMode("expanded"); arm();
+        if (videoRef.current?.ended && prefs?.autoplay_next && ctx.next_file_id) setCountdown(10);
+      }} />}
     </div>
   );
 }

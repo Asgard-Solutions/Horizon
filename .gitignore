@@ -18,6 +18,7 @@ node_modules/
 
 # Testing
 /coverage
+/test_reports/
 
 # Next.js
 /.next/
@@ -96,3 +97,6 @@ test_media/
 credentials.json
 *.key
 .credentials
+
+# Optional app-local FFprobe installation (external binary, never bundled in Git)
+/tools/ffprobe.exe

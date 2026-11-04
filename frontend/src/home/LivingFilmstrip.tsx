@@ -35,7 +35,7 @@ export function LivingFilmstrip({ groups, group, onGroup, selectedKey, onSelect,
     el.scrollTo({ left: Math.max(0, left), behavior: reduced() ? "auto" : "smooth" });
   }, [selectedKey, view, group.id]);
 
-  // Report the focused card's centre for the Horizon Line.
+  // Report the focused card's centre for the REELHEIM Line.
   useEffect(() => {
     const el = track.current;
     if (!el) return;

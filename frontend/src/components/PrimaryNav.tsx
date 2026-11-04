@@ -5,7 +5,7 @@ import { goBack } from "../nav/spatial";
 import { scopedPath } from "../home/context";
 import { useMediaType } from "../home/useMediaType";
 import { useHomeLayout } from "../home/useHomeLayout";
-import logo from "../assets/horizon-media-center-logo-on-dark.png";
+import logo from "../assets/reelheim-logo-header-1120.png";
 
 export function PrimaryNav() {
   const { pathname } = useLocation();
@@ -25,7 +25,7 @@ export function PrimaryNav() {
     event.preventDefault();
   };
   return <header className={home ? "hub-header" : "hub-header hub-header--browse"} data-testid="primary-nav" onKeyDown={moveInHeader}>
-    <Link className="hub-brand" to="/" id="global-home" aria-label="Horizon Home" data-testid="nav-home"><img src={logo} alt="Horizon Media Center" /></Link>
+    <Link className="hub-brand" to="/" id="global-home" aria-label="REELHEIM Home" data-testid="nav-home"><img src={logo} alt="REELHEIM Media Center" /></Link>
     {!home && <button className="hub-global-back" onClick={goBack} data-testid="nav-back"><ArrowLeft aria-hidden="true" focusable="false" />Back</button>}
     {pathname !== "/settings" && <nav aria-label="Global utilities">
       <Link className="hub-utility hub-settings" to={scopedPath("/settings", type)} id="global-settings" data-testid="nav-settings"><Settings aria-hidden="true" focusable="false" /><span>Settings</span></Link>

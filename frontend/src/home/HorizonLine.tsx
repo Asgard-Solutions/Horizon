@@ -1,4 +1,4 @@
-/** The Horizon Line: a 2 px line that bends toward the focused Filmstrip card only. Pure SVG, no animation loop. */
+/** The REELHEIM Line: a 2 px line that bends toward the focused Filmstrip card only. Pure SVG, no animation loop. */
 export function HorizonLine({ anchor, width }: { anchor: number | null; width: number }) {
   if (!width) return null;
   const y = 6;

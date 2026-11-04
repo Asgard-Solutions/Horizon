@@ -1,30 +1,50 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api, post } from "../api";
 import { useAsync } from "../hooks";
-import { SectionHead, SettingRow, Toggle } from "./ui";
+import { ResourceStatus, SectionHead, SettingRow, Toggle } from "./ui";
 
-/** Folder-based collections on/off. NFO <set> collections always apply; only the catalog is regrouped. */
+type CollectionPrefs = { nfo_collections: boolean; folder_collections: boolean };
+
+/** Independent NFO and folder collections; only the indexed catalog is regrouped. */
 export function CollectionsSection() {
-  const { data, setData } = useAsync(() => api<{ folder_collections: boolean }>("/api/settings/library"), []);
+  const { data, replaceData: setData, loading, error, reload } = useAsync(() => api<CollectionPrefs>("/api/settings/library"), []);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  if (!data) return null;
-  const toggle = async (on: boolean) => {
-    const r = await post<{ folder_collections: boolean; collections: number }>("/api/settings/library", { folder_collections: on });
-    setData({ folder_collections: r.folder_collections });
-    setMsg(`${r.collections} collection${r.collections === 1 ? "" : "s"} in your library now.`);
+  const toggle = async (key: keyof CollectionPrefs, on: boolean) => {
+    if (savingRef.current || !data) return;
+    savingRef.current = true;
+    setSaving(true);
+    setSaveError(null);
+    setMsg(null);
+    try {
+      const r = await post<CollectionPrefs & { collections: number }>("/api/settings/library", { [key]: on });
+      setData({ nfo_collections: r.nfo_collections, folder_collections: r.folder_collections });
+      setMsg(`${r.collections} collection${r.collections === 1 ? "" : "s"} in your library now.`);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Could not save collection settings.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
   return (
     <div className="ssection" data-testid="settings-collections">
-      <SectionHead title="Collections & folders" intro="Only Horizon's catalog is regrouped. Your folders and files are never changed." />
-      <SettingRow label="NFO collections" testId="collections-nfo-row"
-        hint={<>Collections named in NFO files (<code>&lt;set&gt;</code>) are always used.</>}>
-        <span className="sbadge sbadge--on">Always on</span>
-      </SettingRow>
-      <SettingRow label="Folder groups" testId="collections-folder-row"
-        hint="A folder that holds several movies becomes a collection. Generic folders such as Movies or Media never count.">
-        <Toggle on={data.folder_collections} onChange={toggle} testId="folder-collections-toggle" />
-      </SettingRow>
-      {msg && <p className="form-hint" role="status" data-testid="folder-collections-result">{msg}</p>}
+      <SectionHead title="Collections & folders" intro="Only REELHEIM's catalog is regrouped. Your folders and files are never changed." />
+      <ResourceStatus loading={loading} error={error} onRetry={reload} testId="collections-load" />
+      {data && <>
+        <SettingRow label="NFO collections" testId="collections-nfo-row"
+          hint={<>Use collections named in NFO files (<code>&lt;set&gt;</code>). When on, these take priority over folder groups.</>}>
+          <Toggle on={data.nfo_collections} onChange={(on) => toggle("nfo_collections", on)} disabled={saving} testId="nfo-collections-toggle" />
+        </SettingRow>
+        <SettingRow label="Folder groups" testId="collections-folder-row"
+          hint="A folder that holds several movies becomes a collection. Generic folders such as Movies or Media never count.">
+          <Toggle on={data.folder_collections} onChange={(on) => toggle("folder_collections", on)} disabled={saving} testId="folder-collections-toggle" />
+        </SettingRow>
+        {(saving || msg) && <p className="form-hint" role="status" data-testid="folder-collections-result">{saving ? "Updating collections…" : msg}</p>}
+        {saveError && <p className="form-error" role="alert" data-testid="collections-save-error">{saveError}</p>}
+      </>}
     </div>
   );
 }
