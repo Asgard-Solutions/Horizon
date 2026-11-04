@@ -1,0 +1,53 @@
+{
+  "summary": "Stage 3 FINAL regression (frontend only, D-pad key simulation) run ONLY against isolated servers 8772 (full: sample_media + Horizon demo + TEST large, 3156 titles) and 8773 (zero libraries). The preview URL was never opened. EXACT automated result: 144 of 146 counted checks passed (98.6%). Manual observations are listed separately and not counted. 7 checks were excluded as invalid test-script errors (all re-run correctly, see excluded_checks). Results by area: Search 25/25. Atlas 36/36 (3 mode-switch checks re-run with normalised ids). NEW sparse-Atlas (17-28 groups, More collections last page with 23 groups) 10/11. Discover 27/28. Removed-title recovery 12/12. Empty library (8773) 11/11. Home, movie and show detail, player, Settings and reduced motion 19/19. 4K 4/4 (the viewport is capped at 3840x1920). The Clear Search focus fix WORKS: on both 8772 and 8773, Enter on search-clear-button clears the query, shows the idle state and focuses the last-used OSK key (horizon.search.oskKey: osk-key-r, osk-key-l), never body. The sparse-Atlas readability fix WORKS: More genres (10 groups) sits on one outer orbit (--r 0.46), every node shows its count and full name, and no labels overlap. Left/Right wrap, Up goes to atlas-back, Down stays. Full pages (36) keep 3 orbits (8/12/16) with Up/Down between rings. More collections has 9 pages; the last page (7 groups) is a single outer orbit; LB/RB paging and the end-stop work. Grid tiles pluralise correctly. The 2 failures are minor: (1) Tab escapes the sort/filter sheet trap (the D-pad arrows stay trapped); (2) with 17-28 groups, the focused node's enlarged label overlaps 1-2 neighbouring labels.",
+  "results_by_area": {
+    "search_8772": "25/25 (nav Enter -> osk-key-a first time; click and '/' -> last-used key; Up from each of A..F -> search-input -> nav (6/6); typing has no duplicates and focus stays; the OSK right edge goes to the first result and then to the last-used result; Backspace and PadX on a result each delete one char; Ctrl+A is native; open a result and Back restores the query and the exact result; no-results -> Right -> Clear search -> cleared + focus on the OSK key)",
+    "atlas_8772": "36/36 (the overview fits 1080p; the selected node is scaled; Left/Right wrap; Up goes to the toolbar; Down goes to ring 1; zoom in and Back restores by id; PageUp/PageDown; return from detail on page 2 in orbit and grid; orbit<->grid persistence across reload; More genres sparse single outer ring, count+name, no overlap, wrap, Down stays, Up exits; nested Back; More collections 9 pages, full page 8/12/16, last page sparse, RB end-stop, LB; grid plurals)",
+    "atlas_17_28_groups_8772": "10/11 (temporary TEST_Saga 900-914 folders gave More collections 311 groups, so page 9 has 23 groups: two OUTER orbits 7+16 at --r 0.31/0.46, count+name on every node, wrap on both rings, Down inner->outer, Down outer stays, Up outer->inner, Up inner->atlas-back, grid '2 titles'. FAIL G4: label overlap)",
+    "discover_8772": "27/28 (tabs; one item per Right and one row per Down; Left/Right edges; Up from the first row -> Sort; sort sheet opens on the selected option; Escape returns to the button; genre sheet opens on the first option; toggling keeps focus and sets aria-pressed; Escape -> Genre button; removing a chip -> Sort; Reset -> Sort; deep restore at index 128 with exact scrollY 6252; Collections Up -> selected tab; collection Up -> Sort; collection Back -> same card; Nothing matches. FAIL D10: Tab escapes the sheet)",
+    "removed_title_8772": "12/12 (Discover middle index 41 and LAST index 99 -> nearest card at 41 and 98; a multi-result Search with the focused result removed -> nearest result; the only Search result removed -> no-results + last OSK key, then Clear search -> OSK key; Atlas orbit (Drama) and Atlas grid removed title -> nearest node/card; Sport genre (all 147 files) removed while inside More genres > Sport > detail -> Back lands on 'More genres 9 groups' with focus on War (same idx 7), the stack holds no children, and the grid lacks Sport)",
+    "empty_8773": "11/11 (first-run + home-add-folder-button focused; discover-empty-library + discover-add-folder with no filter bar, Enter -> /settings; atlas-empty + atlas-add-folder focused; Search -> osk-key-a; no-results -> Right from osk-key-l -> search-clear-button -> Enter -> cleared + osk-key-l)",
+    "home_detail_player_settings_rm_8772": "19/19 (player: Up expands, the first B collapses to osd, the second B exits to /movies/2, by design)",
+    "4k": "4/4 at 3840x1920 (the browser tool caps the height at 1920; 2160 NOT achieved)"
+  },
+  "excluded_checks": [
+    "A13/A14/A16 (first run): the assertion compared testids across modes (atlas-node-movie-1508 vs discover-card-movie-1508). It is the same title, so these are invalid. Re-run with the item key normalised as A13r/A14r/A16r: 3/3 PASS (counted)",
+    "R3 (first attempt): the script's ArrowDown sequence stopped at index 97 (last row) instead of the last index 99. The app behaviour was still correct (focus at 97). Re-run reaching index 99: PASS (counted)",
+    "E10/E11 (first attempt): the script pressed ArrowRight 3 times from osk-key-a (to D, not the right edge), then Enter typed 'd'. Re-run from osk-key-l: 2/2 PASS (counted)",
+    "E12: the expectation that the Collections view on an empty library shows the empty-library state is not in the spec. It shows 'No collections yet' (discover-empty) with no Add folder button. Listed as an observation"
+  ],
+  "manual_observations_not_counted": [
+    "Diagnostic run on the sort sheet: ArrowUp/Down/Left/Right never leave the sheet (Down at the last option stays), but Tab or Shift+Tab moves focus to the background grid cards while the sheet stays open",
+    "17-28 groups: when nothing is focused there are no label overlaps. The overlap happens only around the focused, enlarged label (e.g. inner 'Saga 292' covers 'TEST_Saga 913/914'; outer 'TEST_Saga 906' clips 'TEST_Saga 905')",
+    "Empty library Collections tab: 'No collections yet ... if folder grouping is on in Library' with no Add media folder CTA, unlike the other empty Discover views",
+    "Many TEST_large posters render as solid colour tiles (synthetic poster.jpg). This is a test-data property, not an app bug"
+  ],
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Discover sort/filter sheet (discover/FilterBar.tsx OptionSheet)", "issue": "The focus trap covers only D-pad arrows. Tab/Shift+Tab leaves the open sheet and focuses background cards (keyboard/a11y users)", "selector": "[data-testid='filter-sheet']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Atlas group level with 17-28 groups (two orbits, e.g. More collections last page with 23 groups)", "issues": ["The focused node's enlarged label overlaps 1-2 neighbouring labels on the dense 16-node outer ring, or the outer ring above an inner top-half node. Unfocused layout has 0 overlaps"]},
+      {"screen": "Discover > Collections on an empty library (8773)", "issues": ["Shows 'No collections yet' without the Add media folder CTA. The other Discover views show discover-empty-library"]}
+    ]
+  },
+  "test_report_links": ["/tmp/h3iso/C/work/iso.py (isolated backup/rm/rmgenre/restore/scan helper, touches only /tmp/h3iso/B/TEST_large)", "/tmp/h3iso/C/work/extra.py (creates 15 TEST_Saga folders for the 17-28 groups case)"],
+  "action_items": [
+    "Optional: FilterBar sheet - also trap Tab/Shift+Tab (or make the background inert/aria-modal) while a sheet is open",
+    "Optional: Atlas 17-28 groups - shorten or clamp the focused label width, or raise it with a background so it does not overlap neighbouring labels",
+    "Optional: Discover Collections empty-library - show the discover-empty-library state + Add media folder when there are zero libraries"
+  ],
+  "critical_code_review_comments": [
+    "Search.tsx:111 and :77 duplicate the 'focus last OSK key' expression; extract a helper (focusLastOskKey)",
+    "Atlas.tsx:157 recomputes groupRings(groupItems) just for the offset after line 60 already computed it; compute it once",
+    "Sky.tsx aria-label says 'N titles' for every node; for 'more' nodes it should say groups (minor a11y)"
+  ],
+  "updated_files": ["/app/docs/screenshots/stage3/*.jpeg refreshed (search_osk_results_1080p, discover_movies_filters_1080p, atlas_overview_1080p, atlas_cluster_genre_1080p, atlas_selected_title_1080p, atlas_more_genres_1080p NEW, atlas_more_collections_two_orbits_1080p NEW, removed_title_recovery_1080p, empty_home/discover/atlas/search_1080p, discover_all_4k, atlas_overview_4k, search_results_4k)"],
+  "success_rate": {"backend": "N/A (frontend only)", "frontend": "98.6% (144/146)"},
+  "seed_data_creation": "None persistent. /tmp/h3iso/B/TEST_large was backed up to /tmp/h3iso/C/work/bk_TEST_large, then titles, the Sport genre and the temporary TEST_Saga 900-914 + TEST Solo folders were removed or added. It was restored after each run (final diff -rq IDENTICAL) and rescanned: lib 3 = 3000 movies / 900 episodes, lib 1 = 3/3, lib 2 = 0/5. Side effect on the isolated 8772 DB only: Sample Movie (movie 2) now has a resume position of 2.88 s from the player test. Restored titles get new movie ids (scanner behaviour). sample_media, the preview, /app/data, /app/sample_media, /app/test_media and /tmp/TEST_large were not touched.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Use 8772 (full) and 8773 (empty); never the preview. The browser tool can run subprocess, so call python3 /tmp/h3iso/C/work/iso.py rmtitle '<Title>' | rmgenre <Genre> | restore | scan inside scripts. Restore always rescans lib 3. 8772 overview: genres shown = SciFi, Adventure, Crime, Thriller, Horror, Music, Mystery, Western, Drama + More genres (Documentary, Animation, Comedy, Fantasy, History, Romance, War, Family, Sport, Uncategorized). War is INSIDE More genres. More collections = 295 (9 pages, last 7). The viewport is capped at 3840x1920. Screenshots are saved to /root/.emergent/automation_output/<run>/; copy only your own files (other runs leave c/m/mc/mg.jpeg there). Testids differ between Atlas orbit (atlas-node-<key>) and grid (discover-card-<key>), so normalise them when comparing."
+}

@@ -1,7 +1,57 @@
 # Horizon Stage 3 — Completion report (Discover, Search, Library Atlas)
 
-Status: **final closeout complete — awaiting your final approval**. Stage 4 has not been started.
-Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` (first full pass, 7 bugs), `iteration_10.json` (96%), `iteration_11.json` (closeout pass 1: 126/129), `iteration_12.json` (**final regression: 130/132 automated checks = 98.5%**).
+Status: **final regression complete — awaiting your final approval**. Stage 4 has not been started.
+Date: 2026-06. QA reports: `/app/test_reports/iteration_9.json` … `iteration_12.json`, and **`iteration_13.json` (final approval run)**.
+
+## Final approval run (iteration 13)
+All of this ran on **isolated temporary servers**, each with its own SQLite database, data folder and configuration, and its own copies of the media. Ports were 8771 (sample + demo copies, for the live API suite), 8772 (sample + demo + large synthetic library copies, for the browser suite) and 8773 (empty). **The Horizon preview was not opened, detached, rescanned or modified.** After testing, all three servers were shut down and `/tmp/h3iso` was deleted.
+
+| Suite | Automated result |
+|---|---|
+| Browser regression (full Stage 3 suite plus new checks; simulated D-pad) | **144 / 146 passed (98.6%)** |
+| Live server suite (`tests_live`, against isolated 8771) | **31 / 31 passed**, including the new `test_progress_readd_live.py` |
+| Server unit suite (`pytest tests`) | **185 / 185 passed** |
+
+**Browser results by area:**
+| Area | Passed |
+|---|---|
+| Search | 25/25 |
+| Atlas | 36/36 |
+| Atlas with 17–28 groups | 10/11 |
+| Discover | 27/28 |
+| Removed-title recovery | 12/12 |
+| Empty library | 11/11 |
+| Home / detail / player / Settings / reduced motion | 19/19 |
+| 4K at 3840×1920 | 4/4 |
+
+Seven first-attempt checks contained test-script mistakes: comparing ids across modes, stopping one row short, and starting from the wrong key. Six were rerun correctly and are counted. The seventh tested something outside the spec and is listed as an observation.
+
+**The 2 automated failures:**
+1. **Tab / Shift+Tab escaped an open Sort or Filter sheet** (the D-pad was already trapped). **Fixed afterwards**: Tab now cycles inside the sheet. This was verified by one targeted scripted browser check (16 Tab/Shift+Tab presses stay inside, Escape returns to the button, toggling keeps focus). That check is **not** included in the 144/146.
+2. **With 17–28 groups in an Atlas level, the focused node's enlarged label can overlap 1–2 neighbouring labels.** Unfocused layouts have no overlaps, and navigation and selection are unaffected. This is cosmetic and **tracked for later**.
+
+**Watch progress across remove and re-add**, covered by the new automated live test on isolated media:
+- A title whose file disappears is removed by a rescan.
+- When the same file is restored at the same path, its saved position (42.5 s) comes back.
+- Removing and re-adding the whole library also keeps it.
+
+Progress is keyed by the normalised file path. The title's internal id can change, but progress does not depend on it. To run the live suite on the isolated copy, the live tests now take `MC_LIVE_URL`, `MC_LIVE_SAMPLE` and `MC_LIVE_DEMO`; with none of them set, they use the same paths as before.
+
+**Sparse Atlas display:**
+| Issue | Affects navigation/readability? | Status |
+|---|---|---|
+| Group levels such as "More genres" showed only initials for unfocused nodes, so Music and Mystery looked identical | Yes, readability and selection | **Fixed**: every group node shows its count and full name |
+| Small group levels were crowded onto the tiny inner orbit, with labels covering each other | Yes, readability | **Fixed**: up to 16 groups use one wide outer orbit and 17–28 use the two outer orbits. Full pages keep three orbits. Left/Right wrap, Up exits, and Down stays at the outermost orbit (36/36 and 10/11 automated) |
+| Focused label overlapping a neighbour with 17–28 groups | No | Cosmetic, tracked |
+| Folder-group info panel shows a plain placeholder poster | No | Cosmetic, tracked |
+| Discover's Collections tab on an empty library says "No collections yet" without an Add media folder button (the other tabs have one) | No | Cosmetic, tracked |
+
+**Preview unchanged:** the preview database (all tables, the library list, every progress row and all settings) matched a snapshot taken before testing, field for field. The checksums of every file under `/app/sample_media`, `/app/test_media` and `/tmp/TEST_large` were identical before and after. The preview UI and its APIs respond normally (HTTP 200).
+
+**Kept on the platform-testing backlog:** physical Windows PCs, Xbox consoles, Xbox controllers, NAS/UNC sources, 4K televisions, and a true 3840×2160 viewport (the test browser tops out at 3840×1920).
+
+---
+*Earlier closeout rounds below, kept for history.*
 
 ## 0. Final closeout (this round)
 | Item | Result |

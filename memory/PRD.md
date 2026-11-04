@@ -78,3 +78,10 @@ Host = loopback (+Host header check); LAN devices = PIN pairing → token (cooki
 - Isolated temp servers (separate data dirs, copied media) used for empty-library + removed-title tests, then deleted; preview libraries untouched
 - QA iteration 11 (126/129) -> fixes; iteration 12 final 130/132 (98.5%), remaining bug fixed + scripted check
 - Awaiting final user approval; Stage 4 not started
+
+## Stage 3 final approval run (2026-06)
+- Isolated servers only (8771 live API, 8772 full copy, 8773 empty); preview verified identical (DB snapshot + media checksums)
+- Browser 144/146 (98.6%, iteration_13); live 31/31 (new tests_live/test_progress_readd_live.py; tests take MC_LIVE_URL/MC_LIVE_SAMPLE/MC_LIVE_DEMO); unit 185/185
+- Fixes: sheet Tab trap; sparse Atlas group levels show count+name, use outer orbits (groupRings + Sky offset)
+- Cosmetic backlog: focused label overlap at 17-28 groups, folder-group placeholder poster, empty Collections tab CTA
+- Awaiting final user approval; Stage 4 not started

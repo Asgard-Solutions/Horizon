@@ -17,6 +17,13 @@ function OptionSheet({ title, children, onClose }: { title: string; children: Re
   return (
     <div className="dsheet-scrim" onClick={onClose} data-testid="filter-sheet-scrim">
       <div ref={box} className="dsheet" role="dialog" aria-modal="true" aria-label={title} data-nav-scope="modal"
+        onKeyDown={(e) => { // keep Tab / Shift+Tab inside the open sheet, like the D-pad
+          if (e.key !== "Tab") return;
+          const items = Array.from(box.current?.querySelectorAll<HTMLElement>("button") ?? []);
+          const i = items.indexOf(document.activeElement as HTMLElement);
+          e.preventDefault();
+          items[(i + (e.shiftKey ? -1 : 1) + items.length) % items.length]?.focus();
+        }}
         onClick={(e) => e.stopPropagation()} data-testid="filter-sheet">
         <div className="dsheet-head"><h2>{title}</h2>
           <button className="hbtn hbtn--quiet" onClick={onClose} data-testid="filter-sheet-close"><X size={20} /> Done</button></div>
